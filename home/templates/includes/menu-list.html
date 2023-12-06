@@ -678,14 +678,7 @@
     </li>
     {% endif %}
 
-    {% if request.user.is_authenticated %}
-    <li class="nav-item">
-      <a href="{% url 'logout' %}" class="nav-link">
-        <i class="fa fa-sign-out-alt nav-icon"></i>
-        <p>Logout</p>
-      </a>
-    </li>
-    {% else %}
+    {% if not request.user.is_authenticated %}
     <li class="nav-item">
       <a href="{% url 'login' %}" class="nav-link">
         <i class="fa fa-sign-in-alt nav-icon"></i>
@@ -698,13 +691,7 @@
         <p>Register</p>
       </a>
     </li>        
-    {% endif %} 
-    
-    <li class="nav-item">
-      <a target="_blank" href="https://appseed.us/support/" class="nav-link">
-        <i class="fa fa-rocket text-danger nav-icon"></i>
-        <p>Support</p>
-      </a>
-    </li>         
+    {% endif %}    
+         
     
   </ul>
