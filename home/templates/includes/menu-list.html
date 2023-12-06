@@ -8,7 +8,7 @@
     {% if app_list %}
     {% for app in app_list %}
     {% if app.has_perms and not app.pinned %}
-    <li class="nav-item {% if 'dashboard' in parent %} menu-open {% endif %}">
+    <li class="nav-item {% if app.app_label == 'home' %} menu-open {% endif %}">
       <a class="nav-link {% if app_label != app.label and app.url not in request.path|urlencode  %} collapsed{% endif %}"
         data-bs-toggle="collapse" data-bs-target="#submenu-{{ app.app_label }}" href="{{ app.url }}">
         <i class="nav-icon {{ app.icon }}"></i>
