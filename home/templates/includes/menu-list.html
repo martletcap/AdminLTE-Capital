@@ -40,37 +40,6 @@
     {% endfor %}
     {% endif %}
 
-    {% if request.user.is_superuser %}
-    <li class="nav-item {% if 'tables' in parent %} menu-open {% endif %}">
-      <a href="#" class="nav-link {% if 'tables' in parent %} active {% endif %}">
-        <i class="nav-icon fas fa-table"></i>
-        <p>
-          Tables
-          <i class="fas fa-angle-left right"></i>
-        </p>
-      </a>
-      <ul class="nav nav-treeview">
-        <li class="nav-item">
-          <a href="{% url 'table_simple' %}" class="nav-link {% if 'simple_table' in segment %} active {% endif %}">
-            <i class="far fa-circle nav-icon"></i>
-            <p>Simple Tables</p>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{% url 'table_data' %}" class="nav-link {% if 'data_table' in segment %} active {% endif %}">
-            <i class="far fa-circle nav-icon"></i>
-            <p>DataTables</p>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="{% url 'table_jsgrid' %}" class="nav-link {% if 'jsGrid' in segment %} active {% endif %}">
-            <i class="far fa-circle nav-icon"></i>
-            <p>jsGrid</p>
-          </a>
-        </li>
-      </ul>
-    </li>
-    {% endif %}
 
     {% if request.user.is_authenticated and not request.user.is_superuser %}
     <li class="nav-item">
