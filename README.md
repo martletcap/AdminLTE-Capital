@@ -8,6 +8,7 @@
 * ```. .venv/bin/activate```
 * ```pip install -r requirements.txt```
 * ```pip install "Your db client"```
+* ```python manage.py collectstatic```
 * Create an .env file and set the following variables.
   * DEBUG
   * DB_ENGINE
@@ -16,4 +17,5 @@
   * DB_USERNAME
   * DB_PASS
   * DB_PORT
+* Configure nginx
 * ```gunicorn --config gunicorn-cfg.py core.wsgi```
