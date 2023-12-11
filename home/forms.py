@@ -1,17 +1,15 @@
 from django import forms
 
-from .models import OurTransaction, Company, SeedStep, Shareholder, SharePrice
+from .models import (
+    OurTransaction, SeedStep, Share, Shareholder, SharePrice
+)
 
 class OurTransactionForm(forms.ModelForm):
     class Meta:
         model = OurTransaction
         widgets = {'date':forms.widgets.NumberInput(attrs={'type':'date'})}
-        fields = "__all__"
+        exclude = ['add_by', 'last_edit_by']
 
-class CompanyForm(forms.ModelForm):
-    class Meta:
-        model = Company
-        fields = "__all__"
 
 class SeedStepForm(forms.ModelForm):
     class Meta:
@@ -23,14 +21,19 @@ class SeedStepForm(forms.ModelForm):
         fields = '__all__'
 
 
+class ShareForm(forms.ModelForm):
+    class Meta:
+        model = Share
+        exclude = ['add_by']
+
+
 class ShareholderForm(forms.ModelForm):
     class Meta:
         model = Shareholder
         widgets = {
             'date':forms.widgets.NumberInput(attrs={'type':'date'}),
         }
-        fields = '__all__'
-
+        exclude = ['add_by', 'last_edit_by']
 
 class SharePriceForm(forms.ModelForm):
     class Meta:

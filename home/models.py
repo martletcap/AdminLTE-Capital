@@ -22,10 +22,10 @@ class Contact(models.Model):
         db_table = 'contact'
 
     name = models.CharField(max_length=256)
-    email = models.EmailField()
-    phone = models.CharField(max_length=128)
-    comment = models.TextField(max_length=1024)
-    website = models.URLField()
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=128, blank=True)
+    comment = models.TextField(max_length=1024, blank=True)
+    website = models.CharField(max_length=256, blank=True)
     type = models.ForeignKey(ContactType, on_delete=models.PROTECT)
 
     def __str__(self)->str:
@@ -62,6 +62,7 @@ class CompanyStatus(models.Model):
 
     class Meta:
         db_table = 'company_status'
+        verbose_name_plural = "Company statuses"
         ordering = ['status']
 
     id = models.AutoField(primary_key=True)
@@ -92,14 +93,14 @@ class Company(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=256)
-    short_name = models.CharField(max_length=256)
-    comment = models.TextField(max_length=1024)
+    short_name = models.CharField(max_length=256, blank=True)
+    comment = models.TextField(max_length=1024, blank=True)
     staff = models.ForeignKey(User, on_delete=models.PROTECT)
     contact = models.ForeignKey(Contact, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     sector = models.ForeignKey(Sector, on_delete=models.PROTECT)
     status = models.ForeignKey(CompanyStatus, on_delete=models.PROTECT)
-    link = models.URLField()
+    link = models.CharField(max_length=256, blank=True)
     category = models.ForeignKey(CategoryOfCompany, on_delete=models.PROTECT)
 
     def __str__(self) -> str:
@@ -140,10 +141,10 @@ class Share(models.Model):
     type = models.ForeignKey(ShareType, on_delete=models.PROTECT)
     add_by = models.ForeignKey(User, on_delete=models.PROTECT)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
-    comment = models.TextField(max_length=1024)
+    comment = models.TextField(max_length=1024, blank=True)
 
     def __str__(self) -> str:
-        return str(self.company)
+        return f'{self.company}-{self.type}'
     
 
 class Shareholder(models.Model):
@@ -153,9 +154,9 @@ class Shareholder(models.Model):
 
     id = models.AutoField(primary_key=True)
     date = models.DateField()
-    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    amount = models.IntegerField()
     owner = models.ForeignKey(Contact, on_delete=models.PROTECT)
-    complite = models.BooleanField()
+    complite = models.BooleanField(default=True)
     add_by = models.ForeignKey(
         User, on_delete=models.PROTECT,
         related_name='shareholder_add',
@@ -167,7 +168,7 @@ class Shareholder(models.Model):
     )
     last_edit_datetime = models.DateTimeField(auto_now=True)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
-    comment = models.TextField(max_length=1024)
+    comment = models.TextField(max_length=1024, blank=True)
 
 
 class OurTransaction(models.Model):
@@ -191,7 +192,7 @@ class OurTransaction(models.Model):
         related_name='our_transaction_edit',
     )
     last_edit_datetime = models.DateTimeField(auto_now=True)
-    comment = models.TextField(max_length=1024)
+    comment = models.TextField(max_length=1024, blank=True)
 
     def __str__(self) -> str:
         return str(self.date)
@@ -204,5 +205,5 @@ class SharePrice(models.Model):
 
     id = models.AutoField(primary_key=True)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
-    price = models.DecimalField(max_digits=12, decimal_places=4)
+    price = models.DecimalField(max_digits=16, decimal_places=8)
     date = models.DateField()
