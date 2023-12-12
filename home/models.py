@@ -7,6 +7,7 @@ User = get_user_model()
 class ContactType(models.Model):
 
     class Meta:
+        app_label = 'base_info'
         db_table = 'contact_type'
 
     id = models.AutoField(primary_key=True)
@@ -35,6 +36,7 @@ class Contact(models.Model):
 class Sector(models.Model):
 
     class Meta:
+        app_label = 'base_info'
         db_table = 'sector'
         ordering = ['name']
 
@@ -48,6 +50,7 @@ class Sector(models.Model):
 class Location(models.Model):
 
     class Meta:
+        app_label = 'base_info'
         db_table = 'location'
         unique_together = ('city', 'country',)
 
@@ -76,6 +79,7 @@ class CompanyStatus(models.Model):
 class CategoryOfCompany(models.Model):
 
     class Meta:
+        app_label = 'base_info'
         db_table = 'category_of_company'
         ordering = ['category']
 
@@ -128,6 +132,7 @@ class SeedStep(models.Model):
 class ShareType(models.Model):
 
     class Meta:
+        app_label = 'base_info'
         db_table = 'share_type'
         ordering = ['type']
 

@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    "home",
+    "home", # Main app
+    "base_info", # Just separating models
 ]
 
 MIDDLEWARE = [
