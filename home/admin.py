@@ -81,7 +81,12 @@ class OurTransactionAdmin(admin.ModelAdmin):
         obj.last_edit_by = request.user
         if not obj.add_by_id:
             obj.add_by = request.user
-        obj.save()
+        super().save_model(request, obj, form, change)
+        if form.cleaned_data['save_price']:
+            share = obj.share
+            price = obj.price
+            date = obj.date
+            SharePrice.objects.create(share=share, price=price, date=date)
 
     get_share_company.admin_order_field = 'share__company'
     get_share_company.short_description = 'Company'

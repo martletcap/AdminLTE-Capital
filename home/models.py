@@ -110,7 +110,7 @@ class Company(models.Model):
     category = models.ForeignKey(CategoryOfCompany, on_delete=models.PROTECT)
 
     def __str__(self) -> str:
-        return self.short_name
+        return self.name
 
 
 class SeedStep(models.Model):

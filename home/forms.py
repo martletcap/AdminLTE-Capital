@@ -5,10 +5,14 @@ from .models import (
 )
 
 class OurTransactionForm(forms.ModelForm):
+    save_price = forms.BooleanField(initial=True, required=False)
+
     class Meta:
         model = OurTransaction
         widgets = {'date':forms.widgets.NumberInput(attrs={'type':'date'})}
-        exclude = ['add_by', 'last_edit_by']
+        fields = [
+            'share', 'date', 'amount', 'price', 'save_price', 'comment',
+        ]
 
 
 class SeedStepForm(forms.ModelForm):
