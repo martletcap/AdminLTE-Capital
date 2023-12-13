@@ -1,13 +1,10 @@
-# Core
-django==4.1.12
-python-dotenv==1.0.0
-
-# UI
+asgiref==3.7.2
+Django==4.1.12
 django-admin-adminlte==1.0.5
-
-# Deployment
-whitenoise==6.5.0
+django-simple-history==3.4.0
 gunicorn==21.2.0
-
-# psycopg2-binary
-# mysqlclient
+packaging==23.2
+python-dotenv==1.0.0
+sqlparse==0.4.4
+tzdata==2023.3
+whitenoise==6.5.0
