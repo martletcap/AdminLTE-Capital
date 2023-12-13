@@ -5,7 +5,7 @@ from .models import (
     Company, SeedStep, ShareType, Share, Shareholder, OurTransaction, SharePrice,
 )
 from .forms import (
-    OurTransactionForm, SeedStepForm, ShareForm, ShareholderForm,
+    OurTransactionForm, CompanyForm, SeedStepForm, ShareForm, ShareholderForm,
     SharePriceForm,
 )
 
@@ -20,6 +20,7 @@ class LocationAdmin(admin.ModelAdmin):
 
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ['name', 'location', 'contact', 'sector', 'status', 'category']
+    form = CompanyForm
 
 
 class SeedStepAdmin(admin.ModelAdmin):

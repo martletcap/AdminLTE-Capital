@@ -1,8 +1,13 @@
 from django import forms
+from django.contrib.auth import get_user_model
 
 from .models import (
-    OurTransaction, SeedStep, Share, Shareholder, SharePrice
+    OurTransaction, Company, SeedStep, Share, Shareholder, SharePrice
 )
+from .utils import UserChoiceField
+
+User = get_user_model()
+
 
 class OurTransactionForm(forms.ModelForm):
     save_price = forms.BooleanField(initial=True, required=False)
@@ -14,6 +19,12 @@ class OurTransactionForm(forms.ModelForm):
             'share', 'date', 'amount', 'price', 'save_price', 'comment',
         ]
 
+
+class CompanyForm(forms.ModelForm):
+    staff = UserChoiceField(queryset=User.objects.all())
+    class Meta:
+        model = Company
+        fields = '__all__'
 
 class SeedStepForm(forms.ModelForm):
     class Meta:
