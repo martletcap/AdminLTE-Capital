@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from simple_history.models import HistoricalRecords
 
 
 User = get_user_model()
@@ -12,6 +13,7 @@ class ContactType(models.Model):
 
     id = models.AutoField(primary_key=True)
     type = models.CharField(max_length=128, unique=True)
+    history = HistoricalRecords()
 
     def __str__(self)->str:
         return self.type
@@ -28,6 +30,7 @@ class Contact(models.Model):
     comment = models.TextField(max_length=1024, blank=True)
     website = models.CharField(max_length=256, blank=True)
     type = models.ForeignKey(ContactType, on_delete=models.PROTECT)
+    history = HistoricalRecords()
 
     def __str__(self)->str:
         return self.name
@@ -42,6 +45,7 @@ class Sector(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=256, unique=True)
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         return self.name
@@ -57,6 +61,7 @@ class Location(models.Model):
     id = models.AutoField(primary_key=True)
     city = models.CharField(max_length=128)
     country = models.CharField(max_length=128)
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         return self.city
@@ -71,6 +76,7 @@ class CompanyStatus(models.Model):
 
     id = models.AutoField(primary_key=True)
     status = models.CharField(max_length=256, unique=True)
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         return self.status
@@ -85,6 +91,7 @@ class CategoryOfCompany(models.Model):
 
     id = models.AutoField(primary_key=True)
     category = models.CharField(max_length=256, unique=True)
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         return self.category
@@ -112,6 +119,7 @@ class Company(models.Model):
     status = models.ForeignKey(CompanyStatus, on_delete=models.PROTECT)
     link = models.CharField(max_length=256, blank=True)
     category = models.ForeignKey(CategoryOfCompany, on_delete=models.PROTECT)
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         return self.name
@@ -127,6 +135,7 @@ class SeedStep(models.Model):
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     start_term = models.DateField()
     end_term = models.DateField()
+    history = HistoricalRecords()
 
 
 class ShareType(models.Model):
@@ -138,6 +147,7 @@ class ShareType(models.Model):
 
     id = models.AutoField(primary_key=True)
     type = models.CharField(max_length=256, unique=True)
+    history = HistoricalRecords()
 
     def __str__(self)->str:
         return self.type
@@ -154,6 +164,7 @@ class Share(models.Model):
     add_by = models.ForeignKey(User, on_delete=models.PROTECT)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     comment = models.TextField(max_length=1024, blank=True)
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         return f'{self.company}-{self.type}'
@@ -181,6 +192,7 @@ class Shareholder(models.Model):
     last_edit_datetime = models.DateTimeField(auto_now=True)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
     comment = models.TextField(max_length=1024, blank=True)
+    history = HistoricalRecords()
 
 
 class OurTransaction(models.Model):
@@ -209,6 +221,7 @@ class OurTransaction(models.Model):
     )
     last_edit_datetime = models.DateTimeField(auto_now=True)
     comment = models.TextField(max_length=1024, blank=True)
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         return str(self.date)
@@ -223,3 +236,4 @@ class SharePrice(models.Model):
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
     price = models.DecimalField(max_digits=16, decimal_places=8)
     date = models.DateField()
+    history = HistoricalRecords()

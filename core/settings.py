@@ -58,6 +58,8 @@ INSTALLED_APPS = [
 
     "home", # Main app
     "base_info", # Just separating models
+
+    'simple_history', # expand history
 ]
 
 MIDDLEWARE = [
@@ -69,6 +71,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'simple_history.middleware.HistoryRequestMiddleware', # expand history
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -87,6 +90,9 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
+            'builtins':[
+                'simple_history.templatetags.getattributes' # simple_history templatetags
+            ]
         },
     },
 ]

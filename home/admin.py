@@ -1,4 +1,5 @@
 from django.contrib import admin
+from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
@@ -10,25 +11,25 @@ from .forms import (
 )
 
 
-class ContactAdmin(admin.ModelAdmin):
+class ContactAdmin(SimpleHistoryAdmin):
     list_display = ['name', 'email', 'phone', 'type']
 
 
-class LocationAdmin(admin.ModelAdmin):
+class LocationAdmin(SimpleHistoryAdmin):
     list_display = ['city', 'country']
 
 
-class CompanyAdmin(admin.ModelAdmin):
+class CompanyAdmin(SimpleHistoryAdmin):
     list_display = ['name', 'location', 'contact', 'sector', 'status', 'category']
     form = CompanyForm
 
 
-class SeedStepAdmin(admin.ModelAdmin):
+class SeedStepAdmin(SimpleHistoryAdmin):
     list_display = ['company', 'start_term', 'end_term']
     form = SeedStepForm
 
 
-class ShareAdmin(admin.ModelAdmin):
+class ShareAdmin(SimpleHistoryAdmin):
     list_display = ['type', 'company', 'add_by']
     form = ShareForm
 
@@ -38,7 +39,7 @@ class ShareAdmin(admin.ModelAdmin):
         obj.save()
 
 
-class ShareholderAdmin(admin.ModelAdmin):
+class ShareholderAdmin(SimpleHistoryAdmin):
     list_display = [
         'date', 'amount', 'owner', 'complite', 'get_share_company', 'get_share_type',
         'add_by', 'last_edit_by',
@@ -64,7 +65,7 @@ class ShareholderAdmin(admin.ModelAdmin):
     get_share_type.short_description = 'Share type'
 
 
-class OurTransactionAdmin(admin.ModelAdmin):
+class OurTransactionAdmin(SimpleHistoryAdmin):
     list_display = [
         'date', 'amount', 'price', 'get_share_company', 'get_share_type',
         'add_by', 'last_edit_by',
@@ -95,7 +96,7 @@ class OurTransactionAdmin(admin.ModelAdmin):
     get_share_type.short_description = 'Share type'
 
 
-class SharePriceAdmin(admin.ModelAdmin):
+class SharePriceAdmin(SimpleHistoryAdmin):
     list_display = ['get_share_company', 'get_share_type', 'price', 'date']
     form = SharePriceForm
 
@@ -113,15 +114,15 @@ class SharePriceAdmin(admin.ModelAdmin):
 
 
 # Register your models here.
-admin.site.register(ContactType)
+admin.site.register(ContactType, SimpleHistoryAdmin)
 admin.site.register(Contact, ContactAdmin)
-admin.site.register(Sector)
+admin.site.register(Sector, SimpleHistoryAdmin)
 admin.site.register(Location, LocationAdmin)
-admin.site.register(CompanyStatus)
+admin.site.register(CompanyStatus, SimpleHistoryAdmin)
 admin.site.register(CategoryOfCompany)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(SeedStep, SeedStepAdmin)
-admin.site.register(ShareType)
+admin.site.register(ShareType, SimpleHistoryAdmin)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Shareholder, ShareholderAdmin)
 admin.site.register(OurTransaction, OurTransactionAdmin)
