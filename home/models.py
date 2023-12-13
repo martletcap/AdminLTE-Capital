@@ -70,6 +70,7 @@ class Location(models.Model):
 class CompanyStatus(models.Model):
 
     class Meta:
+        app_label = 'base_info'
         db_table = 'company_status'
         verbose_name_plural = "Company statuses"
         ordering = ['status']
@@ -161,7 +162,6 @@ class Share(models.Model):
 
     id = models.AutoField(primary_key=True)
     type = models.ForeignKey(ShareType, on_delete=models.PROTECT)
-    add_by = models.ForeignKey(User, on_delete=models.PROTECT)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     comment = models.TextField(max_length=1024, blank=True)
     history = HistoricalRecords()
@@ -180,16 +180,6 @@ class Shareholder(models.Model):
     amount = models.IntegerField()
     owner = models.ForeignKey(Contact, on_delete=models.PROTECT)
     complite = models.BooleanField(default=True)
-    add_by = models.ForeignKey(
-        User, on_delete=models.PROTECT,
-        related_name='shareholder_add',
-    )
-    add_datetime = models.DateTimeField(auto_now_add=True)
-    last_edit_by = models.ForeignKey(
-        User, on_delete=models.PROTECT,
-        related_name='shareholder_edit',
-    )
-    last_edit_datetime = models.DateTimeField(auto_now=True)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
     comment = models.TextField(max_length=1024, blank=True)
     history = HistoricalRecords()
@@ -210,16 +200,6 @@ class OurTransaction(models.Model):
         decimal_places=8,
         verbose_name='Price per 1 share',
     )
-    add_by = models.ForeignKey(
-        User, on_delete=models.PROTECT,
-        related_name='our_transaction_add',
-    )
-    add_datetime = models.DateTimeField(auto_now_add=True)
-    last_edit_by = models.ForeignKey(
-        User, on_delete=models.PROTECT,
-        related_name='our_transaction_edit',
-    )
-    last_edit_datetime = models.DateTimeField(auto_now=True)
     comment = models.TextField(max_length=1024, blank=True)
     history = HistoricalRecords()
 

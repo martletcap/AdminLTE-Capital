@@ -6,7 +6,7 @@ from .models import (
     Company, SeedStep, ShareType, Share, Shareholder, OurTransaction, SharePrice,
 )
 from .forms import (
-    OurTransactionForm, CompanyForm, SeedStepForm, ShareForm, ShareholderForm,
+    OurTransactionForm, CompanyForm, SeedStepForm, ShareholderForm,
     SharePriceForm,
 )
 
@@ -30,19 +30,12 @@ class SeedStepAdmin(SimpleHistoryAdmin):
 
 
 class ShareAdmin(SimpleHistoryAdmin):
-    list_display = ['type', 'company', 'add_by']
-    form = ShareForm
-
-    def save_model(self, request, obj, form, change):
-        if not obj.add_by_id:
-            obj.add_by = request.user
-        obj.save()
+    list_display = ['type', 'company']
 
 
 class ShareholderAdmin(SimpleHistoryAdmin):
     list_display = [
         'date', 'amount', 'owner', 'complite', 'get_share_company', 'get_share_type',
-        'add_by', 'last_edit_by',
     ]
     form = ShareholderForm
 
@@ -52,12 +45,6 @@ class ShareholderAdmin(SimpleHistoryAdmin):
     def get_share_type(self, obj):
         return obj.share.type
 
-    def save_model(self, request, obj, form, change):
-        obj.last_edit_by = request.user
-        if not obj.add_by_id:
-            obj.add_by = request.user
-        obj.save()
-
     get_share_company.admin_order_field = 'share__company'
     get_share_company.short_description = 'Company'
 
@@ -66,10 +53,7 @@ class ShareholderAdmin(SimpleHistoryAdmin):
 
 
 class OurTransactionAdmin(SimpleHistoryAdmin):
-    list_display = [
-        'date', 'amount', 'price', 'get_share_company', 'get_share_type',
-        'add_by', 'last_edit_by',
-    ]
+    list_display = ['date', 'amount', 'price', 'get_share_company', 'get_share_type',]
     form = OurTransactionForm
 
     def get_share_company(self, obj):
@@ -79,9 +63,6 @@ class OurTransactionAdmin(SimpleHistoryAdmin):
         return obj.share.type
 
     def save_model(self, request, obj, form, change):
-        obj.last_edit_by = request.user
-        if not obj.add_by_id:
-            obj.add_by = request.user
         super().save_model(request, obj, form, change)
         if form.cleaned_data['save_price']:
             share = obj.share
@@ -119,7 +100,7 @@ admin.site.register(Contact, ContactAdmin)
 admin.site.register(Sector, SimpleHistoryAdmin)
 admin.site.register(Location, LocationAdmin)
 admin.site.register(CompanyStatus, SimpleHistoryAdmin)
-admin.site.register(CategoryOfCompany)
+admin.site.register(CategoryOfCompany, SimpleHistoryAdmin)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(SeedStep, SeedStepAdmin)
 admin.site.register(ShareType, SimpleHistoryAdmin)

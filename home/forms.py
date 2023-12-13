@@ -15,9 +15,7 @@ class OurTransactionForm(forms.ModelForm):
     class Meta:
         model = OurTransaction
         widgets = {'date':forms.widgets.NumberInput(attrs={'type':'date'})}
-        fields = [
-            'share', 'date', 'amount', 'price', 'save_price', 'comment',
-        ]
+        fields = '__all__'
 
 
 class CompanyForm(forms.ModelForm):
@@ -36,19 +34,13 @@ class SeedStepForm(forms.ModelForm):
         fields = '__all__'
 
 
-class ShareForm(forms.ModelForm):
-    class Meta:
-        model = Share
-        exclude = ['add_by']
-
-
 class ShareholderForm(forms.ModelForm):
     class Meta:
         model = Shareholder
         widgets = {
             'date':forms.widgets.NumberInput(attrs={'type':'date'}),
         }
-        exclude = ['add_by', 'last_edit_by']
+        fields = '__all__'
 
 class SharePriceForm(forms.ModelForm):
     class Meta:
