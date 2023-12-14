@@ -1,0 +1,9 @@
+[
+    {
+        "model": "base_info.categoryofcompany",
+        "pk": 1,
+        "fields": {
+            "category": "Protfolio"
+        }
+    }
+]
