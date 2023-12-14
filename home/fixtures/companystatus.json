@@ -1,6 +1,6 @@
 [
     {
-        "model": "base_info.categoryofcompany",
+        "model": "base_info.company_status",
         "pk": 1,
         "fields": {
             "category": "Protfolio"
