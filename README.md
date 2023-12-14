@@ -9,7 +9,7 @@
 * ```pip install -r requirements.txt```
 * ```pip install "Your db client"```
 * ```python manage.py migrate```
-* ```python manage.py loaddata categoryofcompany```
+* ```python manage.py loaddata companystatus```
 * ```python manage.py collectstatic```
 * Create an .env file and set the following variables.
   * DEBUG
