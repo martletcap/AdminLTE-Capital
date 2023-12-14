@@ -3,7 +3,7 @@
         "model": "base_info.companystatus",
         "pk": 1,
         "fields": {
-            "status": "Protfolio"
+            "status": "Portfolio"
         }
     }
 ]
