@@ -15,7 +15,8 @@
       </a>
       <ul class="nav nav-treeview">
         <li class="nav-item">
-          <a href="{% url 'report_short' %}" class="nav-link">
+          {% url 'report_short' as report_short %}
+          <a href="{{ report_short }}" class="nav-link {% if report_short in request.path %} active {% endif %}">
             <i class="far fa-circle nav-icon"></i>
             <p>Short</p>
           </a>
@@ -25,7 +26,7 @@
     {% if app_list %}
     {% for app in app_list %}
     {% if app.has_perms and not app.pinned %}
-    <li class="nav-item {% if app.app_label == 'home' %} menu-open {% endif %}">
+    <li class="nav-item {% if app_label != app.label and app.url in request.path|urlencode  %} menu-open{% endif %}">
       <a class="nav-link {% if app_label != app.label and app.url not in request.path|urlencode  %} collapsed{% endif %}"
         data-bs-toggle="collapse" data-bs-target="#submenu-{{ app.app_label }}" href="{{ app.url }}">
         <i class="nav-icon {{ app.icon }}"></i>
@@ -678,6 +679,27 @@
       </a>
     </li>        
     {% endif %}    
-         
-    
+      
   </ul>
+
+<script>
+/*
+* Развертывание активного меню
+*/
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    navLinks.forEach(function(link) {
+        if (link.classList.contains('active')) {
+            let parentUl = link.closest('ul');
+            while (parentUl && parentUl.classList.contains('nav-treeview')) {
+                let parentLi = parentUl.closest('.nav-item');
+                if (parentLi) {
+                    parentLi.classList.add('menu-open');
+                }
+                parentUl = parentLi.closest('ul');
+            }
+        }
+    });
+});
+</script>
