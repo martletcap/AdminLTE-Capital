@@ -35,7 +35,7 @@
             <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ name }}</h3>
+                <h3 class="card-title">{{ chart1.name }}</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -47,7 +47,28 @@
                 </div>
               </div>
               <div class="card-body">
-                <canvas id="pieChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                <canvas id="pieChart1" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+
+            <!-- PIE CHART -->
+            <div class="card card-danger">
+              <div class="card-header">
+                <h3 class="card-title">{{ chart3.name }}</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <canvas id="pieChart3" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
               </div>
               <!-- /.card-body -->
             </div>
@@ -55,7 +76,50 @@
 
           </div>
           <!-- /.col (LEFT) -->
+          
           <div class="col-md-6">
+          
+          <!-- PIE CHART -->
+            <div class="card card-danger">
+              <div class="card-header">
+                <h3 class="card-title">{{ chart2.name }}</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <canvas id="pieChart2" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+
+            <!-- PIE CHART -->
+            <div class="card card-danger">
+              <div class="card-header">
+                <h3 class="card-title">{{ chart4.name }}</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <canvas id="pieChart4" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
           </div>
           <!-- /.col (RIGHT) -->
         </div>
@@ -75,13 +139,18 @@
     /*
     * My functions
     */
-    function getRandomColor() {
-      var letters = '0123456789ABCDEF';
-      var color = '#';
-      for (var i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
+
+    function generateColors(count, shift) {
+    // Используем один и тот же seed для повторяемости результатов
+      const seed = 5+shift;
+      const colors = [];
+
+      // Генерируем случайные цвета на основе seed
+      for (let i = 0; i < count; i++) {
+        const randomColor = '#' + ((seed + i) * 1234567).toString(16).slice(0, 6);
+        colors.push(randomColor);
       }
-      return color;
+      return colors;
     }
 
 
@@ -93,16 +162,16 @@
       */
 
       //-------------
-      //- PIE CHART -
+      //- PIE CHART1 -
       //-------------
       // Get context with jQuery - using jQuery's .get() method.
-      var pieChartCanvas = $('#pieChart').get(0).getContext('2d')
+      var pieChartCanvas = $('#pieChart1').get(0).getContext('2d')
       var pieData = {
-        labels: {{ names|safe }},
+        labels: {{ chart1.titles|safe }},
         datasets: [
           {
-            data: {{ values|safe}},
-            backgroundColor : {{values|safe}}.map(x=>getRandomColor()),
+            data: {{ chart1.values|safe }},
+            backgroundColor : generateColors({{chart1.values|length}}, 0),
           }
         ]
       }
@@ -117,6 +186,86 @@
         data: pieData,
         options: pieOptions
       })
+
+      //-------------
+      //- PIE CHART2 -
+      //-------------
+      // Get context with jQuery - using jQuery's .get() method.
+      var pieChartCanvas = $('#pieChart2').get(0).getContext('2d')
+      var pieData = {
+        labels: {{ chart2.titles|safe }},
+        datasets: [
+          {
+            data: {{ chart2.values|safe }},
+            backgroundColor : generateColors({{chart2.values|length}}, 0),
+          }
+        ]
+      }
+      var pieOptions     = {
+        maintainAspectRatio : false,
+        responsive : true,
+      }
+      //Create pie or douhnut chart
+      // You can switch between pie and douhnut using the method below.
+      new Chart(pieChartCanvas, {
+        type: 'pie',
+        data: pieData,
+        options: pieOptions
+      })
+
+      //-------------
+      //- PIE CHART3 -
+      //-------------
+      // Get context with jQuery - using jQuery's .get() method.
+      var pieChartCanvas = $('#pieChart3').get(0).getContext('2d')
+      var pieData = {
+        labels: {{ chart3.titles|safe }},
+        datasets: [
+          {
+            data: {{ chart3.values|safe }},
+            backgroundColor : generateColors({{chart3.values|length}}, 0),
+          }
+        ]
+      }
+      var pieOptions     = {
+        maintainAspectRatio : false,
+        responsive : true,
+      }
+      //Create pie or douhnut chart
+      // You can switch between pie and douhnut using the method below.
+      new Chart(pieChartCanvas, {
+        type: 'pie',
+        data: pieData,
+        options: pieOptions
+      })
+
+      //-------------
+      //- PIE CHART4 -
+      //-------------
+      // Get context with jQuery - using jQuery's .get() method.
+      var pieChartCanvas = $('#pieChart4').get(0).getContext('2d')
+      var pieData = {
+        labels: {{ chart4.titles|safe }},
+        datasets: [
+          {
+            data: {{ chart4.values|safe }},
+            backgroundColor : generateColors({{chart4.values|length}}, 0),
+          }
+        ]
+      }
+      var pieOptions     = {
+        maintainAspectRatio : false,
+        responsive : true,
+      }
+      //Create pie or douhnut chart
+      // You can switch between pie and douhnut using the method below.
+      new Chart(pieChartCanvas, {
+        type: 'pie',
+        data: pieData,
+        options: pieOptions
+      })
+
+      
     })
   </script>
 {% endblock extra_scripts %}
