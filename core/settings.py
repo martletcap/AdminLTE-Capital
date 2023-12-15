@@ -58,6 +58,7 @@ INSTALLED_APPS = [
 
     "home", # Main app
     "base_info", # Just separating models
+    'report', # Reports app
 
     'simple_history', # expand history
 ]

@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django.db.models import Sum, F, OuterRef, Subquery, DecimalField
 
-from .models import OurTransaction, SharePrice
+from home.models import OurTransaction, SharePrice
 
 # Create your views here.
 
-def index(request):
+def report_short(request):
     latest_price = SharePrice.objects.filter(
         share=OuterRef('share_id')
     ).order_by('-date')
@@ -37,4 +37,4 @@ def index(request):
         'values': parts,
     }
     # Page from the theme 
-    return render(request, 'pages/index.html', context=context)
+    return render(request, 'pages/report_short.html', context=context)

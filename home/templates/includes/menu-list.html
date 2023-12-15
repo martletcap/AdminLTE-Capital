@@ -5,6 +5,23 @@
            with font-awesome or any other icon font library -->
 
     {% admin_get_menu as app_list %}
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-table"></i>
+        <p>
+          Reports
+          <i class="fas fa-angle-left right"></i>
+        </p>
+      </a>
+      <ul class="nav nav-treeview">
+        <li class="nav-item">
+          <a href="{% url 'report_short' %}" class="nav-link">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Short</p>
+          </a>
+        </li>
+      </ul>
+    </li>
     {% if app_list %}
     {% for app in app_list %}
     {% if app.has_perms and not app.pinned %}
