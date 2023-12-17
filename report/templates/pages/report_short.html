@@ -35,7 +35,7 @@
             <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart1.name }}</h3>
+                <h3 class="card-title">{{ chart1.title }}</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -53,10 +53,10 @@
             </div>
             <!-- /.card -->
 
-            <!-- PIE CHART -->
+           <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart3.name }}</h3>
+                <h3 class="card-title">{{ chart3.title }}</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -72,17 +72,38 @@
               </div>
               <!-- /.card-body -->
             </div>
-            <!-- /.card -->
+          <!-- /.card -->
+
+          <!-- PIE CHART -->
+            <div class="card card-danger">
+              <div class="card-header">
+                <h3 class="card-title">{{ chart5.title }}</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <canvas id="pieChart5" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+              </div>
+              <!-- /.card-body -->
+            </div>
+          <!-- /.card -->
 
           </div>
           <!-- /.col (LEFT) -->
           
           <div class="col-md-6">
-          
+
           <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart2.name }}</h3>
+                <h3 class="card-title">{{ chart2.title }}</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -98,12 +119,12 @@
               </div>
               <!-- /.card-body -->
             </div>
-            <!-- /.card -->
+          <!-- /.card -->
 
-            <!-- PIE CHART -->
+          <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart4.name }}</h3>
+                <h3 class="card-title">{{ chart4.title }}</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -119,9 +140,32 @@
               </div>
               <!-- /.card-body -->
             </div>
-            <!-- /.card -->
+          <!-- /.card -->
+
+          <!-- PIE CHART -->
+            <div class="card card-danger">
+              <div class="card-header">
+                <h3 class="card-title">{{ chart6.title }}</h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <canvas id="pieChart6" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+              </div>
+              <!-- /.card-body -->
+            </div>
+          <!-- /.card -->
+        
           </div>
           <!-- /.col (RIGHT) -->
+
         </div>
         <!-- /.row -->
       </div><!-- /.container-fluid -->
@@ -250,6 +294,58 @@
           {
             data: {{ chart4.values|safe }},
             backgroundColor : generateColors({{chart4.values|length}}, 0),
+          }
+        ]
+      }
+      var pieOptions     = {
+        maintainAspectRatio : false,
+        responsive : true,
+      }
+      //Create pie or douhnut chart
+      // You can switch between pie and douhnut using the method below.
+      new Chart(pieChartCanvas, {
+        type: 'pie',
+        data: pieData,
+        options: pieOptions
+      })
+
+      //-------------
+      //- PIE CHART5 -
+      //-------------
+      // Get context with jQuery - using jQuery's .get() method.
+      var pieChartCanvas = $('#pieChart5').get(0).getContext('2d')
+      var pieData = {
+        labels: {{ chart5.titles|safe }},
+        datasets: [
+          {
+            data: {{ chart5.values|safe }},
+            backgroundColor : generateColors({{chart5.values|length}}, 0),
+          }
+        ]
+      }
+      var pieOptions     = {
+        maintainAspectRatio : false,
+        responsive : true,
+      }
+      //Create pie or douhnut chart
+      // You can switch between pie and douhnut using the method below.
+      new Chart(pieChartCanvas, {
+        type: 'pie',
+        data: pieData,
+        options: pieOptions
+      })
+
+      //-------------
+      //- PIE CHART6 -
+      //-------------
+      // Get context with jQuery - using jQuery's .get() method.
+      var pieChartCanvas = $('#pieChart6').get(0).getContext('2d')
+      var pieData = {
+        labels: {{ chart6.titles|safe }},
+        datasets: [
+          {
+            data: {{ chart6.values|safe }},
+            backgroundColor : generateColors({{chart6.values|length}}, 0),
           }
         ]
       }
