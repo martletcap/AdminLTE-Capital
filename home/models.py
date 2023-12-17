@@ -198,7 +198,7 @@ class OurTransaction(models.Model):
     price = models.DecimalField(
         max_digits=16,
         decimal_places=8,
-        verbose_name='Price per 1 share',
+        verbose_name='Cost per share',
     )
     comment = models.TextField(max_length=1024, blank=True)
     history = HistoricalRecords()
@@ -214,6 +214,10 @@ class SharePrice(models.Model):
 
     id = models.AutoField(primary_key=True)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
-    price = models.DecimalField(max_digits=16, decimal_places=8)
+    price = models.DecimalField(
+        max_digits=16,
+        decimal_places=8,
+        verbose_name='Cost per share',
+    )
     date = models.DateField()
     history = HistoricalRecords()

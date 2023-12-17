@@ -10,7 +10,9 @@ User = get_user_model()
 
 
 class OurTransactionForm(forms.ModelForm):
-    save_price = forms.BooleanField(initial=True, required=False)
+    save_price = forms.BooleanField(
+        initial=True, required=False, label='Save history market price',
+    )
 
     class Meta:
         model = OurTransaction
