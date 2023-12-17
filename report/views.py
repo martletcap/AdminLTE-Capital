@@ -1,7 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.forms import formset_factory
 from django.db.models import Sum, F, OuterRef, Subquery, DecimalField
 
-from home.models import OurTransaction, SharePrice
+from utils.pdf_utils import shareholders_from_pdf
+from home.models import OurTransaction, SharePrice, Company, Shareholder
+from .forms import UploadFileForm, ShareholderUploadForm
 
 # Create your views here.
 
@@ -90,3 +93,29 @@ def report_short(request):
 
     # Page from the theme 
     return render(request, 'pages/report_short.html', context=context)
+
+
+def upload_shareholders(request):
+    if request.method == "POST":
+        company, shareholders = shareholders_from_pdf(request.FILES.get('file'))
+        ShareholderFormset = formset_factory(ShareholderUploadForm)
+        company = get_object_or_404(Company, name=company)
+        initial_data = []
+        for share in shareholders:
+            initial_data.append({
+                'amount':share[0],
+                'type':share[1],
+                'name':share[2],
+                'company':company,
+            })
+        context = {
+            'formset': ShareholderFormset(initial=initial_data),
+        }
+        return render(request, 'pages/shareholders_chek.html', context=context)
+    else:
+        form = UploadFileForm()
+        context = {
+            'form': form
+        }
+        return render(request, 'pages/file_upload_form.html', context=context)
+    
