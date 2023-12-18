@@ -35,7 +35,7 @@
             <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart1.title }}</h3>
+                <h3 class="card-title">No. Cos. Sector</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -56,7 +56,7 @@
            <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart3.title }}</h3>
+                <h3 class="card-title">Investment Sector</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -77,7 +77,7 @@
           <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart5.title }}</h3>
+                <h3 class="card-title">Market Price Sector</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -103,7 +103,7 @@
           <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart2.title }}</h3>
+                <h3 class="card-title">No. Cos. City</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -124,7 +124,7 @@
           <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart4.title }}</h3>
+                <h3 class="card-title">Investment City</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -145,7 +145,7 @@
           <!-- PIE CHART -->
             <div class="card card-danger">
               <div class="card-header">
-                <h3 class="card-title">{{ chart6.title }}</h3>
+                <h3 class="card-title">Market Price City</h3>
 
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -211,11 +211,11 @@
       // Get context with jQuery - using jQuery's .get() method.
       var pieChartCanvas = $('#pieChart1').get(0).getContext('2d')
       var pieData = {
-        labels: {{ chart1.titles|safe }},
+        labels: {{ sectors|safe }},
         datasets: [
           {
-            data: {{ chart1.values|safe }},
-            backgroundColor : generateColors({{chart1.values|length}}, 0),
+            data: {{ chart1|safe }},
+            backgroundColor : generateColors({{chart1|length}}, 0),
           }
         ]
       }
@@ -237,11 +237,11 @@
       // Get context with jQuery - using jQuery's .get() method.
       var pieChartCanvas = $('#pieChart2').get(0).getContext('2d')
       var pieData = {
-        labels: {{ chart2.titles|safe }},
+        labels: {{ locations|safe }},
         datasets: [
           {
-            data: {{ chart2.values|safe }},
-            backgroundColor : generateColors({{chart2.values|length}}, 0),
+            data: {{ chart2|safe }},
+            backgroundColor : generateColors({{chart2|length}}, 0),
           }
         ]
       }
@@ -263,11 +263,11 @@
       // Get context with jQuery - using jQuery's .get() method.
       var pieChartCanvas = $('#pieChart3').get(0).getContext('2d')
       var pieData = {
-        labels: {{ chart3.titles|safe }},
+        labels: {{ sectors|safe }},
         datasets: [
           {
-            data: {{ chart3.values|safe }},
-            backgroundColor : generateColors({{chart3.values|length}}, 0),
+            data: {{ chart3|safe }},
+            backgroundColor : generateColors({{chart3|length}}, 0),
           }
         ]
       }
@@ -289,11 +289,11 @@
       // Get context with jQuery - using jQuery's .get() method.
       var pieChartCanvas = $('#pieChart4').get(0).getContext('2d')
       var pieData = {
-        labels: {{ chart4.titles|safe }},
+        labels: {{ locations|safe }},
         datasets: [
           {
-            data: {{ chart4.values|safe }},
-            backgroundColor : generateColors({{chart4.values|length}}, 0),
+            data: {{ chart4|safe }},
+            backgroundColor : generateColors({{chart4|length}}, 0),
           }
         ]
       }
@@ -310,16 +310,16 @@
       })
 
       //-------------
-      //- PIE CHART5 -
+      //- PIE CHAR5 -
       //-------------
       // Get context with jQuery - using jQuery's .get() method.
       var pieChartCanvas = $('#pieChart5').get(0).getContext('2d')
       var pieData = {
-        labels: {{ chart5.titles|safe }},
+        labels: {{ sectors|safe }},
         datasets: [
           {
-            data: {{ chart5.values|safe }},
-            backgroundColor : generateColors({{chart5.values|length}}, 0),
+            data: {{ chart5|safe }},
+            backgroundColor : generateColors({{chart5|length}}, 0),
           }
         ]
       }
@@ -336,16 +336,16 @@
       })
 
       //-------------
-      //- PIE CHART6 -
+      //- PIE CHAR6 -
       //-------------
       // Get context with jQuery - using jQuery's .get() method.
       var pieChartCanvas = $('#pieChart6').get(0).getContext('2d')
       var pieData = {
-        labels: {{ chart6.titles|safe }},
+        labels: {{ locations|safe }},
         datasets: [
           {
-            data: {{ chart6.values|safe }},
-            backgroundColor : generateColors({{chart6.values|length}}, 0),
+            data: {{ chart6|safe }},
+            backgroundColor : generateColors({{chart6|length}}, 0),
           }
         ]
       }
@@ -360,6 +360,9 @@
         data: pieData,
         options: pieOptions
       })
+
+
+
 
       
     })
