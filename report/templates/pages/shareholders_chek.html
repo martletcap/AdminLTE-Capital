@@ -59,18 +59,23 @@
         <div class="col-12 mb-4">
             <div class="card">
                 <div class="card-body">
-                        <form method="POST" enctype="multipart/form-data">
-                            {{ formset.management_form }} 
-                            {{ formset.management_data }}
-                            {% csrf_token %} 
-                            {% for form in formset %}
-                                {{form.as_p}}
-                            {% endfor %} 
-                            <hr>
-                            <button type="submit" class="btn btn-success" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
-                                {% trans "Send" %}
-                            </button>
-                        </form> 
+                    {% if title %}
+                        <h5 class="card-title"><strong>{{title}}</strong></h5>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" action="{{form_url}}">
+                        {{ formset.management_form }} 
+                        {{ formset.management_data }}
+                        {% csrf_token %} 
+                        {% for form in formset %}
+                            {{form.as_p}}
+                        {% endfor %} 
+                        <hr>
+                        <button type="submit" class="btn btn-success" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
+                            {% trans "Send" %}
+                        </button>
+                    </form> 
                 </div>
             </div>
         </div>

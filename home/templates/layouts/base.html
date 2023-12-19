@@ -14,7 +14,8 @@
   <link rel="stylesheet" href="{% static 'plugins/overlayScrollbars/css/OverlayScrollbars.min.css' %}">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
-
+  <!-- Toastr -->
+  <link rel="stylesheet" href="{% static 'plugins/toastr/toastr.min.css' %}">
 
   {% block extrastyle %}{% endblock extrastyle %}
 </head>
@@ -56,6 +57,8 @@
   </div>
   
   {% include 'includes/scripts.html' %}
+  <!-- Toastr -->
+  <script src="{% static 'plugins/toastr/toastr.min.js' %}"></script>
   {% block extra_scripts %}{% endblock extra_scripts %}
 
 

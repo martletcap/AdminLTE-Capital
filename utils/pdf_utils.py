@@ -3,6 +3,8 @@ import re
 import PyPDF2
 
 def shareholders_from_pdf(pdf: str):
+    if pdf.content_type != 'application/pdf':
+        return None, []
     reader = PyPDF2.PdfReader(pdf, strict=False)
     page = reader.pages[0].extract_text()
     company_name =  re.search(r'Company Name:\s(.+)(?:\s+|$)', page).group(1)

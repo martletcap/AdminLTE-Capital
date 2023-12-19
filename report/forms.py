@@ -9,6 +9,6 @@ class UploadFileForm(forms.Form):
 
 class ShareholderUploadForm(forms.Form):
     name = forms.CharField()
-    company = forms.CharField()
+    company = forms.IntegerField(widget=forms.HiddenInput())
     type = forms.CharField()
     amount = forms.IntegerField()

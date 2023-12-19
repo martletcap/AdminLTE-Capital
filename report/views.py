@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-from django.shortcuts import render, get_object_or_404
+from django.contrib import messages
+from django.shortcuts import render, resolve_url, redirect
 from django.forms import formset_factory
 from django.db.models import Sum, F, OuterRef, Subquery, DecimalField, Count
 
@@ -91,25 +92,33 @@ def report_short(request):
 
 def upload_shareholders(request):
     if request.method == "POST":
-        company, shareholders = shareholders_from_pdf(request.FILES.get('file'))
+        file = request.FILES.get('file')
+        company, shareholders = shareholders_from_pdf(file)
         ShareholderFormset = formset_factory(ShareholderUploadForm)
-        company = get_object_or_404(Company, name=company)
+        company = Company.objects.filter(name=company).first()
+        if not company or not shareholders:
+            messages.error(request, 'Unsupported file type or non-existent company')
+            form = UploadFileForm()
+            return render(request, 'pages/file_upload_form.html', context={'form': form})
         initial_data = []
         for share in shareholders:
             initial_data.append({
                 'amount':share[0],
                 'type':share[1],
                 'name':share[2],
-                'company':company,
+                'company':company.pk,
             })
         context = {
+            'title': company.name,
             'formset': ShareholderFormset(initial=initial_data),
+            'form_url': resolve_url('confirm_shareholders')
         }
         return render(request, 'pages/shareholders_chek.html', context=context)
     else:
         form = UploadFileForm()
-        context = {
-            'form': form
-        }
+        context = {'form': form}
         return render(request, 'pages/file_upload_form.html', context=context)
     
+
+def confirm_shareholders(request):
+    return redirect('index')
