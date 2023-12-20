@@ -4,7 +4,7 @@
 * ```git clone https://github.com/artur0527rg/AdminLTE-Capital.git```
 
 * ```cd AdminLTE-Capital```
-* ```python -m venv .venv```
+* ```python3 -m venv .venv```
 * ```. .venv/bin/activate```
 * ```pip install -r requirements.txt```
 * ```pip install "Your db client"```
