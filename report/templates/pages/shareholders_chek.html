@@ -4,6 +4,10 @@
 {% block extrahead %}
     {{ block.super }}
     <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+     <!-- DataTables -->
+    <link rel="stylesheet" href="{% static 'plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
     {{ media }}
 {% endblock %}
 
@@ -63,15 +67,36 @@
                         <h5 class="card-title"><strong>{{title}}</strong></h5>
                     {% endif %}
                 </div>
-                <div class="card-body">
+                <div class="card-body border-0 shadow table-wrapper table-responsive">
                     <form method="POST" enctype="multipart/form-data" action="{{form_url}}">
                         {{ formset.management_form }} 
                         {{ formset.management_data }}
+                        {% if extra_form %}{{ extra_form.as_p }}{% endif %}
                         {% csrf_token %} 
-                        {% for form in formset %}
-                            {{form.as_p}}
-                        {% endfor %} 
-                        <hr>
+                        <table id="example1" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                {% for field in formset.1 %}
+                                    <td>{{ field.label }}</td>
+                                {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for form in formset %}
+                                </tr>
+                                {% with forloop.counter0 as outer_counter %}
+                                    {% for field in form %}
+                                        {% if outer_counter in special_fields %}
+                                        <td class="table-danger">{{field}}</td>
+                                        {% else %}
+                                        <td>{{field}}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                         <button type="submit" class="btn btn-success" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
                             {% trans "Send" %}
                         </button>
@@ -81,3 +106,46 @@
         </div>
     </div>
 {% endblock %}
+
+{% block extra_scripts %}
+  <!-- DataTables  & Plugins -->
+  <script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+  <script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
+  <script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
+  <script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+  <!-- Page specific script -->
+  <script>
+    var hiddenFieldIndexes = [];
+    {% for field in formset.0 %}
+        {% if field.is_hidden %}
+            hiddenFieldIndexes.push({{ forloop.counter0 }});
+        {% endif %}
+    {% endfor %}
+    const table = $(function () {
+      $("#example1").DataTable({
+      "paging": false,
+      "lengthChange": false,
+      "searching": false,
+      "ordering": false,
+      "info": true,
+      "autoWidth": false,
+      "responsive": false,
+      "aoColumnDefs":[
+        {
+          "aTargets": hiddenFieldIndexes,
+          "bVisible": false,
+        }
+      ]
+      });
+    });
+  </script>
+{% endblock %}
+

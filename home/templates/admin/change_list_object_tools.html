@@ -1,0 +1,17 @@
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    {% if has_add_permission %}
+        {% url cl.opts|admin_urlname:'add' as add_url %}
+        <a href="{% add_preserved_filters add_url is_popup to_field %}" class="btn btn-sm btn-outline-gray-600 btn-success mr-2">
+            <i class="fa fa-plus-circle"></i>
+            {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
+        </a>
+    {% endif %}
+    {% if has_add_permission and  cl.opts.verbose_name == 'shareholder'%}
+        <a href="{% url 'upload_shareholders' %}" class="btn btn-sm btn-outline-gray-600 btn-info mr-2">
+            <i class="fa fa-plus-circle"></i>
+            {% blocktrans with cl.opts.verbose_name as name %}Upload {{ name }}{% endblocktrans %}
+        </a>
+    {% endif %}
+{% endblock %}
