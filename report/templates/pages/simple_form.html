@@ -59,7 +59,7 @@
         <div class="col-12 mb-4">
             <div class="card">
                 <div class="card-body">
-                    <form enctype="multipart/form-data" action="/utils/upload/" method="post">
+                    <form {% if enctype %}enctype="{{ enctype }}"{% endif %} action="{{ url }}" method="{{ method }}">
                         {% csrf_token %}
                         <div class='row'>
                             <div class="{% for field in form %}{% if field.name %} field-{{ field.name }}{% endif %}{% endfor %}">

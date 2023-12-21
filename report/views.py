@@ -122,8 +122,13 @@ def upload_shareholders(request):
         return render(request, 'pages/shareholders_chek.html', context=context)
     else:
         form = UploadFileForm()
-        context = {'form': form}
-        return render(request, 'pages/file_upload_form.html', context=context)
+        context = {
+            'enctype':'multipart/form-data',
+            'method': "POST",
+            'url': resolve_url('upload_shareholders'), 
+            'form': form,
+        }
+        return render(request, 'pages/simple_form.html', context=context)
     
 
 def confirm_shareholders(request):
