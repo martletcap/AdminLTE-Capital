@@ -136,13 +136,16 @@ s{% extends "layouts/base.html" %}
         });
         const outputDiv = document.getElementById('output');
         let outputString = '';
+        let sum = 0
 
         // Формируем строку для каждого уникального share_type
         for (const shareType in shareTypeAmounts) {
-        if (shareTypeAmounts.hasOwnProperty(shareType)) {
-            outputString += `${shareType} - ${shareTypeAmounts[shareType]};<br>`;
+            if (shareTypeAmounts.hasOwnProperty(shareType)) {
+                sum += shareTypeAmounts[shareType]
+                outputString += `${shareType} - ${shareTypeAmounts[shareType]};<br>`;
+            }
         }
-        }
+        outputString += `<b>Total: ${sum}</b>`
         outputDiv.innerHTML = outputString;
     }
     updateOutput();
