@@ -27,7 +27,7 @@ class Contact(models.Model):
     name = models.CharField(max_length=256, unique=True)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=128, blank=True)
-    comment = models.TextField(max_length=1024, blank=True)
+    comment = models.TextField(max_length=10240, blank=True)
     website = models.CharField(max_length=256, blank=True)
     type = models.ForeignKey(ContactType, on_delete=models.PROTECT)
     history = HistoricalRecords()
@@ -107,7 +107,7 @@ class Company(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=256, unique=True)
     short_name = models.CharField(max_length=256, blank=True)
-    comment = models.TextField(max_length=1024, blank=True)
+    comment = models.TextField(max_length=10240, blank=True)
     staff = models.ForeignKey(User, on_delete=models.PROTECT)
     contact = models.ForeignKey(
         Contact,
@@ -163,7 +163,7 @@ class Share(models.Model):
     id = models.AutoField(primary_key=True)
     type = models.ForeignKey(ShareType, on_delete=models.PROTECT)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
-    comment = models.TextField(max_length=1024, blank=True)
+    comment = models.TextField(max_length=10240, blank=True)
     history = HistoricalRecords()
 
     def __str__(self) -> str:
@@ -181,7 +181,7 @@ class Shareholder(models.Model):
     owner = models.ForeignKey(Contact, on_delete=models.PROTECT)
     complite = models.BooleanField(default=True)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
-    comment = models.TextField(max_length=1024, blank=True)
+    comment = models.TextField(max_length=10240, blank=True)
     history = HistoricalRecords()
 
 
@@ -200,7 +200,7 @@ class OurTransaction(models.Model):
         decimal_places=8,
         verbose_name='Cost per share',
     )
-    comment = models.TextField(max_length=1024, blank=True)
+    comment = models.TextField(max_length=10240, blank=True)
     history = HistoricalRecords()
 
     def __str__(self) -> str:
