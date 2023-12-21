@@ -24,7 +24,7 @@ class Contact(models.Model):
     class Meta:
         db_table = 'contact'
 
-    name = models.CharField(max_length=256, unique=True)
+    name = models.CharField(max_length=255, unique=True)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=128, blank=True)
     comment = models.TextField(max_length=10240, blank=True)
@@ -44,7 +44,7 @@ class Sector(models.Model):
         ordering = ['name']
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=256, unique=True)
+    name = models.CharField(max_length=255, unique=True)
     history = HistoricalRecords()
 
     def __str__(self) -> str:
@@ -76,7 +76,7 @@ class CompanyStatus(models.Model):
         ordering = ['status']
 
     id = models.AutoField(primary_key=True)
-    status = models.CharField(max_length=256, unique=True)
+    status = models.CharField(max_length=255, unique=True)
     history = HistoricalRecords()
 
     def __str__(self) -> str:
@@ -91,7 +91,7 @@ class CategoryOfCompany(models.Model):
         ordering = ['category']
 
     id = models.AutoField(primary_key=True)
-    category = models.CharField(max_length=256, unique=True)
+    category = models.CharField(max_length=255, unique=True)
     history = HistoricalRecords()
 
     def __str__(self) -> str:
@@ -105,7 +105,7 @@ class Company(models.Model):
         ordering = ['name']
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=256, unique=True)
+    name = models.CharField(max_length=255, unique=True)
     short_name = models.CharField(max_length=256, blank=True)
     comment = models.TextField(max_length=10240, blank=True)
     staff = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -147,7 +147,7 @@ class ShareType(models.Model):
         ordering = ['type']
 
     id = models.AutoField(primary_key=True)
-    type = models.CharField(max_length=256, unique=True)
+    type = models.CharField(max_length=255, unique=True)
     history = HistoricalRecords()
 
     def __str__(self)->str:
