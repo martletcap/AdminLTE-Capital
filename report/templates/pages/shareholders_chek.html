@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %}
+s{% extends "layouts/base.html" %}
 {% load i18n admin_urls static admin_modify %}
 
 {% block extrahead %}
@@ -103,11 +103,55 @@
                     </form> 
                 </div>
             </div>
+            <div class='card'>
+                <div class='card-body'>
+                    <div id='output'></div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
 
 {% block extra_scripts %}
+  <!-- Group by share scirpt  -->
+  <script>
+    function updateOutput(){
+        const rows = document.querySelectorAll('#example1 tbody tr');
+
+        const shareTypeAmounts = {};
+
+        rows.forEach(row => {
+            const shareTypeInput = row.querySelector('td:nth-child(3) input[type="text"]');
+            const amountInput = row.querySelector('td:nth-child(4) input[type="number"]');
+
+            const shareType = shareTypeInput.value;
+            const amount = parseFloat(amountInput.value) || 0;
+
+            if (shareTypeAmounts.hasOwnProperty(shareType)) {
+                shareTypeAmounts[shareType] += amount;
+            } else {
+                // Если это новый уникальный share_type, устанавливаем его сумму
+                shareTypeAmounts[shareType] = amount;
+            }
+        });
+        const outputDiv = document.getElementById('output');
+        let outputString = '';
+
+        // Формируем строку для каждого уникального share_type
+        for (const shareType in shareTypeAmounts) {
+        if (shareTypeAmounts.hasOwnProperty(shareType)) {
+            outputString += `${shareType} - ${shareTypeAmounts[shareType]};<br>`;
+        }
+        }
+        outputDiv.innerHTML = outputString;
+    }
+    updateOutput();
+    const tableInputs = document.querySelectorAll('#example1 input');
+    tableInputs.forEach(input => {
+        input.addEventListener('input', updateOutput);
+    });
+  </script>
+
   <!-- DataTables  & Plugins -->
   <script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
   <script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
