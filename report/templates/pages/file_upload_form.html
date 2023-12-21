@@ -59,12 +59,11 @@
         <div class="col-12 mb-4">
             <div class="card">
                 <div class="card-body">
-                    <form enctype="multipart/form-data" action="{{url}}" method="post">
+                    <form enctype="multipart/form-data" action="/utils/upload/" method="post">
                         {% csrf_token %}
                         <div class='row'>
                             <div class="{% for field in form %}{% if field.name %} field-{{ field.name }}{% endif %}{% endfor %}">
                                 {% block field_sets %}
-                                    <form method='post' action='utils/upload/'>
                                         {% for field in form %}
                                             {{ field.label_tag }}
                                             {{ field }}
@@ -72,7 +71,6 @@
                                         <button type="submit" class="btn btn-success" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
                                             {% trans "Send" %}
                                         </button>
-                                    </form>
                                 {% endblock %}
                             </div>
                         </div>
