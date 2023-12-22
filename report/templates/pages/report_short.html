@@ -292,6 +292,21 @@
       * Here we will create a few charts using ChartJS
       */
 
+      //
+      // General Pie Options
+      //
+      var pieOptions  = {
+        maintainAspectRatio : false,
+        responsive : true,
+        legend: {
+            position: 'left', // Положение легенды
+            labels: {
+                boxWidth: 10 // Ширина квадратика цвета
+            }
+        }
+      }
+      
+
       //-------------
       //- PIE CHART1 -
       //-------------
@@ -305,10 +320,6 @@
             backgroundColor : generateColors({{chart1|length}}, 0),
           }
         ]
-      }
-      var pieOptions     = {
-        maintainAspectRatio : false,
-        responsive : true,
       }
       //Create pie or douhnut chart
       // You can switch between pie and douhnut using the method below.
@@ -332,10 +343,6 @@
           }
         ]
       }
-      var pieOptions     = {
-        maintainAspectRatio : false,
-        responsive : true,
-      }
       //Create pie or douhnut chart
       // You can switch between pie and douhnut using the method below.
       new Chart(pieChartCanvas, {
@@ -357,10 +364,6 @@
             backgroundColor : generateColors({{chart3|length}}, 0),
           }
         ]
-      }
-      var pieOptions     = {
-        maintainAspectRatio : false,
-        responsive : true,
       }
       //Create pie or douhnut chart
       // You can switch between pie and douhnut using the method below.
@@ -384,10 +387,6 @@
           }
         ]
       }
-      var pieOptions     = {
-        maintainAspectRatio : false,
-        responsive : true,
-      }
       //Create pie or douhnut chart
       // You can switch between pie and douhnut using the method below.
       new Chart(pieChartCanvas, {
@@ -410,10 +409,6 @@
           }
         ]
       }
-      var pieOptions     = {
-        maintainAspectRatio : false,
-        responsive : true,
-      }
       //Create pie or douhnut chart
       // You can switch between pie and douhnut using the method below.
       new Chart(pieChartCanvas, {
@@ -435,10 +430,6 @@
             backgroundColor : generateColors({{chart6|length}}, 0),
           }
         ]
-      }
-      var pieOptions     = {
-        maintainAspectRatio : false,
-        responsive : true,
       }
       //Create pie or douhnut chart
       // You can switch between pie and douhnut using the method below.
