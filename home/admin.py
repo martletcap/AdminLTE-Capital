@@ -25,8 +25,16 @@ class CompanyAdmin(SimpleHistoryAdmin):
 
 
 class SeedStepAdmin(SimpleHistoryAdmin):
-    list_display = ['company', 'start_term', 'end_term']
+    list_display = [
+        'company', 'formatted_start_term_field', 'formatted_end_term_field',
+    ]
     form = SeedStepForm
+
+    def formatted_start_term_field(self, obj):
+        return obj.start_term.strftime('%Y/%m/%d')
+    
+    def formatted_end_term_field(self, obj):
+        return obj.end_term.strftime('%Y/%m/%d')
 
 
 class ShareAdmin(SimpleHistoryAdmin):
@@ -35,9 +43,12 @@ class ShareAdmin(SimpleHistoryAdmin):
 
 class ShareholderAdmin(SimpleHistoryAdmin):
     list_display = [
-        'date', 'amount', 'owner', 'complite', 'get_share_company', 'get_share_type',
+        'formatted_date_field', 'amount', 'owner', 'complite', 'get_share_company', 'get_share_type',
     ]
     form = ShareholderForm
+
+    def formatted_date_field(self, obj):
+        return obj.date.strftime('%Y/%m/%d')
 
     def get_share_company(self, obj):
         return obj.share.company
@@ -53,8 +64,14 @@ class ShareholderAdmin(SimpleHistoryAdmin):
 
 
 class OurTransactionAdmin(SimpleHistoryAdmin):
-    list_display = ['date', 'amount', 'price', 'get_share_company', 'get_share_type',]
+    list_display = [
+        'formatted_date_field', 'amount', 'price', 'get_share_company',
+        'get_share_type',
+    ]
     form = OurTransactionForm
+
+    def formatted_date_field(self, obj):
+        return obj.date.strftime('%Y/%m/%d')
 
     def get_share_company(self, obj):
         return obj.share.company
@@ -78,8 +95,13 @@ class OurTransactionAdmin(SimpleHistoryAdmin):
 
 
 class SharePriceAdmin(SimpleHistoryAdmin):
-    list_display = ['get_share_company', 'get_share_type', 'price', 'date']
+    list_display = [
+        'get_share_company', 'get_share_type', 'price', 'formatted_date_field'
+    ]
     form = SharePriceForm
+
+    def formatted_date_field(self, obj):
+        return obj.date.strftime('%Y/%m/%d')
 
     def get_share_company(self, obj):
         return obj.share.company

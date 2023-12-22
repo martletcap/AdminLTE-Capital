@@ -178,5 +178,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-DATE_FORMAT = "Y/m/d"
-USE_L10N = False
+USE_THOUSAND_SEPARATOR = True
