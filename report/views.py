@@ -2,12 +2,20 @@ from decimal import Decimal
 from datetime import date
 
 from django.contrib import messages
+from django.views.generic import View
 from django.shortcuts import render, resolve_url, redirect
 from django.db.models import Sum, F, OuterRef, Subquery, Count
 
+from home.models import (
+    SharePrice, Company, Sector, Location, ContactType, Share,
+)
+
 from utils.pdf_utils import shareholders_from_pdf
-from home.models import SharePrice, Company, Sector, Location, Contact, ContactType
-from .forms import UploadFileForm, ShareholderUploadFormSet, ShareholderExtraForm
+from .forms import (
+    UploadFileForm, ShareholderUploadFormSet, ShareholderExtraForm,
+    CompanySelectForm, SharePriceFormSet,
+)
+
 
 
 def none_to_zero(array:list):
@@ -98,7 +106,7 @@ def upload_shareholders(request):
         if not company or not shareholders:
             messages.error(request, 'Unsupported file type or non-existent company')
             form = UploadFileForm()
-            return render(request, 'pages/file_upload_form.html', context={'form': form})
+            return render(request, 'pages/simple_form.html', context={'form': form})
         initial_data = []
         special_fields = []
         for ind in range(len(shareholders)):
@@ -119,7 +127,7 @@ def upload_shareholders(request):
             'form_url': resolve_url('confirm_shareholders'),
             'extra_form':extra_form,
         }
-        return render(request, 'pages/shareholders_chek.html', context=context)
+        return render(request, 'pages/simple_formset.html', context=context)
     else:
         form = UploadFileForm()
         context = {
@@ -144,3 +152,44 @@ def confirm_shareholders(request):
         )
     messages.success(request, 'Added successfully.')
     return redirect('report_short')
+
+class SharePriceUpdateView(View):
+    def get(self, request):
+        form = CompanySelectForm(request.GET)
+        if not form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('update_prices'), 
+                'form': form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        shares = Share.objects.filter(company=form.cleaned_data['company'])
+        initial_data = []
+        for share in shares:
+            initial_data.append({
+                'share':share,
+                'price': 0,
+                'date': date.today(),
+            })
+        if not initial_data: 
+            messages.warning(request, 'The company has no shares')
+            return redirect('update_prices')
+
+        context = {
+            'title': 'test',
+            'table_headers': initial_data[0].keys(),
+            'formset': SharePriceFormSet(initial=initial_data),
+            'form_url': resolve_url('update_prices'),
+        }
+        return render(request, 'pages/simple_formset.html', context=context)
+
+    def post(self, request):
+        formset = SharePriceFormSet(request.POST)
+        if not formset.is_valid:
+            messages.warning(request, 'Invalid form. Please try again.')
+            return redirect('update_prices')
+        for form in formset:
+            form.save()
+        return redirect('report_short')
+    

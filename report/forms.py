@@ -4,7 +4,7 @@ from django import forms
 from django.forms import formset_factory
 
 from home.models import Shareholder, Share, ShareType, ContactType, Contact, Company
-
+from home.forms import SharePriceForm
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
@@ -47,3 +47,10 @@ class ShareholderUploadForm(forms.Form):
         
     
 ShareholderUploadFormSet = formset_factory(ShareholderUploadForm, extra=0)
+
+class CompanySelectForm(forms.Form):
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.all(),
+    )
+
+SharePriceFormSet = formset_factory(SharePriceForm, extra=0)
