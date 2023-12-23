@@ -21,6 +21,13 @@
             <p>Short</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'company_report' as company_report %}
+          <a href="{{ company_report }}" class="nav-link {% if company_report in request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Company Report</p>
+          </a>
+        </li>
       </ul>
     </li>
     {% if app_list %}

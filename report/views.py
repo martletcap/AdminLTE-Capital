@@ -4,10 +4,11 @@ from datetime import date
 from django.contrib import messages
 from django.views.generic import View
 from django.shortcuts import render, resolve_url, redirect
-from django.db.models import Sum, F, OuterRef, Subquery, Count
+from django.db.models import Sum, F, OuterRef, Subquery, Count, Max
 
 from home.models import (
     SharePrice, Company, Sector, Location, ContactType, Share,
+    Shareholder,
 )
 
 from utils.pdf_utils import shareholders_from_pdf
@@ -193,3 +194,34 @@ class SharePriceUpdateView(View):
             form.save()
         return redirect('report_short')
     
+
+class CompanyReportView(View):
+    def get(self, request):
+        form = CompanySelectForm(request.GET)
+        if not form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('company_report'), 
+                'form': form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        company = form.cleaned_data['company']
+        contact = company.contact
+        latest_shareholders = Shareholder.objects.filter(
+            owner=OuterRef('owner')
+        ).order_by('-date')
+
+        shareholders = Shareholder.objects.annotate(
+            latest_date=Subquery(latest_shareholders.values('date')[:1])
+        ).filter(
+            share__company=company,
+            date=F('latest_date')
+        )
+
+        context = {
+            'results':shareholders,
+            'company':company,
+            'contact':contact,
+        }
+        return render(request, 'pages/company_report.html', context)
