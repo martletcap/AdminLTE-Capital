@@ -196,28 +196,6 @@ class Shareholder(models.Model):
     history = HistoricalRecords()
 
 
-class OurTransaction(models.Model):
-
-    class Meta:
-        db_table = 'our_transaction'
-        ordering = ['-date']
-
-    id = models.AutoField(primary_key=True)
-    share = models.ForeignKey(Share, on_delete=models.PROTECT)
-    date = models.DateField()
-    amount = models.IntegerField(verbose_name='Amount of Shares')
-    price = models.DecimalField(
-        max_digits=16,
-        decimal_places=8,
-        verbose_name='Cost per share',
-    )
-    comment = models.TextField(max_length=10240, blank=True)
-    history = HistoricalRecords()
-
-    def __str__(self) -> str:
-        return str(self.date)
-    
-
 class SharePrice(models.Model):
 
     class Meta:

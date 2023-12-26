@@ -2,22 +2,11 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from .models import (
-    OurTransaction, Company, SeedStep, Split, Shareholder, SharePrice
+    Company, SeedStep, Split, Shareholder, SharePrice,
 )
 from .utils import UserChoiceField
 
 User = get_user_model()
-
-
-class OurTransactionForm(forms.ModelForm):
-    save_price = forms.BooleanField(
-        initial=True, required=False, label='Save history market price',
-    )
-
-    class Meta:
-        model = OurTransaction
-        widgets = {'date':forms.widgets.NumberInput(attrs={'type':'date'})}
-        fields = '__all__'
 
 
 class CompanyForm(forms.ModelForm):

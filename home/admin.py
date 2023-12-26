@@ -3,11 +3,10 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
-    Company, SeedStep, ShareType, Share, Split, Shareholder, OurTransaction,
-    SharePrice,
+    Company, SeedStep, ShareType, Share, Split, Shareholder, SharePrice,
 )
 from .forms import (
-    OurTransactionForm, CompanyForm, SeedStepForm, SplitForm, ShareholderForm,
+    CompanyForm, SeedStepForm, SplitForm, ShareholderForm,
     SharePriceForm,
 )
 
@@ -68,37 +67,6 @@ class ShareholderAdmin(SimpleHistoryAdmin):
     get_share_type.short_description = 'Share type'
 
 
-class OurTransactionAdmin(SimpleHistoryAdmin):
-    list_display = [
-        'formatted_date_field', 'amount', 'price', 'get_share_company',
-        'get_share_type',
-    ]
-    form = OurTransactionForm
-
-    def formatted_date_field(self, obj):
-        return obj.date.strftime('%Y/%m/%d')
-
-    def get_share_company(self, obj):
-        return obj.share.company
-    
-    def get_share_type(self, obj):
-        return obj.share.type
-
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        if form.cleaned_data['save_price']:
-            share = obj.share
-            price = obj.price
-            date = obj.date
-            SharePrice.objects.create(share=share, price=price, date=date)
-
-    get_share_company.admin_order_field = 'share__company'
-    get_share_company.short_description = 'Company'
-
-    get_share_type.admin_order_field = 'share__type'
-    get_share_type.short_description = 'Share type'
-
-
 class SharePriceAdmin(SimpleHistoryAdmin):
     list_display = [
         'get_share_company', 'get_share_type', 'price', 'formatted_date_field'
@@ -134,5 +102,5 @@ admin.site.register(ShareType, SimpleHistoryAdmin)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Split, SplitAdmin)
 admin.site.register(Shareholder, ShareholderAdmin)
-admin.site.register(OurTransaction, OurTransactionAdmin)
+
 admin.site.register(SharePrice, SharePriceAdmin)
