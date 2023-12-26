@@ -4,10 +4,11 @@ from simple_history.admin import SimpleHistoryAdmin
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
     Company, SeedStep, ShareType, Share, Split, Shareholder, SharePrice,
+    TransactionType, MoneyTransaction, ShareTransaction,
 )
 from .forms import (
     CompanyForm, SeedStepForm, SplitForm, ShareholderForm,
-    SharePriceForm,
+    SharePriceForm, MoneyTransactionForm, ShareTransactionForm,
 )
 
 
@@ -89,6 +90,17 @@ class SharePriceAdmin(SimpleHistoryAdmin):
     get_share_type.short_description = 'Share type'
 
 
+class MoneyTransactionAdmin(SimpleHistoryAdmin):
+    list_display = ['date', 'price', 'company', 'transaction_type']
+    form = MoneyTransactionForm
+
+class ShareTransactionAdmin(SimpleHistoryAdmin):
+    list_display = [
+        'money_transaction', 'date', 'share', 'amount',
+    ]
+    form = ShareTransactionForm
+
+
 # Register your models here.
 admin.site.register(ContactType, SimpleHistoryAdmin)
 admin.site.register(Contact, ContactAdmin)
@@ -102,5 +114,7 @@ admin.site.register(ShareType, SimpleHistoryAdmin)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Split, SplitAdmin)
 admin.site.register(Shareholder, ShareholderAdmin)
-
 admin.site.register(SharePrice, SharePriceAdmin)
+admin.site.register(TransactionType, SimpleHistoryAdmin)
+admin.site.register(MoneyTransaction, MoneyTransactionAdmin)
+admin.site.register(ShareTransaction, ShareTransactionAdmin)

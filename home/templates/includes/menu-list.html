@@ -16,14 +16,14 @@
       <ul class="nav nav-treeview">
         <li class="nav-item">
           {% url 'report_short' as report_short %}
-          <a href="{{ report_short }}" class="nav-link {% if report_short in request.path %} active {% endif %}">
+          <a href="{{ report_short }}" class="nav-link {% if report_short == request.path %} active {% endif %}">
             <i class="far fa-circle nav-icon"></i>
             <p>Short</p>
           </a>
         </li>
         <li class="nav-item">
           {% url 'company_report' as company_report %}
-          <a href="{{ company_report }}" class="nav-link {% if company_report in request.path %} active {% endif %}">
+          <a href="{{ company_report }}" class="nav-link {% if company_report == request.path %} active {% endif %}">
             <i class="far fa-circle nav-icon"></i>
             <p>Company Report</p>
           </a>

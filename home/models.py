@@ -210,3 +210,71 @@ class SharePrice(models.Model):
     )
     date = models.DateField()
     history = HistoricalRecords()
+
+
+class TransactionType(models.Model):
+
+    class Meta:
+        app_label = 'base_info'
+        db_table = 'transaction_type'
+        unique_together = ('company', 'type')
+        
+    id = models.AutoField(primary_key=True)
+
+    class Companies(models.TextChoices):
+        MARSHALL = 'MARSHALL', 'Marshall'
+        MARTLET = 'MARTLET', 'Martlet'
+
+    company = models.CharField(
+        max_length = 255, choices = Companies.choices,
+        default = Companies.MARTLET,
+    )
+
+    class Types(models.TextChoices):
+        BUY = 'BUY', 'Buy'
+        WAITING = 'WAITING', 'Waiting'
+        LOAN = 'LOAN', 'Loan'
+        RESTRUCTURING = 'RESTRUCTURING', 'Restructuring'
+
+    type = models.CharField(
+        max_length = 255, choices = Types.choices,
+        default = Types.BUY,
+    )
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return f'{self.company} - {self.type}'
+
+
+class MoneyTransaction(models.Model):
+
+    class Meta:
+        db_table = 'money_transaction'
+        ordering = ['-date']
+        
+    id = models.AutoField(primary_key=True)
+    date = models.DateField()
+    price = models.DecimalField(
+        max_digits=13,
+        decimal_places=2,
+    )
+    company = models.ForeignKey(Company, on_delete=models.PROTECT)
+    transaction_type = models.ForeignKey(TransactionType, on_delete=models.PROTECT)
+    comment = models.TextField(max_length=10240, blank=True)
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return f'{self.price}'
+
+class ShareTransaction(models.Model):
+    
+    class Meta:
+         db_table = 'share_transaction'
+
+    id = models.AutoField(primary_key=True)
+    money_transaction = models.ForeignKey(MoneyTransaction, on_delete=models.PROTECT)
+    date = models.DateField()
+    share = models.ForeignKey(Share, on_delete=models.PROTECT)
+    amount = models.IntegerField()
+    comment = models.TextField(max_length=10240, blank=True)
+    history = HistoricalRecords()
