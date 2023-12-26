@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from .models import (
-    OurTransaction, Company, SeedStep, Share, Shareholder, SharePrice
+    OurTransaction, Company, SeedStep, Split, Shareholder, SharePrice
 )
 from .utils import UserChoiceField
 
@@ -35,6 +35,14 @@ class SeedStepForm(forms.ModelForm):
         }
         fields = '__all__'
 
+
+class SplitForm(forms.ModelForm):
+    class Meta:
+        model = Split
+        widgets = {
+            'date':forms.widgets.NumberInput(attrs={'type':'date'}),
+        }
+        fields = '__all__'
 
 class ShareholderForm(forms.ModelForm):
     class Meta:

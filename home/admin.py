@@ -3,10 +3,11 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
-    Company, SeedStep, ShareType, Share, Shareholder, OurTransaction, SharePrice,
+    Company, SeedStep, ShareType, Share, Split, Shareholder, OurTransaction,
+    SharePrice,
 )
 from .forms import (
-    OurTransactionForm, CompanyForm, SeedStepForm, ShareholderForm,
+    OurTransactionForm, CompanyForm, SeedStepForm, SplitForm, ShareholderForm,
     SharePriceForm,
 )
 
@@ -39,6 +40,10 @@ class SeedStepAdmin(SimpleHistoryAdmin):
 
 class ShareAdmin(SimpleHistoryAdmin):
     list_display = ['type', 'company']
+
+class SplitAdmin(SimpleHistoryAdmin):
+    list_display = ['date', 'share', 'before', 'after']
+    form = SplitForm
 
 
 class ShareholderAdmin(SimpleHistoryAdmin):
@@ -127,6 +132,7 @@ admin.site.register(Company, CompanyAdmin)
 admin.site.register(SeedStep, SeedStepAdmin)
 admin.site.register(ShareType, SimpleHistoryAdmin)
 admin.site.register(Share, ShareAdmin)
+admin.site.register(Split, SplitAdmin)
 admin.site.register(Shareholder, ShareholderAdmin)
 admin.site.register(OurTransaction, OurTransactionAdmin)
 admin.site.register(SharePrice, SharePriceAdmin)

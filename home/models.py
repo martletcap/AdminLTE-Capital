@@ -168,6 +168,17 @@ class Share(models.Model):
 
     def __str__(self) -> str:
         return f'{self.company}-{self.type}'
+
+class Split(models.Model):
+    
+    class Meta:
+        db_table = 'split'
+
+    id = models.AutoField(primary_key=True)
+    date = models.DateField()
+    share = models.ForeignKey(Share, on_delete=models.PROTECT)
+    before = models.IntegerField(default=1)
+    after = models.IntegerField(default=1)
     
 
 class Shareholder(models.Model):
