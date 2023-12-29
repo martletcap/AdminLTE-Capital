@@ -4,7 +4,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
     Company, SeedStep, ShareType, Share, Split, Shareholder, SharePrice,
-    TransactionType, MoneyTransaction, ShareTransaction,
+    MoneyTransaction, ShareTransaction,
 )
 from .forms import (
     CompanyForm, SeedStepForm, SplitForm, ShareholderForm,
@@ -91,8 +91,12 @@ class SharePriceAdmin(SimpleHistoryAdmin):
 
 
 class MoneyTransactionAdmin(SimpleHistoryAdmin):
-    list_display = ['date', 'price', 'company', 'transaction_type']
+    list_display = ['formatted_date_field', 'price', 'company', 'transaction_type']
     form = MoneyTransactionForm
+
+    def formatted_date_field(self, obj):
+        return obj.date.strftime('%Y/%m/%d')
+
 
 class ShareTransactionAdmin(SimpleHistoryAdmin):
     list_display = [
@@ -115,6 +119,5 @@ admin.site.register(Share, ShareAdmin)
 admin.site.register(Split, SplitAdmin)
 admin.site.register(Shareholder, ShareholderAdmin)
 admin.site.register(SharePrice, SharePriceAdmin)
-admin.site.register(TransactionType, SimpleHistoryAdmin)
 admin.site.register(MoneyTransaction, MoneyTransactionAdmin)
 admin.site.register(ShareTransaction, ShareTransactionAdmin)

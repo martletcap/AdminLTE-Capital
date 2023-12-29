@@ -217,33 +217,25 @@ class TransactionType(models.Model):
     class Meta:
         app_label = 'base_info'
         db_table = 'transaction_type'
-        unique_together = ('company', 'type')
         
     id = models.AutoField(primary_key=True)
-
-    class Companies(models.TextChoices):
-        MARSHALL = 'MARSHALL', 'Marshall'
-        MARTLET = 'MARTLET', 'Martlet'
-
-    company = models.CharField(
-        max_length = 255, choices = Companies.choices,
-        default = Companies.MARTLET,
-    )
-
-    class Types(models.TextChoices):
-        BUY = 'BUY', 'Buy'
-        WAITING = 'WAITING', 'Waiting'
-        LOAN = 'LOAN', 'Loan'
-        RESTRUCTURING = 'RESTRUCTURING', 'Restructuring'
-
-    type = models.CharField(
-        max_length = 255, choices = Types.choices,
-        default = Types.BUY,
-    )
-    history = HistoricalRecords()
+    title = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
-        return f'{self.company} - {self.type}'
+        return self.title
+
+
+class Portfolio(models.Model):
+
+    class Meta:
+        app_label = 'base_info'
+        db_table = 'portfolio'
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class MoneyTransaction(models.Model):
@@ -260,6 +252,7 @@ class MoneyTransaction(models.Model):
     )
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     transaction_type = models.ForeignKey(TransactionType, on_delete=models.PROTECT)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.PROTECT)
     comment = models.TextField(max_length=10240, blank=True)
     history = HistoricalRecords()
 

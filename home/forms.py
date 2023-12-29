@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from .models import (
-    Company, SeedStep, Split, Shareholder, SharePrice, MoneyTransaction,
+    Company, SeedStep, Split, Shareholder, SharePrice, Portfolio, MoneyTransaction,
     ShareTransaction,
 )
 from .utils import UserChoiceField
@@ -52,6 +52,7 @@ class SharePriceForm(forms.ModelForm):
 
 
 class MoneyTransactionForm(forms.ModelForm):
+
     class Meta:
         model = MoneyTransaction
         widgets = {
