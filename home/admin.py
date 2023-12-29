@@ -91,7 +91,10 @@ class SharePriceAdmin(SimpleHistoryAdmin):
 
 
 class MoneyTransactionAdmin(SimpleHistoryAdmin):
-    list_display = ['formatted_date_field', 'price', 'company', 'transaction_type']
+    list_display = [
+        'formatted_date_field', 'price', 'company', 'transaction_type',
+        'portfolio',
+    ]
     form = MoneyTransactionForm
 
     def formatted_date_field(self, obj):

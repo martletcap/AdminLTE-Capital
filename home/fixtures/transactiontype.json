@@ -1,0 +1,51 @@
+[
+    {
+        "model": "base_info.transactiontype",
+        "pk": 1,
+        "fields": {
+            "title": "Buy"
+        }
+    },
+    {
+        "model": "base_info.transactiontype",
+        "pk": 2,
+        "fields": {
+            "title": "Sell"
+        }
+    },
+    {
+        "model": "base_info.transactiontype",
+        "pk": 3,
+        "fields": {
+            "title": "Loan"
+        }
+    },
+    {
+        "model": "base_info.transactiontype",
+        "pk": 4,
+        "fields": {
+            "title": "Loan Back"
+        }
+    },
+    {
+        "model": "base_info.transactiontype",
+        "pk": 5,
+        "fields": {
+            "title": "Loan Interest"
+        }
+    },
+    {
+        "model": "base_info.transactiontype",
+        "pk": 6,
+        "fields": {
+            "title": "Dividends"
+        }
+    },
+    {
+        "model": "base_info.transactiontype",
+        "pk": 7,
+        "fields": {
+            "title": "Restructuring"
+        }
+    }
+]

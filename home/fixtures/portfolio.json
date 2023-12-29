@@ -1,0 +1,16 @@
+[
+    {
+        "model": "base_info.portfolio",
+        "pk": 1,
+        "fields": {
+            "name": "Marshall"
+        }
+    },
+    {
+        "model": "base_info.portfolio",
+        "pk": 2,
+        "fields": {
+            "name": "Martlet"
+        }
+    }
+]
