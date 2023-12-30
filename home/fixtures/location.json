@@ -1,0 +1,42 @@
+[
+    {
+        "model": "base_info.location",
+        "pk": 1,
+        "fields": {
+            "city": "Cambridge",
+            "country": "Great Britain"
+        }
+    },
+    {
+        "model": "base_info.location",
+        "pk": 2,
+        "fields": {
+            "city": "London",
+            "country": "Great Britain"
+        }
+    },
+    {
+        "model": "base_info.location",
+        "pk": 3,
+        "fields": {
+            "city": "Newcastle",
+            "country": "Great Britain"
+        }
+    },
+    {
+        "model": "base_info.location",
+        "pk": 4,
+        "fields": {
+            "city": "Oxford",
+            "country": "Great Britain"
+        }
+    },
+    {
+        "model": "base_info.location",
+        "pk": 5,
+        "fields": {
+            "city": "Sheffield",
+            "country": "Great Britain"
+        }
+    }
+]
