@@ -1,14 +1,16 @@
-from decimal import Decimal
 from datetime import date
 
 from django.contrib import messages
 from django.views.generic import View
 from django.shortcuts import render, resolve_url, redirect
-from django.db.models import Sum, F, OuterRef, Subquery, Count, Max
+from django.db.models import (
+    F, OuterRef, Subquery,
+)
 
+from core.settings import PORTFOLIO
 from home.models import (
-    SharePrice, Company, Sector, Location, ContactType, Share,
-    Shareholder,
+    Company, ContactType, Share, Shareholder, MoneyTransaction, ShareTransaction,
+    SharePrice, Split,
 )
 
 from utils.pdf_utils import shareholders_from_pdf
@@ -18,86 +20,107 @@ from .forms import (
 )
 
 
+def report_short(request):
+    context = {}
+    context['result_headers'] = [
+        'Area', 'No. Cos.', 'Investment', 'Market Price',
+    ]
+    sectors = {}
+    locations = {}
+    template = {
+        'num': 0,
+        'investment': 0,
+        'market': 0,
+    }
 
-def none_to_zero(array:list):
-    new_array = []
-    for record in array:
-        new_array.append([])
-        for ind in range(len(record)):
-            if record[ind] is None:
-                new_array[-1].append(0)
-            elif isinstance(record[ind], Decimal):
-                new_array[-1].append(int(record[ind]))
-            else:
-                new_array[-1].append(record[ind])
-    return new_array
-
-
-# # Create your views here.
-# def report_short(request):
-#     context = dict()
-#     context['result_headers'] = [
-#         'Area', 'No. Cos.', 'Investment', 'Market Price',
-#     ]
-
-#     latest_price = SharePrice.objects.filter(
-#         share_id=OuterRef('company__share__ourtransaction__share_id')
-#     ).order_by('-date').values('price')[:1]
-
-#     # Sector data
-#     res = Sector.objects.filter(
-#         company__status__status='Portfolio',
-#     ).annotate(
-#         num_companies=Count('company', distinct=True),
-#         purchase_amount=Sum(
-#             F('company__share__ourtransaction__amount')*
-#             F('company__share__ourtransaction__price')
-#         ),
-#         market_value = Sum(
-#             F('company__share__ourtransaction__amount')*
-#             Subquery(latest_price)
-#         )
-#     ).values_list('name', 'num_companies', 'purchase_amount', 'market_value')
-#     context['results_sector'] = none_to_zero(res)
-
-
-#     # Location data
-#     res = Location.objects.annotate(
-#         num_companies=Count('company', distinct=True),
-#         purchase_amount=Sum(
-#             F('company__share__ourtransaction__amount')*
-#             F('company__share__ourtransaction__price')
-#         ),
-#         market_value = Sum(
-#             F('company__share__ourtransaction__amount')*
-#             Subquery(latest_price)
-#         )
-#     ).values_list('city', 'num_companies', 'purchase_amount', 'market_value')
-#     context['results_location'] = none_to_zero(res)
-
-#     # Chart data
-#     context['sectors'] = []
-#     context['locations'] = []
-#     context['chart1'] = []
-#     context['chart2'] = []
-#     context['chart3'] = []
-#     context['chart4'] = []
-#     context['chart5'] = []
-#     context['chart6'] = []
-#     for record in context['results_sector']:
-#         context['sectors'].append(record[0])
-#         context['chart1'].append(record[1])
-#         context['chart3'].append(record[2])
-#         context['chart5'].append(record[3])
-#     for record in context['results_location']:
-#         context['locations'].append(record[0])
-#         context['chart2'].append(record[1])
-#         context['chart4'].append(record[2])
-#         context['chart6'].append(record[3])
-    
-#     # Page from the theme 
-#     return render(request, 'pages/report_short.html', context=context)
-
+    # Get companies
+    companies = Company.objects.filter(
+        status__status = 'Portfolio'
+    ).annotate(
+        area = F('sector__name'),
+        city = F('location__city')
+    )
+    # Count companies by sector and city
+    for company in companies:
+        if not sectors.get(company.area):
+            sectors[company.area]=template.copy()
+            locations[company.city]=template.copy()
+        sectors[company.area]['num']+=1
+        locations[company.city]['num']+=1
+    # Get money transactions
+    money_transactions = MoneyTransaction.objects.filter(
+        company__in = companies,
+        portfolio__name = PORTFOLIO,
+    ).annotate(
+        area = F('company__sector__name'),
+        city = F('company__location__city'),
+        type = F('transaction_type__title'),
+    )
+    # Sum all investments
+    for transaction in money_transactions:
+        if transaction.type == 'Sell':
+            price = -float(transaction.price)
+        else:
+            price = float(transaction.price)
+        sectors[transaction.area]['investment']+=price
+        locations[transaction.city]['investment']+=price
+    # Get share transactions
+    share_transactions = ShareTransaction.objects.filter(
+        money_transaction__in = money_transactions,
+    ).annotate(
+        type = F('money_transaction__transaction_type__title'),
+        area = F('money_transaction__company__sector__name'),
+        city = F('money_transaction__company__location__city'),
+    )
+    # Sum market price
+    for transaction in share_transactions:
+        last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
+        splits = Split.objects.filter(share=transaction.share).annotate(
+            cof = F('after')/F('before'),
+        ).values_list('cof')
+        cof = 1
+        for split in splits:
+            cof *= split[0]
+        if last_price.exists():
+            last_price = last_price.first().price
+        else:
+            last_price = 0
+        if transaction.type == 'Sell':
+            total = -float(transaction.amount*cof*last_price)
+        else:
+            total = float(transaction.amount*cof*last_price)
+        sectors[transaction.area]['market']+=total
+        locations[transaction.city]['market']+=total
+    # Representation
+    context['results_sector'] = []
+    context['results_location'] = []
+    context['sectors'] = []
+    context['locations'] = []
+    context['chart1'] = []
+    context['chart2'] = []
+    context['chart3'] = []
+    context['chart4'] = []
+    context['chart5'] = []
+    context['chart6'] = []
+    for key in sectors.keys():
+        context['results_sector'].append((
+            key, sectors[key]['num'], sectors[key]['investment'],
+            sectors[key]['market'],
+        ))
+        context['sectors'].append(key)
+        context['chart1'].append(sectors[key]['num'])
+        context['chart3'].append(sectors[key]['investment'])
+        context['chart5'].append(sectors[key]['market'])
+    for key in locations.keys():
+        context['results_location'].append((
+            key, locations[key]['num'], locations[key]['investment'],
+            locations[key]['market'],
+        ))
+        context['locations'].append(key)
+        context['chart2'].append(locations[key]['num'])
+        context['chart4'].append(locations[key]['investment'])
+        context['chart6'].append(locations[key]['market'])
+    return render(request, 'pages/report_short.html', context=context)
 
 def upload_shareholders(request):
     if request.method == "POST":

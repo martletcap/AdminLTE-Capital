@@ -19,5 +19,6 @@
   * DB_USERNAME
   * DB_PASS
   * DB_PORT
+  * PORTFOLIO
 * Configure nginx
 * ```gunicorn --config gunicorn-cfg.py core.wsgi```
