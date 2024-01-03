@@ -44,6 +44,7 @@ def report_short(request):
     for company in companies:
         if not sectors.get(company.area):
             sectors[company.area]=template.copy()
+        if not locations.get(company.city):
             locations[company.city]=template.copy()
         sectors[company.area]['num']+=1
         locations[company.city]['num']+=1

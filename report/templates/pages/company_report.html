@@ -99,6 +99,7 @@
             <thead>
                 <tr>
                     <th>Owner</th>
+                    <th>Contact Type</th>
                     <th>Share</th>
                     <th>Amount</th>
                 </tr>
@@ -107,6 +108,7 @@
                 {% for record in results %}
                     </tr>
                         <td>{{ record.owner }}</td>
+                        <td>{{ record.owner.type }}</td>
                         <td>{{ record.share.type }}</td>
                         <td>{{ record.amount }}</td>
                     </tr>
