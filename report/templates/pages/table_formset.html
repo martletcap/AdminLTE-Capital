@@ -86,9 +86,9 @@ s{% extends "layouts/base.html" %}
                                 {% for form in formset %}
                                 </tr>
                                 {% if forloop.counter0 in special_fields %}
-                                <td class="table-danger">{{ forloop.counter }}</td>
+                                    <td class="table-danger">{{ forloop.counter }}</td>
                                 {% else %}
-                                <td>{{ forloop.counter }}</td>
+                                    <td>{{ forloop.counter }}</td>
                                 {% endif %}
                                 {% with forloop.counter0 as outer_counter %}
                                     {% for field in form %}
