@@ -76,6 +76,7 @@ s{% extends "layouts/base.html" %}
                         <table id="example1" class="table table-bordered table-striped">
                             <thead>
                                 <tr>
+                                <th>#</th>
                                 {% for field in formset.1 %}
                                     <td>{{ field.label }}</td>
                                 {% endfor %}
@@ -84,6 +85,11 @@ s{% extends "layouts/base.html" %}
                             <tbody>
                                 {% for form in formset %}
                                 </tr>
+                                {% if forloop.counter0 in special_fields %}
+                                <td class="table-danger">{{ forloop.counter }}</td>
+                                {% else %}
+                                <td>{{ forloop.counter }}</td>
+                                {% endif %}
                                 {% with forloop.counter0 as outer_counter %}
                                     {% for field in form %}
                                         {% if outer_counter in special_fields %}
@@ -192,16 +198,7 @@ s{% extends "layouts/base.html" %}
         }
       ]
       });
-    });
-    table.on('order.dt search.dt', function () {
-        let i = 1;
- 
-        table
-            .cells(null, 0, { search: 'applied', order: 'applied' })
-            .every(function (cell) {
-                this.data(i++);
-            });
-    }).draw();
+    }); 
   </script>
 {% endblock %}
 

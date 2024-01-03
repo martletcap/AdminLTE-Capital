@@ -151,7 +151,7 @@ def upload_shareholders(request):
             'form_url': resolve_url('confirm_shareholders'),
             'extra_form':extra_form,
         }
-        return render(request, 'pages/simple_formset.html', context=context)
+        return render(request, 'pages/table_formset.html', context=context)
     else:
         form = UploadFileForm()
         context = {
@@ -206,7 +206,7 @@ class SharePriceUpdateView(View):
             'formset': SharePriceFormSet(initial=initial_data),
             'form_url': resolve_url('update_prices'),
         }
-        return render(request, 'pages/simple_formset.html', context=context)
+        return render(request, 'pages/table_formset.html', context=context)
 
     def post(self, request):
         formset = SharePriceFormSet(request.POST)
