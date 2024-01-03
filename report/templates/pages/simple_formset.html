@@ -142,7 +142,7 @@ s{% extends "layouts/base.html" %}
         for (const shareType in shareTypeAmounts) {
             if (shareTypeAmounts.hasOwnProperty(shareType)) {
                 sum += shareTypeAmounts[shareType]
-                outputString += `${shareType} - ${shareTypeAmounts[shareType]};<br>`;
+                outputString += `${shareType} - ${shareTypeAmounts[shareType].toLocaleString('en-US')};<br>`;
             }
         }
         outputString += `<b>Total: ${sum}</b>`
@@ -193,6 +193,15 @@ s{% extends "layouts/base.html" %}
       ]
       });
     });
+    table.on('order.dt search.dt', function () {
+        let i = 1;
+ 
+        table
+            .cells(null, 0, { search: 'applied', order: 'applied' })
+            .every(function (cell) {
+                this.data(i++);
+            });
+    }).draw();
   </script>
 {% endblock %}
 
