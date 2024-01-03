@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.shortcuts import redirect
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (
@@ -90,6 +92,22 @@ class SharePriceAdmin(SimpleHistoryAdmin):
     get_share_type.short_description = 'Share type'
 
 
+class ShareTransactionAdmin(SimpleHistoryAdmin):
+    list_display = [
+        'money_transaction', 'date', 'share', 'amount',
+    ]
+    form = ShareTransactionForm
+
+    def add_view(self, request, form_url="", extra_context=None):
+        if extra_context is None: extra_context = {}
+        extra_context['show_save_and_add_prices'] = True
+        return super().add_view(request, form_url, extra_context)
+    
+    def response_post_save_add(self, request, obj):        
+        if "_saveandaddprices" in request.POST:
+            return redirect(reverse('update_prices')+'?'+f'company={obj.share.company.id}')
+
+
 class MoneyTransactionAdmin(SimpleHistoryAdmin):
     list_display = [
         'formatted_date_field', 'price', 'company', 'transaction_type',
@@ -99,13 +117,19 @@ class MoneyTransactionAdmin(SimpleHistoryAdmin):
 
     def formatted_date_field(self, obj):
         return obj.date.strftime('%Y/%m/%d')
-
-
-class ShareTransactionAdmin(SimpleHistoryAdmin):
-    list_display = [
-        'money_transaction', 'date', 'share', 'amount',
-    ]
-    form = ShareTransactionForm
+    
+    def add_view(self, request, form_url="", extra_context=None):
+        if extra_context is None: extra_context = {}
+        extra_context['show_save_and_add_share'] = True
+        return super().add_view(request, form_url, extra_context)
+    
+    def response_post_save_add(self, request, obj):        
+        if "_saveandaddshare" in request.POST:
+            share_transaction_url = reverse('admin:home_sharetransaction_add')
+            return redirect(
+                share_transaction_url + '?'+ 
+                f'money_transaction={obj.pk}' + '&' + f'date={obj.date}'
+            )
 
 
 # Register your models here.
