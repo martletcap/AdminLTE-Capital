@@ -92,7 +92,7 @@ class CategoryOfCompany(models.Model):
         ordering = ['category']
 
     id = models.AutoField(primary_key=True)
-    category = models.CharField(max_length=255, unique=True)
+    category = models.CharField(max_length=255, unique=True,)
     history = HistoricalRecords()
 
     def __str__(self) -> str:
@@ -206,7 +206,7 @@ class SharePrice(models.Model):
 
     class Meta:
         db_table = 'share_price'
-        verbose_name_plural = '6. Share Transaction'
+        verbose_name_plural = '6. Share Price'
 
     id = models.AutoField(primary_key=True)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
