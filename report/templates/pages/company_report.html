@@ -93,6 +93,32 @@
             </div>
         </div>
     </div>
+    <div class="row main-header mt-2">
+        <div class="col">
+            <!-- LINE CHART -->
+            <div class="card card-info">
+                <div class="card-header">
+                <h3 class="card-title">Line Chart</h3>
+
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                </div>
+                <div class="card-body">
+                <div class="chart">
+                    <canvas id="lineChart" style="min-height: 300px; max-width: 100%;"></canvas>
+                </div>
+                </div>
+                <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+        </div>
+    </div>
     <div class="row main-header mt-3 mr-1">
         <div class="card card-body border-0 shadow table-wrapper table-responsive">
             <table id="example2" class="table table-bordered table-striped">
@@ -119,3 +145,87 @@
         <!-- /.card -->
     </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<!-- ChartJS -->
+<script src="{% static 'plugins/chart.js/Chart.min.js' %}"></script>
+<!-- Page specific script -->
+<script>
+function generateRandomColor() {
+  // Generating random values for red, green, and blue
+  const red = Math.floor(Math.random() * 256); // Random number between 0 and 255
+  const green = Math.floor(Math.random() * 256); // Random number between 0 and 255
+  const blue = Math.floor(Math.random() * 256); // Random number between 0 and 255
+
+  // Converting the RGB values to hexadecimal format
+  const color = `rgba(${red},${green},${blue},0.9)`
+
+  return color;
+}
+
+$(function () {
+    /* ChartJS
+    */
+
+    //-------------
+    //- LINE CHART -
+    //--------------
+    var lineChartCanvas = $('#lineChart').get(0).getContext('2d')
+    var lineChartOptions = {
+        maintainAspectRatio : false,
+        responsive : true,
+        legend: {
+            display: true
+        },
+        scales: {
+            xAxes: [{
+            gridLines : {
+                display : false,
+            }
+            }],
+            yAxes: [{
+            gridLines : {
+                display : false,
+            }
+            }]
+        }
+    }
+    var lineChartData = {
+        labels  : {{ chart1.labels|safe }},
+        datasets: [
+            {% for key, array in chart1.datasets.items %}
+            {
+            label               : '{{ key }}',
+            backgroundColor     :'rgba(60,141,188,0.9)',
+            borderColor         : generateRandomColor(),
+            pointRadius         : false,
+            pointColor          : '#3b8bba',
+            pointStrokeColor    : 'rgba(60,141,188,1)',
+            pointHighlightFill  : '#fff',
+            pointHighlightStroke: 'rgba(60,141,188,1)',
+            data                : [
+                {% for item in array %}
+                    {% if item == 0 %}
+                        null,
+                    {% else %}
+                        {{ item }},
+                    {% endif %}
+                {% endfor %}
+            ],
+            fill: false,
+          },
+          {% endfor %}
+        ]
+    }
+    lineChartOptions.datasetFill = false
+
+    var lineChart = new Chart(lineChartCanvas, {
+    type: 'line',
+    data: lineChartData,
+    options: lineChartOptions
+    })
+
+})
+</script>
+        
+{% endblock extra_scripts %}

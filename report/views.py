@@ -242,10 +242,43 @@ class CompanyReportView(View):
             share__company=company,
             date=F('latest_date')
         )
+        # Price chart
+        labels = []
+        datasets = {}
+
+        shares = Share.objects.filter(
+            company = company,
+        )
+        for share in shares:
+            datasets[share.type.type] = []
+
+        share_prices = SharePrice.objects.filter(
+            share__in = shares,
+        ).annotate(type = F('share__type__type')).order_by('date')
+
+        last_date = date.min
+        for share_price in share_prices:
+            if share_price.date == last_date:
+                datasets[share_price.type][-1] = float(share_price.price)
+            else:
+                labels.append(str(share_price.date))
+                for key, array in datasets.items():
+                    if key == share_price.type:
+                        array.append(float(share_price.price))
+                    else:
+                        if len(array):
+                            array.append(array[-1])
+                        else:
+                            array.append(0)
+            last_date = share_price.date
 
         context = {
             'results':shareholders,
             'company':company,
             'contact':contact,
+            'chart1':{
+                'labels': labels,
+                'datasets':datasets
+            },
         }
         return render(request, 'pages/company_report.html', context)
