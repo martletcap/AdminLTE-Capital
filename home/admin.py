@@ -130,6 +130,7 @@ class MoneyTransactionAdmin(SimpleHistoryAdmin):
                 share_transaction_url + '?'+ 
                 f'money_transaction={obj.pk}' + '&' + f'date={obj.date}'
             )
+        return super().response_post_save_add(request, obj)
 
 
 # Register your models here.
