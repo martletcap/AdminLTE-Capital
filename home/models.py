@@ -23,6 +23,7 @@ class Contact(models.Model):
     
     class Meta:
         db_table = 'contact'
+        verbose_name_plural = '1. Contacts'
 
     name = models.CharField(max_length=255, unique=True)
     email = models.EmailField(blank=True)
@@ -103,6 +104,7 @@ class Company(models.Model):
     class Meta:
         db_table = 'company'
         ordering = ['name']
+        verbose_name_plural = '2. Companys'
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
@@ -131,6 +133,7 @@ class SeedStep(models.Model):
     class Meta:
         db_table = 'seed_step'
         ordering = ['-end_term']
+        verbose_name_plural = '9. Seed Steps'
 
     id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
@@ -159,6 +162,7 @@ class Share(models.Model):
     class Meta:
         db_table = 'share'
         unique_together = ('company', 'type')
+        verbose_name_plural = '3. Shares'
 
     id = models.AutoField(primary_key=True)
     type = models.ForeignKey(ShareType, on_delete=models.PROTECT)
@@ -173,6 +177,7 @@ class Split(models.Model):
     
     class Meta:
         db_table = 'split'
+        verbose_name_plural = '8. Splits'
 
     id = models.AutoField(primary_key=True)
     date = models.DateField()
@@ -185,6 +190,7 @@ class Shareholder(models.Model):
 
     class Meta:
         db_table = 'shareholder'
+        verbose_name_plural = '7. Shareholders'
 
     id = models.AutoField(primary_key=True)
     date = models.DateField()
@@ -200,6 +206,7 @@ class SharePrice(models.Model):
 
     class Meta:
         db_table = 'share_price'
+        verbose_name_plural = '6. Share Transaction'
 
     id = models.AutoField(primary_key=True)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
@@ -243,6 +250,7 @@ class MoneyTransaction(models.Model):
     class Meta:
         db_table = 'money_transaction'
         ordering = ['-date']
+        verbose_name_plural = '4. Money Transactions'
         
     id = models.AutoField(primary_key=True)
     date = models.DateField()
@@ -263,6 +271,7 @@ class ShareTransaction(models.Model):
     
     class Meta:
          db_table = 'share_transaction'
+         verbose_name_plural = '5. Share Transaction'
 
     id = models.AutoField(primary_key=True)
     money_transaction = models.ForeignKey(MoneyTransaction, on_delete=models.PROTECT)
