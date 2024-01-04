@@ -94,9 +94,12 @@ class SharePriceAdmin(SimpleHistoryAdmin):
 
 class ShareTransactionAdmin(SimpleHistoryAdmin):
     list_display = [
-        'money_transaction', 'date', 'share', 'amount',
+        'get_money_transaction', 'date', 'share', 'amount',
     ]
     form = ShareTransactionForm
+
+    def get_money_transaction(self, obj):
+        return obj.money_transaction.price
 
     def add_view(self, request, form_url="", extra_context=None):
         if extra_context is None: extra_context = {}
