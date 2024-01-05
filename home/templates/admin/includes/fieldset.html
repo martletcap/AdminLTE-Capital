@@ -14,7 +14,7 @@
                         {% if field.is_checkbox %}
                             <div class="form-check">
                                 <label class="form-check-label">
-                                    <label {% if field.field.errors %}class='text-danger'{% endif %} for="{{ field.field.id_for_label }}">{{ field.field.name|capfirst }}:</label>
+                                    {{ field.label_tag }}
                                     {% for error in field.field.errors %}
                                         <div class='text-danger'>{{error}}</div>
                                     {% endfor %}
@@ -23,7 +23,7 @@
                                 </label>
                             </div>
                         {% else %}
-                            <label {% if field.field.errors %}class='text-danger'{% endif %} for="{{ field.field.id_for_label }}">{{ field.field.name|capfirst }}:</label>
+                            {{ field.label_tag }}
                             {% for error in field.field.errors %}
                                 <div class='text-danger'>{{error}}</div>
                             {% endfor %}
