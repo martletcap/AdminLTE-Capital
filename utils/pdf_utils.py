@@ -3,7 +3,7 @@ import string
 
 import PyPDF2
 
-def shareholders_from_pdf(pdf: str):
+def shareholders_from_pdf(pdf):
     if pdf.content_type != 'application/pdf':
         return None, []
     reader = PyPDF2.PdfReader(pdf, strict=False)
@@ -19,7 +19,7 @@ def shareholders_from_pdf(pdf: str):
         text = page.extract_text()
         pattern = re.compile((
             r'Shareholding\s(?:[0-9]+):\s([0-9]+)\s([A-Z\s\n\W]+)\s[a-z\s\n]+'
-            r'Name:\s([A-Z\s\n\W]+)\n'
+            r'Name:\s([0-9A-Z\s\n\W\(\)]+)\n'
         ))
         for group in pattern.finditer(text):
             tmp = []
