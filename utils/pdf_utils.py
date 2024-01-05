@@ -15,16 +15,19 @@ def shareholders_from_pdf(pdf):
     res = []
     # Helper set
     printable = set(string.ascii_letters + string.digits + string.punctuation + ' ')
-    for page in reader.pages:
-        text = page.extract_text()
-        pattern = re.compile((
+    pattern = re.compile((
             r'Shareholding\s(?:[0-9]+):\s([0-9]+)\s([A-Z\s\n\W]+)\s[a-z\s\n]+'
-            r'Name:\s([0-9A-Z\s\n\W\(\)]+)\n'
-        ))
-        for group in pattern.finditer(text):
-            tmp = []
-            for match in group.groups():
-                # Deleting all escape sequence characters
-                tmp.append(''.join(letter for letter in match if letter in printable))
-            res.append(tmp)
+            r'(?:Electronically\sfiled\sdocument\sfor\sCompany\sNumber:\s(?:[0-9]+))?'
+            r'Name:\s([0-9A-Z\s\n\W]+)\n'
+    ))
+    text = ''
+    for page in reader.pages:
+        text +=  page.extract_text()
+        
+    for group in pattern.finditer(text):
+        tmp = []
+        for match in group.groups():
+            # Deleting all escape sequence characters
+            tmp.append(''.join(letter for letter in match if letter in printable))
+        res.append(tmp)
     return(company_name, res)
