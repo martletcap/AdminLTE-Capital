@@ -194,7 +194,7 @@ class SharePriceUpdateView(View):
         for share in shares:
             initial_data.append({
                 'share':share,
-                'price': 0,
+                'price': request.GET.get('price', 0),
                 'date': date.today(),
             })
         if not initial_data: 
@@ -202,7 +202,7 @@ class SharePriceUpdateView(View):
             return redirect('update_prices')
 
         context = {
-            'title': 'test',
+            'title': 'Update Price',
             'table_headers': initial_data[0].keys(),
             'formset': SharePriceFormSet(initial=initial_data),
             'form_url': resolve_url('update_prices'),

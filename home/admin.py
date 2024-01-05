@@ -108,7 +108,12 @@ class ShareTransactionAdmin(SimpleHistoryAdmin):
     
     def response_post_save_add(self, request, obj):        
         if "_saveandaddprices" in request.POST:
-            return redirect(reverse('update_prices')+'?'+f'company={obj.share.company.id}')
+            price = obj.money_transaction.price/obj.amount
+            return redirect(
+                reverse('update_prices')+'?'+
+                f'company={obj.share.company.id}'+ '&' +
+                f'price={price}'
+            )
 
 
 class MoneyTransactionAdmin(SimpleHistoryAdmin):
