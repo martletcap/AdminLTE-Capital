@@ -194,7 +194,7 @@ class SharePriceUpdateView(View):
         for share in shares:
             initial_data.append({
                 'share':share,
-                'price': request.GET.get('price', 0),
+                'price': round(float(request.GET.get('price', 0)), 2),
                 'date': date.today(),
             })
         if not initial_data: 
@@ -203,7 +203,6 @@ class SharePriceUpdateView(View):
 
         context = {
             'title': 'Update Price',
-            'table_headers': initial_data[0].keys(),
             'formset': SharePriceFormSet(initial=initial_data),
             'form_url': resolve_url('update_prices'),
         }
@@ -211,7 +210,7 @@ class SharePriceUpdateView(View):
 
     def post(self, request):
         formset = SharePriceFormSet(request.POST)
-        if not formset.is_valid:
+        if not formset.is_valid():
             messages.warning(request, 'Invalid form. Please try again.')
             return redirect('update_prices')
         for form in formset:

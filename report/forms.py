@@ -1,4 +1,5 @@
 import datetime
+from typing import Any
 
 from django import forms
 from django.forms import formset_factory
@@ -53,4 +54,14 @@ class CompanySelectForm(forms.Form):
         queryset=Company.objects.all(),
     )
 
-SharePriceFormSet = formset_factory(SharePriceForm, extra=0)
+
+class SharePriceUpdateForm(SharePriceForm):
+    consider = forms.BooleanField(required=False)
+
+    def save(self, commit=True) -> Any:
+        if self.cleaned_data.get('consider', False):
+            return super().save(commit)
+        return None
+
+
+SharePriceFormSet = formset_factory(SharePriceUpdateForm, extra=0)
