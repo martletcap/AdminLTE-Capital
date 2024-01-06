@@ -18,6 +18,7 @@ from .forms import (
     UploadFileForm, ShareholderUploadFormSet, ShareholderExtraForm,
     CompanySelectForm, SharePriceFormSet,
 )
+from core import settings
 
 
 def short_report(request):
@@ -281,3 +282,96 @@ class CompanyReportView(View):
             },
         }
         return render(request, 'pages/company_report.html', context)
+    
+
+class DetailedReportView(View):
+    def get(self, request):
+        res = {}
+        context = {
+            'result_headers':[
+                'Company', 'Marshal Amount', 'Restructuring', 'Total Amount', 'Market Price', 'First transaction',
+            ],
+            'results':[],
+        }
+        companies = Company.objects.all()
+        for comapny in companies:
+            res[comapny.name] = {
+                'marshal_amount': 0,
+                'restructuring': 0,
+                'total_amount': 0,
+                'market_price': 0,
+                'first_transaction': 0,
+            }
+
+        share_transactions = ShareTransaction.objects.annotate(
+            company = F('share__company__name'),
+            portfolio = F('money_transaction__portfolio__name'),
+            type = F('money_transaction__transaction_type__title'),
+        )
+        for transaction in share_transactions:
+            last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
+            splits = Split.objects.filter(share=transaction.share).annotate(
+                cof = F('after')/F('before'),
+            ).values_list('cof')
+            cof = 1
+            for split in splits:
+                cof *= split[0]
+            if last_price.exists():
+                last_price = last_price.first().price
+            else:
+                last_price = 0
+            if transaction.type == 'Sell':
+                if transaction.portfolio == 'Marshall':
+                    res[transaction.company]['marshal_amount'] -= (
+                        transaction.amount*cof
+                    )
+                elif transaction.portfolio == settings.PORTFOLIO:
+                    res[transaction.company]['total_amount'] -= (
+                        transaction.amount*cof
+                    )
+                    res[transaction.company]['market_price'] -= float(
+                        transaction.amount*cof*last_price
+                    )
+            else:
+                if transaction.portfolio == 'Marshall':
+                    res[transaction.company]['marshal_amount'] += (
+                        transaction.amount*cof
+                    )
+                elif transaction.portfolio == settings.PORTFOLIO:
+                    res[transaction.company]['total_amount'] += (
+                        transaction.amount*cof
+                    )
+                    res[transaction.company]['market_price'] += float(
+                        transaction.amount*cof*last_price
+                    )
+        
+        for company in companies:
+                restruct = MoneyTransaction.objects.filter(
+                    company = company,
+                    transaction_type__title = 'Restructuring',
+                ).order_by('-date')[:1].filter()
+                if restruct:
+                    res[company.name]['restructuring'] = float(restruct.price)
+                else:
+                    res[company.name]['restructuring'] = 0
+
+        for company in companies: 
+            first_transaction = MoneyTransaction.objects.filter(
+                company = company,
+            ).order_by('-date')[:1].first()
+            if first_transaction:
+                res[company.name]['first_transaction'] = first_transaction.date 
+            else:
+                res[company.name]['first_transaction'] = 0
+
+        for key, value in res.items():
+            context['results'].append(
+                (
+                    key, value['marshal_amount'], value['restructuring'],
+                    value['total_amount'], value['market_price'],
+                    value['first_transaction'],
+                )
+            )
+
+        return render(request, 'pages/detailed_report.html', context=context)
+        
