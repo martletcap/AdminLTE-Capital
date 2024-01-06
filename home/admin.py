@@ -114,6 +114,7 @@ class ShareTransactionAdmin(SimpleHistoryAdmin):
                 f'company={obj.share.company.id}'+ '&' +
                 f'price={price}'
             )
+        return super().response_post_save_add(request, obj)
 
 
 class MoneyTransactionAdmin(SimpleHistoryAdmin):
