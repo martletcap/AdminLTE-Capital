@@ -349,7 +349,7 @@ class DetailedReportView(View):
                 restruct = MoneyTransaction.objects.filter(
                     company = company,
                     transaction_type__title = 'Restructuring',
-                ).order_by('-date')[:1].filter()
+                ).order_by('-date')[:1].first()
                 if restruct:
                     res[company.name]['restructuring'] = float(restruct.price)
                 else:
