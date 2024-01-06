@@ -18,7 +18,6 @@ from .forms import (
     UploadFileForm, ShareholderUploadFormSet, ShareholderExtraForm,
     CompanySelectForm, SharePriceFormSet,
 )
-from core import settings
 
 
 def short_report(request):
@@ -325,7 +324,7 @@ class DetailedReportView(View):
                     res[transaction.company]['marshal_amount'] -= (
                         transaction.amount*cof
                     )
-                elif transaction.portfolio == settings.PORTFOLIO:
+                elif transaction.portfolio == PORTFOLIO:
                     res[transaction.company]['total_amount'] -= (
                         transaction.amount*cof
                     )
@@ -337,7 +336,7 @@ class DetailedReportView(View):
                     res[transaction.company]['marshal_amount'] += (
                         transaction.amount*cof
                     )
-                elif transaction.portfolio == settings.PORTFOLIO:
+                elif transaction.portfolio == PORTFOLIO:
                     res[transaction.company]['total_amount'] += (
                         transaction.amount*cof
                     )
