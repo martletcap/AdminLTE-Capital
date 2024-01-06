@@ -67,7 +67,7 @@ def short_report(request):
         locations[transaction.city]['investment']+=price
     # Get share transactions
     share_transactions = ShareTransaction.objects.filter(
-        money_transaction__in = money_transactions,
+        money_transaction__company__in = companies,
     ).annotate(
         type = F('money_transaction__transaction_type__title'),
         area = F('money_transaction__company__sector__name'),
@@ -76,7 +76,10 @@ def short_report(request):
     # Sum market price
     for transaction in share_transactions:
         last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
-        splits = Split.objects.filter(share=transaction.share).annotate(
+        splits = Split.objects.filter(
+            date__gte = transaction.date,
+            share=transaction.share,
+        ).annotate(
             cof = F('after')/F('before'),
         ).values_list('cof')
         cof = 1
@@ -309,7 +312,10 @@ class DetailedReportView(View):
         )
         for transaction in share_transactions:
             last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
-            splits = Split.objects.filter(share=transaction.share).annotate(
+            splits = Split.objects.filter(
+                date__gte = transaction.date,
+                share=transaction.share,
+            ).annotate(
                 cof = F('after')/F('before'),
             ).values_list('cof')
             cof = 1
@@ -324,25 +330,23 @@ class DetailedReportView(View):
                     res[transaction.company]['marshal_amount'] -= (
                         transaction.amount*cof
                     )
-                elif transaction.portfolio == PORTFOLIO:
-                    res[transaction.company]['total_amount'] -= (
-                        transaction.amount*cof
-                    )
-                    res[transaction.company]['market_price'] -= float(
-                        transaction.amount*cof*last_price
-                    )
+                res[transaction.company]['total_amount'] -= (
+                    transaction.amount*cof
+                )
+                res[transaction.company]['market_price'] -= float(
+                    transaction.amount*cof*last_price
+                )
             else:
                 if transaction.portfolio == 'Marshall':
                     res[transaction.company]['marshal_amount'] += (
                         transaction.amount*cof
                     )
-                elif transaction.portfolio == PORTFOLIO:
-                    res[transaction.company]['total_amount'] += (
-                        transaction.amount*cof
-                    )
-                    res[transaction.company]['market_price'] += float(
-                        transaction.amount*cof*last_price
-                    )
+                res[transaction.company]['total_amount'] += (
+                    transaction.amount*cof
+                )
+                res[transaction.company]['market_price'] += float(
+                    transaction.amount*cof*last_price
+                )
         
         for company in companies:
                 restruct = MoneyTransaction.objects.filter(
