@@ -20,7 +20,7 @@ from .forms import (
 )
 
 
-def report_short(request):
+def short_report(request):
     context = {}
     context['result_headers'] = [
         'Area', 'No. Cos.', 'Investment', 'Market Price',
@@ -121,7 +121,7 @@ def report_short(request):
         context['chart2'].append(locations[key]['num'])
         context['chart4'].append(locations[key]['investment'])
         context['chart6'].append(locations[key]['market'])
-    return render(request, 'pages/report_short.html', context=context)
+    return render(request, 'pages/short_report.html', context=context)
 
 def upload_shareholders(request):
     if request.method == "POST":
@@ -176,7 +176,7 @@ def confirm_shareholders(request):
             date = extra_form.cleaned_data['date'],
         )
     messages.success(request, 'Added successfully.')
-    return redirect('report_short')
+    return redirect('short_report')
 
 class SharePriceUpdateView(View):
     def get(self, request):
@@ -215,7 +215,7 @@ class SharePriceUpdateView(View):
             return redirect('update_prices')
         for form in formset:
             form.save()
-        return redirect('report_short')
+        return redirect('short_report')
     
 
 class CompanyReportView(View):

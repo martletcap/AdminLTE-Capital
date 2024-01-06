@@ -15,8 +15,8 @@
       </a>
       <ul class="nav nav-treeview">
         <li class="nav-item">
-          {% url 'report_short' as report_short %}
-          <a href="{{ report_short }}" class="nav-link {% if report_short == request.path %} active {% endif %}">
+          {% url 'short_report' as short_report %}
+          <a href="{{ short_report }}" class="nav-link {% if short_report == request.path %} active {% endif %}">
             <i class="far fa-circle nav-icon"></i>
             <p>Short</p>
           </a>
