@@ -16,7 +16,7 @@ def shareholders_from_pdf(pdf):
     # Helper set
     printable = set(string.ascii_letters + string.digits + string.punctuation + ' ')
     pattern = re.compile((
-            r'Shareholding\s(?:[0-9]+):\s([0-9]+)\s([A-Z\s\n\W]+)\s[a-z\s\n]+'
+            r'Shareholding\s(?:[0-9]+):\s([0-9]+)\s([0-9A-Z\s\n\W]+)\s[a-z\s\n]+'
             r'(?:Electronically\sfiled\sdocument\sfor\sCompany\sNumber:\s(?:[0-9]+))?'
             r'Name:\s([0-9A-Z\s\n\W]+)\n'
     ))
