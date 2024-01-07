@@ -2,6 +2,7 @@ from datetime import date
 
 from django.contrib import messages
 from django.views.generic import View
+from django.urls import reverse
 from django.shortcuts import render, resolve_url, redirect
 from django.db.models import (
     F, OuterRef, Subquery,
@@ -294,10 +295,12 @@ class DetailedReportView(View):
                 'Company', 'Marshal Amount', 'Restructuring', 'Total Amount', 'Market Price', 'First transaction',
             ],
             'results':[],
+            'links':[],
         }
         companies = Company.objects.all()
-        for comapny in companies:
-            res[comapny.name] = {
+        for company in companies:
+            context['links'].append(reverse('company_report')+f'?company={company.pk}')
+            res[company.name] = {
                 'marshal_amount': 0,
                 'restructuring': 0,
                 'total_amount': 0,

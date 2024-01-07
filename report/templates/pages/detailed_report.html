@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-{% load i18n admin_urls static admin_list %}
+{% load i18n admin_urls static admin_list index %}
 
 {% block extrastyle %}
     <!-- DataTables -->
@@ -49,9 +49,15 @@
                 <tbody>
                   {% for record in results %}
                     </tr>
+                      {% with forloop.counter0 as external_loop %}
                       {% for value in record %}
-                        <td>{{value}}</td>
+                        {% if forloop.counter0 == 0 %}
+                          <td><a href="{{ links|index:external_loop }}">{{value}}</a></td>
+                        {% else %}
+                          <td>{{value}}</td>
+                        {% endif %}
                       {% endfor %}
+                      {% endwith %}
                     </tr>
                   {% endfor %}
                 </tbody>
