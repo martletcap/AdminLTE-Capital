@@ -292,7 +292,7 @@ class DetailedReportView(View):
         res = {}
         context = {
             'result_headers':[
-                'Company', 'Marshal Amount', 'Restructuring', 'Total Amount', 'Market Price', 'First transaction',
+                'Company', 'Marshal Market Price', 'Restructuring', 'Total Amount', 'Market Price', 'First transaction',
             ],
             'results':[],
             'links':[],
@@ -301,7 +301,7 @@ class DetailedReportView(View):
         for company in companies:
             context['links'].append(reverse('company_report')+f'?company={company.pk}')
             res[company.name] = {
-                'marshal_amount': 0,
+                'marshal_market_price': 0,
                 'restructuring': 0,
                 'total_amount': 0,
                 'market_price': 0,
@@ -330,8 +330,8 @@ class DetailedReportView(View):
                 last_price = 0
             if transaction.type == 'Sell':
                 if transaction.portfolio == 'Marshall':
-                    res[transaction.company]['marshal_amount'] -= (
-                        transaction.amount*cof
+                    res[transaction.company]['marshal_market_price'] -= (
+                        round(transaction.amount*cof*last_price, 1)
                     )
                 res[transaction.company]['total_amount'] -= (
                     transaction.amount*cof
@@ -341,8 +341,8 @@ class DetailedReportView(View):
                 )
             else:
                 if transaction.portfolio == 'Marshall':
-                    res[transaction.company]['marshal_amount'] += (
-                        transaction.amount*cof
+                    res[transaction.company]['marshal_market_price'] += (
+                        round(transaction.amount*cof*last_price, 1)
                     )
                 res[transaction.company]['total_amount'] += (
                     transaction.amount*cof
@@ -373,7 +373,7 @@ class DetailedReportView(View):
         for key, value in res.items():
             context['results'].append(
                 (
-                    key, value['marshal_amount'], value['restructuring'],
+                    key, value['marshal_market_price'], value['restructuring'],
                     value['total_amount'], value['market_price'],
                     value['first_transaction'],
                 )
