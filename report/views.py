@@ -292,7 +292,7 @@ class DetailedReportView(View):
         res = {}
         context = {
             'result_headers':[
-                'Company', 'Marshal Invested', 'Restructuring', 'Total Amount', 'Market Price', 'First transaction',
+                'Company', 'Marshal Invested', 'Restructuring', 'Martlet Invested', 'Total Amount', 'Market Price', 'First transaction',
             ],
             'results':[],
             'links':[],
@@ -303,22 +303,26 @@ class DetailedReportView(View):
             res[company.name] = {
                 'marshal_invested': 0,
                 'restructuring': 0,
+                'martlet_invested': 0,
                 'total_amount': 0,
                 'market_price': 0,
                 'first_transaction': 0,
             }
 
-        money_transactions = MoneyTransaction.objects.filter(
-            portfolio__name = 'Marshall',
-        ).annotate(
+        money_transactions = MoneyTransaction.objects.all().annotate(
             type = F('transaction_type__title'),
             company_name = F('company__name'),
+            portfolio_name = F('portfolio__name')
         )
         for transaction in money_transactions:
+            value = transaction.price
             if transaction.type == 'Sell':
-                res[transaction.company_name]['marshal_invested'] -= transaction.price
-            else:
-                res[transaction.company_name]['marshal_invested'] += transaction.price
+                value = -value
+            if transaction.portfolio_name == 'Marshall':
+                res[transaction.company_name]['marshal_invested'] += value
+            elif transaction.portfolio_name == 'Martlet':
+                res[transaction.company_name]['martlet_invested'] += value
+
 
         share_transactions = ShareTransaction.objects.annotate(
             company = F('share__company__name'),
@@ -378,7 +382,7 @@ class DetailedReportView(View):
             context['results'].append(
                 (
                     key, value['marshal_invested'], value['restructuring'],
-                    value['total_amount'], value['market_price'],
+                    value['martlet_invested'], value['total_amount'], value['market_price'],
                     value['first_transaction'],
                 )
             )
