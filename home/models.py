@@ -182,6 +182,7 @@ class Split(models.Model):
     id = models.AutoField(primary_key=True)
     date = models.DateField()
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
+    comment = models.TextField(max_length=10240, blank=True)
     before = models.IntegerField(default=1)
     after = models.IntegerField(default=1)
     
