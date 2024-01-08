@@ -198,7 +198,7 @@ class SharePriceUpdateView(View):
         for share in shares:
             initial_data.append({
                 'share':share,
-                'price': round(float(request.GET.get('price', 0)), 2),
+                'price': round(float(request.GET.get('price', 0)), 3),
                 'date': date.today(),
             })
         if not initial_data: 
