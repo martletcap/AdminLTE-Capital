@@ -345,18 +345,18 @@ class DetailedReportView(View):
             else:
                 last_price = 0
             if transaction.type == 'Sell':
-                res[transaction.company]['total_amount'] -= (
-                    transaction.amount*cof
+                res[transaction.company]['total_amount'] -= round(
+                    transaction.amount*cof, 2
                 )
-                res[transaction.company]['market_price'] -= float(
-                    transaction.amount*cof*last_price
+                res[transaction.company]['market_price'] -= round(
+                    float(transaction.amount*cof*last_price), 2
                 )
             else:
-                res[transaction.company]['total_amount'] += (
-                    transaction.amount*cof
+                res[transaction.company]['total_amount'] += round(
+                    transaction.amount*cof, 2
                 )
-                res[transaction.company]['market_price'] += float(
-                    transaction.amount*cof*last_price
+                res[transaction.company]['market_price'] += round(
+                    float(transaction.amount*cof*last_price), 2
                 )
         
         for company in companies:
