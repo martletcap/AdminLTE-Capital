@@ -140,6 +140,11 @@ def short_report(request):
         context['chart2'].append(locations[key]['num'])
         context['chart4'].append(locations[key]['investment'])
         context['chart6'].append(locations[key]['market'])
+    # Footer-total
+    context['footer'] = [
+        'Total:', total_companies, 100, round(total_money_invested, 2),
+        100, round(total_market_price, 2), 100,
+    ]
     return render(request, 'pages/short_report.html', context=context)
 
 def upload_shareholders(request):

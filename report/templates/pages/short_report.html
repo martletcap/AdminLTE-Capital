@@ -195,6 +195,13 @@
                     </tr>
                   {% endfor %}
                 </tbody>
+                <tfoot>
+                <tr>
+                  {% for value in footer %}
+                    <td><b>{{ value }}</b></td>
+                  {% endfor %}
+                </tr>
+              </tfoot>
             </table>
           </div>
           <!-- /.card -->
@@ -220,6 +227,13 @@
                     </tr>
                   {% endfor %}
                 </tbody>
+                <tfoot>
+                <tr>
+                  {% for value in footer %}
+                    <td><b>{{ value }}</b></td>
+                  {% endfor %}
+                </tr>
+              </tfoot>
             </table>
           </div>
           <!-- /.card -->
@@ -262,7 +276,7 @@
     });
   </script>
 
-  
+
   <!-- ChartJS -->
   <script src="{% static 'plugins/chart.js/Chart.min.js' %}"></script>
   <!-- Page specific script -->
