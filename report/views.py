@@ -361,10 +361,10 @@ class DetailedReportView(View):
                 else:
                     res[company.name]['restructuring'] = 0
 
-        for company in companies: 
+        for company in companies:
             first_transaction = MoneyTransaction.objects.filter(
                 company = company,
-            ).order_by('-date')[:1].first()
+            ).order_by('date')[:1].first()
             if first_transaction:
                 res[company.name]['first_transaction'] = first_transaction.date 
             else:
