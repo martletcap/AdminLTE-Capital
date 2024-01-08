@@ -266,7 +266,7 @@ class MoneyTransaction(models.Model):
     history = HistoricalRecords()
 
     def __str__(self):
-        return f'{self.price}'
+        return f'{self.company}|{self.date} - {self.price}'
 
 class ShareTransaction(models.Model):
     
