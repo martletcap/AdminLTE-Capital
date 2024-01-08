@@ -24,7 +24,8 @@ from .forms import (
 def short_report(request):
     context = {}
     context['result_headers'] = [
-        'Area', 'No. Cos.', 'Investment', 'Market Price',
+        'Area', 'No. Com.', 'Pct. Com.', 'Investment', 'Investment Pct.',
+        'Market Price', 'Market Price Pct.'
     ]
     sectors = {}
     locations = {}
@@ -41,6 +42,7 @@ def short_report(request):
         area = F('sector__name'),
         city = F('location__city')
     )
+    total_companies = 0
     # Count companies by sector and city
     for company in companies:
         if not sectors.get(company.area):
@@ -49,6 +51,7 @@ def short_report(request):
             locations[company.city]=template.copy()
         sectors[company.area]['num']+=1
         locations[company.city]['num']+=1
+        total_companies += 1
     # Get money transactions
     money_transactions = MoneyTransaction.objects.filter(
         company__in = companies,
@@ -58,12 +61,14 @@ def short_report(request):
         city = F('company__location__city'),
         type = F('transaction_type__title'),
     )
+    total_money_invested = 0
     # Sum all investments
     for transaction in money_transactions:
         if transaction.type == 'Sell':
             price = -float(transaction.price)
         else:
             price = float(transaction.price)
+        total_money_invested += price
         sectors[transaction.area]['investment']+=price
         locations[transaction.city]['investment']+=price
     # Get share transactions
@@ -74,6 +79,7 @@ def short_report(request):
         area = F('money_transaction__company__sector__name'),
         city = F('money_transaction__company__location__city'),
     )
+    total_market_price = 0
     # Sum market price
     for transaction in share_transactions:
         last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
@@ -94,6 +100,7 @@ def short_report(request):
             total = -float(transaction.amount*cof*last_price)
         else:
             total = float(transaction.amount*cof*last_price)
+        total_market_price += total
         sectors[transaction.area]['market']+=total
         locations[transaction.city]['market']+=total
     # Representation
@@ -109,8 +116,12 @@ def short_report(request):
     context['chart6'] = []
     for key in sectors.keys():
         context['results_sector'].append((
-            key, sectors[key]['num'], sectors[key]['investment'],
+            key, sectors[key]['num'],
+            round(100/total_companies*sectors[key]['num'], 1),
+            sectors[key]['investment'],
+            round(100/total_money_invested*sectors[key]['investment'], 1),
             round(sectors[key]['market'], 2),
+            round(100/total_market_price*sectors[key]['market'], 1),
         ))
         context['sectors'].append(key)
         context['chart1'].append(sectors[key]['num'])
@@ -118,8 +129,12 @@ def short_report(request):
         context['chart5'].append(sectors[key]['market'])
     for key in locations.keys():
         context['results_location'].append((
-            key, locations[key]['num'], locations[key]['investment'],
+            key, locations[key]['num'], 
+            round(100/total_companies*locations[key]['num'], 1),
+            locations[key]['investment'],
+            round(100/total_money_invested*locations[key]['investment'], 1),
             round(locations[key]['market'], 2),
+            round(100/total_market_price*locations[key]['market'], 1),
         ))
         context['locations'].append(key)
         context['chart2'].append(locations[key]['num'])
