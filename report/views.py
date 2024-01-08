@@ -292,7 +292,7 @@ class DetailedReportView(View):
         res = {}
         context = {
             'result_headers':[
-                'Company', 'Marshal Market Price', 'Restructuring', 'Total Amount', 'Market Price', 'First transaction',
+                'Company', 'Marshal Invested', 'Restructuring', 'Total Amount', 'Market Price', 'First transaction',
             ],
             'results':[],
             'links':[],
@@ -301,12 +301,24 @@ class DetailedReportView(View):
         for company in companies:
             context['links'].append(reverse('company_report')+f'?company={company.pk}')
             res[company.name] = {
-                'marshal_market_price': 0,
+                'marshal_invested': 0,
                 'restructuring': 0,
                 'total_amount': 0,
                 'market_price': 0,
                 'first_transaction': 0,
             }
+
+        money_transactions = MoneyTransaction.objects.filter(
+            portfolio__name = 'Marshall',
+        ).annotate(
+            type = F('transaction_type__title'),
+            company_name = F('company__name'),
+        )
+        for transaction in money_transactions:
+            if transaction.type == 'Sell':
+                res[transaction.company_name]['marshal_invested'] -= transaction.price
+            else:
+                res[transaction.company_name]['marshal_invested'] += transaction.price
 
         share_transactions = ShareTransaction.objects.annotate(
             company = F('share__company__name'),
@@ -329,10 +341,6 @@ class DetailedReportView(View):
             else:
                 last_price = 0
             if transaction.type == 'Sell':
-                if transaction.portfolio == 'Marshall':
-                    res[transaction.company]['marshal_market_price'] -= (
-                        round(transaction.amount*cof*last_price, 1)
-                    )
                 res[transaction.company]['total_amount'] -= (
                     transaction.amount*cof
                 )
@@ -340,10 +348,6 @@ class DetailedReportView(View):
                     transaction.amount*cof*last_price
                 )
             else:
-                if transaction.portfolio == 'Marshall':
-                    res[transaction.company]['marshal_market_price'] += (
-                        round(transaction.amount*cof*last_price, 1)
-                    )
                 res[transaction.company]['total_amount'] += (
                     transaction.amount*cof
                 )
@@ -373,7 +377,7 @@ class DetailedReportView(View):
         for key, value in res.items():
             context['results'].append(
                 (
-                    key, value['marshal_market_price'], value['restructuring'],
+                    key, value['marshal_invested'], value['restructuring'],
                     value['total_amount'], value['market_price'],
                     value['first_transaction'],
                 )
