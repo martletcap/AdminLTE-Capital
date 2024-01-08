@@ -56,7 +56,7 @@ class CompanySelectForm(forms.Form):
 
 
 class SharePriceUpdateForm(SharePriceForm):
-    consider = forms.BooleanField(required=False)
+    consider = forms.BooleanField(required=False, initial=True)
 
     def save(self, commit=True) -> Any:
         if self.cleaned_data.get('consider', False):

@@ -112,7 +112,8 @@ class ShareTransactionAdmin(SimpleHistoryAdmin):
             return redirect(
                 reverse('update_prices')+'?'+
                 f'company={obj.share.company.id}'+ '&' +
-                f'price={price}'
+                f'price={price}' + '&' + 
+                f'date={obj.date}'
             )
         return super().response_post_save_add(request, obj)
 
