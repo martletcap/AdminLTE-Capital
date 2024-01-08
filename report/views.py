@@ -61,9 +61,9 @@ def short_report(request):
     # Sum all investments
     for transaction in money_transactions:
         if transaction.type == 'Sell':
-            price = -round(float(transaction.price), 2)
+            price = -float(transaction.price)
         else:
-            price = round(float(transaction.price), 2)
+            price = float(transaction.price)
         sectors[transaction.area]['investment']+=price
         locations[transaction.city]['investment']+=price
     # Get share transactions
@@ -91,9 +91,9 @@ def short_report(request):
         else:
             last_price = 0
         if transaction.type == 'Sell':
-            total = -round(float(transaction.amount*cof*last_price), 2)
+            total = -float(transaction.amount*cof*last_price)
         else:
-            total = round(float(transaction.amount*cof*last_price), 2)
+            total = float(transaction.amount*cof*last_price)
         sectors[transaction.area]['market']+=total
         locations[transaction.city]['market']+=total
     # Representation
@@ -110,7 +110,7 @@ def short_report(request):
     for key in sectors.keys():
         context['results_sector'].append((
             key, sectors[key]['num'], sectors[key]['investment'],
-            sectors[key]['market'],
+            round(sectors[key]['market'], 2),
         ))
         context['sectors'].append(key)
         context['chart1'].append(sectors[key]['num'])
@@ -119,7 +119,7 @@ def short_report(request):
     for key in locations.keys():
         context['results_location'].append((
             key, locations[key]['num'], locations[key]['investment'],
-            locations[key]['market'],
+            round(locations[key]['market'], 2),
         ))
         context['locations'].append(key)
         context['chart2'].append(locations[key]['num'])
@@ -345,18 +345,18 @@ class DetailedReportView(View):
             else:
                 last_price = 0
             if transaction.type == 'Sell':
-                res[transaction.company]['total_amount'] -= round(
-                    transaction.amount*cof, 2
+                res[transaction.company]['total_amount'] -= (
+                    transaction.amount*cof
                 )
-                res[transaction.company]['market_price'] -= round(
-                    float(transaction.amount*cof*last_price), 2
+                res[transaction.company]['market_price'] -= float(
+                    transaction.amount*cof*last_price
                 )
             else:
-                res[transaction.company]['total_amount'] += round(
-                    transaction.amount*cof, 2
+                res[transaction.company]['total_amount'] += (
+                    transaction.amount*cof
                 )
-                res[transaction.company]['market_price'] += round(
-                    float(transaction.amount*cof*last_price), 2
+                res[transaction.company]['market_price'] += float(
+                    transaction.amount*cof*last_price
                 )
         
         for company in companies:
@@ -382,8 +382,8 @@ class DetailedReportView(View):
             context['results'].append(
                 (
                     key, value['marshal_invested'], value['restructuring'],
-                    value['martlet_invested'], value['total_amount'], value['market_price'],
-                    value['first_transaction'],
+                    value['martlet_invested'], round(value['total_amount'], 2),
+                    round(value['market_price'], 2), value['first_transaction'],
                 )
             )
 
