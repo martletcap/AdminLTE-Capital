@@ -61,9 +61,9 @@ def short_report(request):
     # Sum all investments
     for transaction in money_transactions:
         if transaction.type == 'Sell':
-            price = -float(transaction.price)
+            price = -round(float(transaction.price), 2)
         else:
-            price = float(transaction.price)
+            price = round(float(transaction.price), 2)
         sectors[transaction.area]['investment']+=price
         locations[transaction.city]['investment']+=price
     # Get share transactions
@@ -91,9 +91,9 @@ def short_report(request):
         else:
             last_price = 0
         if transaction.type == 'Sell':
-            total = -float(transaction.amount*cof*last_price)
+            total = -round(float(transaction.amount*cof*last_price), 2)
         else:
-            total = float(transaction.amount*cof*last_price)
+            total = round(float(transaction.amount*cof*last_price), 2)
         sectors[transaction.area]['market']+=total
         locations[transaction.city]['market']+=total
     # Representation
