@@ -258,6 +258,7 @@ class MoneyTransaction(models.Model):
     price = models.DecimalField(
         max_digits=13,
         decimal_places=2,
+        verbose_name='Cost',
     )
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     transaction_type = models.ForeignKey(TransactionType, on_delete=models.PROTECT)
