@@ -127,8 +127,8 @@ s{% extends "layouts/base.html" %}
         const shareTypeAmounts = {};
 
         rows.forEach(row => {
-            const shareTypeInput = row.querySelector('td:nth-child(3) input[type="text"]');
-            const amountInput = row.querySelector('td:nth-child(4) input[type="number"]');
+            const shareTypeInput = row.querySelector('td:nth-child(4) input[type="text"]');
+            const amountInput = row.querySelector('td:nth-child(5) input[type="number"]');
 
             const shareType = shareTypeInput.value;
             const amount = parseFloat(amountInput.value) || 0;
