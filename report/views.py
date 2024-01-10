@@ -427,8 +427,8 @@ class UpdateShareholdersView(View):
             share__company = company,
         ).order_by('-date')[:1].first()
         if not last_date:
-            pass
-            # Redirect + message
+            messages.warning(request, 'The company has no shareholders')
+            return redirect('update_shareholders')
         shareholders = Shareholder.objects.filter(
             date=last_date.date,
             share__company = company,

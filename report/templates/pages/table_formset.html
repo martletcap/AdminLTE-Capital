@@ -106,6 +106,7 @@ s{% extends "layouts/base.html" %}
                         <button type="submit" class="btn btn-success" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
                             {% trans "Send" %}
                         </button>
+                        <button type="button" class="btn btn-primary" id="addRowBtn">Add Row</button>
                     </form> 
                 </div>
             </div>
@@ -119,7 +120,21 @@ s{% extends "layouts/base.html" %}
 {% endblock %}
 
 {% block extra_scripts %}
-  <!-- Group by share scirpt  -->
+  <!-- DataTables  & Plugins -->
+  <script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+  <script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
+  <script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
+  <script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+  <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+
+  <!-- Total info script  -->
   <script>
     function updateOutput(){
         const rows = document.querySelectorAll('#example1 tbody tr');
@@ -161,20 +176,7 @@ s{% extends "layouts/base.html" %}
     });
   </script>
 
-  <!-- DataTables  & Plugins -->
-  <script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
-  <script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
-  <script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
-  <script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
-  <script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
-  <script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
-  <script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
-  <script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
-  <script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
-  <script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
-  <script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
-  <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
-  <!-- Page specific script -->
+  <!-- DataTable scripts -->
   <script>
     var hiddenFieldIndexes = [];
     {% for field in formset.0 %}
@@ -199,6 +201,66 @@ s{% extends "layouts/base.html" %}
       ]
       });
     }); 
+  </script>
+
+  <!-- New row script -->
+  <script>
+    $(document).ready(function () {
+      // Add Row Button Click Event
+      $('#addRowBtn').on('click', function () {
+        addNewRow();
+      });
+
+      function addNewRow() {
+        // DataTable change DOM, so first of all we need destroy DataTable
+        $("#example1").DataTable().destroy();
+
+        // Clone the first row (assuming it's your header row) to get the structure
+        var newRow = $('#example1 tbody tr:last').clone();
+        
+        // Get current row id
+        var currentNumber = parseInt(newRow.find('td:first').text()) || 0;
+        
+        // Clear input values in the new row
+        newRow.find('input').val('');
+        
+        // Set id for new row
+        newRow.find('td:first').text(currentNumber + 1);
+
+        // Update IDs of input fields in the new row
+        // And add event listener
+        newRow.find('input').each(function () {
+            var currentId = $(this).attr('id');
+            $(this).on('input', updateOutput)
+            if (currentId) {
+                var newId = currentId.replace(/\d+/, function (match) {
+                    return parseInt(match) + 1;
+                });
+                $(this).attr('id', newId);
+            }
+        });
+
+        // Append the new row to the table
+        $('#example1 tbody').append(newRow);
+
+        // Build againg
+        $("#example1").DataTable({
+            "paging": false,
+            "lengthChange": false,
+            "searching": false,
+            "ordering": false,
+            "info": true,
+            "autoWidth": false,
+            "responsive": false,
+            "aoColumnDefs":[
+                {
+                "aTargets": hiddenFieldIndexes,
+                "bVisible": false,
+                }
+            ]
+        });
+      }
+    });
   </script>
 {% endblock %}
 
