@@ -27,6 +27,7 @@ class ShareholderUploadForm(forms.Form):
     type = forms.CharField()
     amount = forms.IntegerField()
     comment = forms.CharField(max_length=10240, required=False)
+    complite = forms.BooleanField(initial=True, required=False)
     
 
     def save(self, company:Company, date:datetime.date):
@@ -44,6 +45,7 @@ class ShareholderUploadForm(forms.Form):
             owner = contact,
             share = share,
             comment = self.cleaned_data['comment'],
+            complite = self.cleaned_data['complite']
         )
         
     

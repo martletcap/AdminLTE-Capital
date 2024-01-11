@@ -444,6 +444,7 @@ class UpdateShareholdersView(View):
                 'contact_type':shareholder.contact_type,
                 'type':shareholder.type,
                 'name':shareholder.name,
+                'complite': shareholder.complite,
             })
         extra_form = ShareholderExtraForm(initial={'company':company, 'date':date.today()})
         context = {
