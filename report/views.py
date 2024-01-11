@@ -255,36 +255,50 @@ class CompanyReportView(View):
             return render(request, 'pages/simple_form.html', context=context)
         company = form.cleaned_data['company']
         contact = company.contact
-        latest_shareholders = Shareholder.objects.filter(
-            owner=OuterRef('owner')
-        ).order_by('-date')
+        latest_shareholder = Shareholder.objects.filter(
+            share__company = company,
+        ).order_by('-date')[:1].first()
+        if latest_shareholder:
+            shareholders = Shareholder.objects.filter(
+                date = latest_shareholder.date,
+                share__company=company,
+            )
+        else:
+            shareholders = []
 
-        shareholders = Shareholder.objects.annotate(
-            latest_date=Subquery(latest_shareholders.values('date')[:1])
-        ).filter(
-            share__company=company,
-            date=F('latest_date')
-        )
 
         # Percentage of company ownership
         percentage_of_ownership = 0
         our_amount = 0
         total_amount = 0
-        share_transactions = ShareTransaction.objects.filter(
-            share__company = company
-        ).annotate(
-            transaction_type = F('money_transaction__transaction_type'),
-        )
-        for transaction in share_transactions:
-            if transaction.transaction_type == 'Sell':
-                our_amount -= transaction.amount
-            else:
-                our_amount += transaction.amount
         for shareholder in shareholders:
             total_amount += shareholder.amount
+        share_transactions = ShareTransaction.objects.annotate(
+            portfolio = F('money_transaction__portfolio__name'),
+            type = F('money_transaction__transaction_type__title'),
+        ).filter(
+            share__company = company
+        )
+        for transaction in share_transactions:
+            splits = Split.objects.filter(
+                date__gte = transaction.date,
+                share=transaction.share,
+            ).annotate(
+                cof = F('after')/F('before'),
+            ).values_list('cof')
+            cof = 1
+            for split in splits:
+                cof *= split[0]
+            if transaction.type == 'Sell':
+                our_amount -= (
+                    transaction.amount*cof
+                )
+            else:
+                our_amount += (
+                    transaction.amount*cof
+                )
         if total_amount and our_amount:
             percentage_of_ownership = round(100/total_amount*our_amount, 2)
-            
 
         # Price chart
         labels = []
@@ -405,18 +419,21 @@ class DetailedReportView(View):
 
         # Percentage of company ownership
         for key in res.keys():
-            last_shareholder = Shareholder.objects.filter(
-                share__company__name = key, 
+            latest_shareholder = Shareholder.objects.filter(
+                share__company__name = key,
             ).order_by('-date')[:1].first()
-            if last_shareholder:
-                total_shares = Shareholder.objects.filter(
-                    date = last_shareholder.date
+            if latest_shareholder:
+                latest_date = latest_shareholder.date
+                our_amount = res[key]['total_amount']
+                total_amount = Shareholder.objects.filter(
+                    share__company__name = key,
+                    date = latest_date,
                 ).aggregate(
-                    amount_sum = Sum('amount')
-                )['amount_sum']
-                if total_shares:
-                    res[key]['percentage_of_ownership'] = (
-                        100/total_shares*res[key]['total_amount']
+                    total_amount = Sum('amount')
+                )['total_amount']
+                if our_amount and total_amount:
+                    res[key]['percentage_of_ownership'] = round(
+                        100/total_amount*our_amount, 2
                     )
         
         for company in companies:
@@ -443,7 +460,7 @@ class DetailedReportView(View):
                 (
                     key, value['marshal_invested'], value['restructuring'],
                     value['martlet_invested'], round(value['total_amount'], 2),
-                    round(value['percentage_of_ownership'], 1),
+                    round(value['percentage_of_ownership'], 2),
                     round(value['market_price'], 2), value['first_transaction'],
                 )
             )
