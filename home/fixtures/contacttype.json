@@ -1,0 +1,58 @@
+[
+    {
+        "model": "base_info.contacttype",
+        "pk": 1,
+        "fields": {
+            "type": "Angel"
+        }
+    },
+    {
+        "model": "base_info.contacttype",
+        "pk": 2,
+        "fields": {
+            "type": "Ex-Employee"
+        }
+    },
+    {
+        "model": "base_info.contacttype",
+        "pk": 3,
+        "fields": {
+            "type": "Founder"
+        }
+    },
+    {
+        "model": "base_info.contacttype",
+        "pk": 4,
+        "fields": {
+            "type": "Institution"
+        }
+    },
+    {
+        "model": "base_info.contacttype",
+        "pk": 5,
+        "fields": {
+            "type": "IQ Capital"
+        }
+    },
+    {
+        "model": "base_info.contacttype",
+        "pk": 6,
+        "fields": {
+            "type": "Managment"
+        }
+    },
+    {
+        "model": "base_info.contacttype",
+        "pk": 7,
+        "fields": {
+            "type": "No Type Info"
+        }
+    },
+    {
+        "model": "base_info.contacttype",
+        "pk": 8,
+        "fields": {
+            "type": "No Name Info"
+        }
+    }
+]
