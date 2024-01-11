@@ -282,7 +282,8 @@ class CompanyReportView(View):
                 our_amount += transaction.amount
         for shareholder in shareholders:
             total_amount += shareholder.amount
-        percentage_of_ownership = round(100/total_amount*our_amount, 2)
+        if total_amount and our_amount:
+            percentage_of_ownership = round(100/total_amount*our_amount, 2)
             
 
         # Price chart
