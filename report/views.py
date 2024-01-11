@@ -5,7 +5,7 @@ from django.views.generic import View
 from django.urls import reverse
 from django.shortcuts import render, resolve_url, redirect
 from django.db.models import (
-    F, OuterRef, Subquery,
+    F, OuterRef, Subquery, Sum,
 )
 
 from core.settings import PORTFOLIO
@@ -265,6 +265,20 @@ class CompanyReportView(View):
             share__company=company,
             date=F('latest_date')
         )
+
+        # Percentage of company ownership
+        percentage_of_ownership = 0
+        our_amount = ShareTransaction.objects.filter(
+            share__company = company
+        ).aggregate(
+            amount_sum = Sum('amount')
+        )['amount_sum']
+        total_amount = 0
+        for shareholder in shareholders:
+            total_amount += shareholder.amount
+        if our_amount and total_amount:
+            percentage_of_ownership = round(100/total_amount*our_amount, 5)
+
         # Price chart
         labels = []
         datasets = {}
@@ -299,6 +313,7 @@ class CompanyReportView(View):
             'results':shareholders,
             'company':company,
             'contact':contact,
+            'percentage_of_ownership': percentage_of_ownership,
             'chart1':{
                 'labels': labels,
                 'datasets':datasets
