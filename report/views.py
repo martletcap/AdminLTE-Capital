@@ -268,16 +268,22 @@ class CompanyReportView(View):
 
         # Percentage of company ownership
         percentage_of_ownership = 0
-        our_amount = ShareTransaction.objects.filter(
-            share__company = company
-        ).aggregate(
-            amount_sum = Sum('amount')
-        )['amount_sum']
+        our_amount = 0
         total_amount = 0
+        share_transactions = ShareTransaction.objects.filter(
+            share__company = company
+        ).annotate(
+            transaction_type = F('money_transaction__transaction_type'),
+        )
+        for transaction in share_transactions:
+            if transaction.transaction_type == 'Sell':
+                our_amount -= transaction.amount
+            else:
+                our_amount += transaction.amount
         for shareholder in shareholders:
             total_amount += shareholder.amount
-        if our_amount and total_amount:
-            percentage_of_ownership = round(100/total_amount*our_amount, 5)
+        percentage_of_ownership = round(100/total_amount*our_amount, 2)
+            
 
         # Price chart
         labels = []
@@ -327,7 +333,8 @@ class DetailedReportView(View):
         res = {}
         context = {
             'result_headers':[
-                'Company', 'Marshal Invested', 'Restructuring', 'Martlet Invested', 'Total Amount', 'Market Price', 'First transaction',
+                'Company', 'Marshal Invested', 'Restructuring', 'Martlet Invested',
+                'Total Amount', 'Perc. of ownership', 'Market Price', 'First transaction',
             ],
             'results':[],
             'links':[],
@@ -340,6 +347,7 @@ class DetailedReportView(View):
                 'restructuring': 0,
                 'martlet_invested': 0,
                 'total_amount': 0,
+                'percentage_of_ownership': 0,
                 'market_price': 0,
                 'first_transaction': 0,
             }
@@ -393,6 +401,22 @@ class DetailedReportView(View):
                 res[transaction.company]['market_price'] += float(
                     transaction.amount*cof*last_price
                 )
+
+        # Percentage of company ownership
+        for key in res.keys():
+            last_shareholder = Shareholder.objects.filter(
+                share__company__name = key, 
+            ).order_by('-date')[:1].first()
+            if last_shareholder:
+                total_shares = Shareholder.objects.filter(
+                    date = last_shareholder.date
+                ).aggregate(
+                    amount_sum = Sum('amount')
+                )['amount_sum']
+                if total_shares:
+                    res[key]['percentage_of_ownership'] = (
+                        100/total_shares*res[key]['total_amount']
+                    )
         
         for company in companies:
                 restruct = MoneyTransaction.objects.filter(
@@ -418,6 +442,7 @@ class DetailedReportView(View):
                 (
                     key, value['marshal_invested'], value['restructuring'],
                     value['martlet_invested'], round(value['total_amount'], 2),
+                    round(value['percentage_of_ownership'], 1),
                     round(value['market_price'], 2), value['first_transaction'],
                 )
             )
