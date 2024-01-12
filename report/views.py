@@ -9,15 +9,14 @@ from django.db.models import (
 )
 
 from core.settings import PORTFOLIO
+from utils.pdf_utils import shareholders_from_pdf
 from home.models import (
     Company, ContactType, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split,
 )
-
-from utils.pdf_utils import shareholders_from_pdf
 from .forms import (
-    UploadFileForm,
-    CompanySelectForm, SharePriceFormSet,
+    UploadFileForm, ShareholderExtraForm, CompanySelectForm,
+    ShareholderUploadFormSet, SharePriceFormSet,
 )
 
 
@@ -147,61 +146,60 @@ from .forms import (
 #     ]
 #     return render(request, 'pages/short_report.html', context=context)
 
-# def upload_shareholders(request):
-#     if request.method == "POST":
-#         file = request.FILES.get('file')
-#         company, shareholders = shareholders_from_pdf(file)
-#         company = Company.objects.filter(name=company).first()
-#         if not company or not shareholders:
-#             messages.error(request, 'Unsupported file type or non-existent company')
-#             form = UploadFileForm()
-#             return render(request, 'pages/simple_form.html', context={'form': form})
-#         initial_data = []
-#         special_fields = []
-#         for ind in range(len(shareholders)):
-#             contact_type = ContactType.objects.filter(contact__name=shareholders[ind][2]).first()
-#             blank_type = ContactType.objects.filter(type='No Type Info').first()
-#             if not contact_type: special_fields.append(ind)
-#             initial_data.append({
-#                 'amount':shareholders[ind][0],
-#                 'contact_type':contact_type if contact_type else blank_type,
-#                 'type':shareholders[ind][1],
-#                 'name':shareholders[ind][2],
-#             })
-#         extra_form = ShareholderExtraForm(initial={'company':company, 'date':date.today()})
-#         context = {
-#             'special_fields':special_fields,
-#             'title': company.name,
-#             'table_headers': initial_data[0].keys(),
-#             'formset': ShareholderUploadFormSet(initial=initial_data),
-#             'form_url': resolve_url('confirm_shareholders'),
-#             'extra_form':extra_form,
-#         }
-#         return render(request, 'pages/table_formset.html', context=context)
-#     else:
-#         form = UploadFileForm()
-#         context = {
-#             'enctype':'multipart/form-data',
-#             'method': "POST",
-#             'url': resolve_url('upload_shareholders'), 
-#             'form': form,
-#         }
-#         return render(request, 'pages/simple_form.html', context=context)
+def upload_shareholders(request):
+    if request.method == "POST":
+        file = request.FILES.get('file')
+        company, shareholders = shareholders_from_pdf(file)
+        company = Company.objects.filter(name=company).first()
+        if not company or not shareholders:
+            messages.error(request, 'Unsupported file type or non-existent company')
+            return redirect('upload_shareholders')
+        initial_data = []
+        special_fields = []
+        for ind in range(len(shareholders)):
+            contact_type = ContactType.objects.filter(contact__name=shareholders[ind][2]).first()
+            blank_type = ContactType.objects.filter(type='No Type Info').first()
+            if not contact_type: special_fields.append(ind)
+            initial_data.append({
+                'amount':shareholders[ind][0],
+                'contact_type':contact_type if contact_type else blank_type,
+                'type':shareholders[ind][1],
+                'name':shareholders[ind][2],
+            })
+        extra_form = ShareholderExtraForm(initial={'company':company, 'date':date.today()})
+        context = {
+            'special_fields':special_fields,
+            'title': company.name,
+            'table_headers': initial_data[0].keys(),
+            'formset': ShareholderUploadFormSet(initial=initial_data),
+            'form_url': resolve_url('confirm_shareholders'),
+            'extra_form':extra_form,
+        }
+        return render(request, 'pages/table_formset.html', context=context)
+    else:
+        form = UploadFileForm()
+        context = {
+            'enctype':'multipart/form-data',
+            'method': "POST",
+            'url': resolve_url('upload_shareholders'), 
+            'form': form,
+        }
+        return render(request, 'pages/simple_form.html', context=context)
     
 
-# def confirm_shareholders(request):
-#     extra_form = ShareholderExtraForm(request.POST)
-#     shareholders_set_form = ShareholderUploadFormSet(request.POST)
-#     if not shareholders_set_form.is_valid() or not extra_form.is_valid():
-#         messages.error(request, 'Invalid form. Please try again.') 
-#         return redirect('upload_shareholders')
-#     for form in shareholders_set_form:
-#         form.save(
-#             company = extra_form.cleaned_data['company'],
-#             date = extra_form.cleaned_data['date'],
-#         )
-#     messages.success(request, 'Added successfully.')
-#     return redirect('short_report')
+def confirm_shareholders(request):
+    extra_form = ShareholderExtraForm(request.POST)
+    shareholders_set_form = ShareholderUploadFormSet(request.POST)
+    if not shareholders_set_form.is_valid() or not extra_form.is_valid():
+        messages.error(request, 'Invalid form. Please try again.') 
+        return redirect('upload_shareholders')
+    for form in shareholders_set_form:
+        form.save(
+            company = extra_form.cleaned_data['company'],
+            date = extra_form.cleaned_data['date'],
+        )
+    messages.success(request, 'Added successfully.')
+    return redirect('upload_shareholders')
 
 class SharePriceUpdateView(View):
     def get(self, request):
