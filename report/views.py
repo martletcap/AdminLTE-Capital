@@ -160,10 +160,11 @@ def upload_shareholders(request):
         special_fields = []
         for ind in range(len(shareholders)):
             contact_type = ContactType.objects.filter(contact__name=shareholders[ind][2]).first()
+            blank_type = ContactType.objects.filter(type='No Type Info').first()
             if not contact_type: special_fields.append(ind)
             initial_data.append({
                 'amount':shareholders[ind][0],
-                'contact_type':contact_type,
+                'contact_type':contact_type if contact_type else blank_type,
                 'type':shareholders[ind][1],
                 'name':shareholders[ind][2],
             })
