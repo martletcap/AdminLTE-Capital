@@ -14,14 +14,19 @@ class UploadFileForm(forms.Form):
     file = forms.FileField()
 
 
-class ShareholderExtraForm(forms.Form):
+class ShareholderListExtraForm(forms.Form):
     company = forms.ModelChoiceField(
         queryset=Company.objects.all(),
         widget=forms.HiddenInput(),
     )
     date = forms.DateField(widget=forms.widgets.NumberInput(attrs={'type':'date'}))
 
-        
+    def get_or_create(self):
+        return ShareholderList.objects.get_or_create(
+            company = self.cleaned_data['company'],
+            date = self.cleaned_data['date'],
+        )
+
 
 class CompanySelectForm(forms.Form):
     company = forms.ModelChoiceField(
@@ -51,20 +56,15 @@ class ShareholderUploadForm(forms.Form):
     option = forms.BooleanField(initial=True, required=False)
     
 
-    def save(self, company:Company, date:datetime.date):
+    def save(self, shareholder_list: ShareholderList):
         share_type, _ = ShareType.objects.get_or_create(type=self.cleaned_data['type'])
-        share, _ = Share.objects.get_or_create(type=share_type, company=company)
-        contact_type = self.cleaned_data['contact_type']
+        share, _ = Share.objects.get_or_create(type=share_type, company=shareholder_list.company)
         # Get or create contact and change contact type
         contact = Contact.objects.filter(name=self.cleaned_data['name']).first()
         if not contact:
             contact = Contact(name=self.cleaned_data['name'])
-        contact.type = contact_type
+        contact.type = self.cleaned_data['contact_type']
         contact.save()
-        shareholder_list, _  = ShareholderList.objects.get_or_create(
-            company = company,
-            date = date,
-        )
         return Shareholder.objects.create(
             shareholder_list = shareholder_list,
             contact = contact,

@@ -15,7 +15,7 @@ from home.models import (
     SharePrice, Split, ShareholderList, Shareholder,
 )
 from .forms import (
-    UploadFileForm, ShareholderExtraForm, CompanySelectForm,
+    UploadFileForm, ShareholderListExtraForm, CompanySelectForm,
     ShareholderUploadFormSet, SharePriceFormSet,
 )
 
@@ -166,7 +166,7 @@ def upload_shareholders(request):
                 'type':shareholders[ind][1],
                 'name':shareholders[ind][2],
             })
-        extra_form = ShareholderExtraForm(initial={'company':company, 'date':date.today()})
+        extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date.today()})
         context = {
             'special_fields':special_fields,
             'title': company.name,
@@ -188,16 +188,30 @@ def upload_shareholders(request):
     
 
 def confirm_shareholders(request):
-    extra_form = ShareholderExtraForm(request.POST)
+    force = bool(request.GET.get('force'))
+    extra_form = ShareholderListExtraForm(request.POST)
     shareholders_set_form = ShareholderUploadFormSet(request.POST)
     if not shareholders_set_form.is_valid() or not extra_form.is_valid():
+        print(shareholders_set_form.non_form_errors())
         messages.error(request, 'Invalid form. Please try again.') 
         return redirect('upload_shareholders')
+    shareholder_list, created = extra_form.get_or_create()
+    print(force, created)
+    if not force and not created:
+        context = {
+            'text': 'ShareholderList already exists.',
+            'additionally':'Will all records for the current date be deleted '\
+                'and overwritten with new ones?',
+            'method': "POST",
+            'url': resolve_url('confirm_shareholders')+'?force=1', 
+            'forms':[extra_form],
+            'formsets':[shareholders_set_form]
+        }
+        return render(request, 'pages/confirm_form.html', context=context)
+    if force:
+        Shareholder.objects.filter(shareholder_list=shareholder_list).delete()
     for form in shareholders_set_form:
-        form.save(
-            company = extra_form.cleaned_data['company'],
-            date = extra_form.cleaned_data['date'],
-        )
+        form.save(shareholder_list)
     messages.success(request, 'Added successfully.')
     return redirect('upload_shareholders')
 
@@ -502,7 +516,7 @@ class UpdateShareholdersView(View):
                 'name':shareholder.name,
                 'option': shareholder.option,
             })
-        extra_form = ShareholderExtraForm(initial={'company':company, 'date':date.today()})
+        extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date.today()})
         context = {
             'title': company.name,
             'table_headers': initial_data[0].keys(),
