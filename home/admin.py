@@ -6,11 +6,12 @@ from simple_history.admin import SimpleHistoryAdmin
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
     Company, SeedStep, ShareType, Share, Split, Shareholder, SharePrice,
-    MoneyTransaction, ShareTransaction,
+    MoneyTransaction, ShareTransaction, FairValueMethod,
 )
 from .forms import (
     CompanyForm, SeedStepForm, SplitForm, ShareholderForm,
     SharePriceForm, MoneyTransactionForm, ShareTransactionForm,
+    FairValueMethodForm,
 )
 
 
@@ -141,6 +142,11 @@ class MoneyTransactionAdmin(SimpleHistoryAdmin):
                 f'money_transaction={obj.pk}' + '&' + f'date={obj.date}'
             )
         return super().response_post_save_add(request, obj)
+    
+
+class FairValueMethodAdmin(SimpleHistoryAdmin):
+    list_display = ['company', 'name', 'percent', 'date']
+    form = FairValueMethodForm
 
 
 # Register your models here.
@@ -159,3 +165,4 @@ admin.site.register(Shareholder, ShareholderAdmin)
 admin.site.register(SharePrice, SharePriceAdmin)
 admin.site.register(MoneyTransaction, MoneyTransactionAdmin)
 admin.site.register(ShareTransaction, ShareTransactionAdmin)
+admin.site.register(FairValueMethod, FairValueMethodAdmin)
