@@ -203,44 +203,44 @@ from .forms import (
 #     messages.success(request, 'Added successfully.')
 #     return redirect('short_report')
 
-# class SharePriceUpdateView(View):
-#     def get(self, request):
-#         form = CompanySelectForm(request.GET)
-#         if not form.is_valid():
-#             context = {
-#                 'enctype':'multipart/form-data',
-#                 'method': "GET",
-#                 'url': resolve_url('update_prices'), 
-#                 'form': form,
-#             }
-#             return render(request, 'pages/simple_form.html', context=context)
-#         shares = Share.objects.filter(company=form.cleaned_data['company'])
-#         initial_data = []
-#         for share in shares:
-#             initial_data.append({
-#                 'share':share,
-#                 'price': round(float(request.GET.get('price', 0)), 3),
-#                 'date':  request.GET['date'] if request.GET.get('date') else date.today(),
-#             })
-#         if not initial_data: 
-#             messages.warning(request, 'The company has no shares')
-#             return redirect('update_prices')
+class SharePriceUpdateView(View):
+    def get(self, request):
+        form = CompanySelectForm(request.GET)
+        if not form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('update_prices'), 
+                'form': form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        shares = Share.objects.filter(company=form.cleaned_data['company'])
+        initial_data = []
+        for share in shares:
+            initial_data.append({
+                'share':share,
+                'price': round(float(request.GET.get('price', 0)), 3),
+                'date':  request.GET['date'] if request.GET.get('date') else date.today(),
+            })
+        if not initial_data: 
+            messages.warning(request, 'The company has no shares')
+            return redirect('update_prices')
 
-#         context = {
-#             'title': 'Update Price',
-#             'formset': SharePriceFormSet(initial=initial_data),
-#             'form_url': resolve_url('update_prices'),
-#         }
-#         return render(request, 'pages/table_formset.html', context=context)
+        context = {
+            'title': 'Update Price',
+            'formset': SharePriceFormSet(initial=initial_data),
+            'form_url': resolve_url('update_prices'),
+        }
+        return render(request, 'pages/table_formset.html', context=context)
 
-#     def post(self, request):
-#         formset = SharePriceFormSet(request.POST)
-#         if not formset.is_valid():
-#             messages.warning(request, 'Invalid form. Please try again.')
-#             return redirect('update_prices')
-#         for form in formset:
-#             form.save()
-#         return redirect('short_report')
+    def post(self, request):
+        formset = SharePriceFormSet(request.POST)
+        if not formset.is_valid():
+            messages.warning(request, 'Invalid form. Please try again.')
+            return redirect('update_prices')
+        for form in formset:
+            form.save()
+        return redirect('short_report')
     
 
 # class CompanyReportView(View):
