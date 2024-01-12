@@ -133,7 +133,7 @@ class SeedStep(models.Model):
     class Meta:
         db_table = 'seed_step'
         ordering = ['-end_term']
-        verbose_name_plural = '09. Seed Steps'
+        verbose_name_plural = '10. Seed Steps'
 
     id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
@@ -177,7 +177,7 @@ class Split(models.Model):
     
     class Meta:
         db_table = 'split'
-        verbose_name_plural = '08. Splits'
+        verbose_name_plural = '09. Splits'
 
     id = models.AutoField(primary_key=True)
     date = models.DateField()
@@ -272,7 +272,7 @@ class FairValueMethod(models.Model):
 
     class Meta:
         db_table = 'fair_value_method'
-        verbose_name_plural = '10. Fair Value Method'
+        verbose_name_plural = '11. Fair Value Method'
 
     id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
@@ -280,3 +280,38 @@ class FairValueMethod(models.Model):
     percent = models.IntegerField()
     date = models.DateField()
     history = HistoricalRecords()
+
+
+class ShareholderList(models.Model):
+
+    class Meta:
+        db_table = 'shareholder_list'
+        verbose_name_plural = '07. Shareholder List'
+
+    id = models.AutoField(primary_key=True)
+    company = models.ForeignKey(Company, on_delete=models.PROTECT)
+    date = models.DateField()
+    comment = models.TextField(max_length=10240, blank=True)
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return f"{self.company}|{self.date}"
+
+
+class Shareholder(models.Model):
+
+    class Meta:
+        db_table = 'shareholder'
+        verbose_name_plural = '08. Shareholders'
+    
+    id = models.AutoField(primary_key=True)
+    shareholder_list = models.ForeignKey(ShareholderList, on_delete=models.PROTECT)
+    contact = models.ForeignKey(Contact, on_delete=models.PROTECT)
+    share = models.ForeignKey(Share, on_delete=models.PROTECT)
+    amount = models.IntegerField()
+    comment = models.TextField(max_length=10240, blank=True)
+    option = models.BooleanField(default=True)
+    history = HistoricalRecords()
+
+    def __self__(self):
+        return f"{self.shareholder_list} - {self.contact}"

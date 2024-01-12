@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 from .models import (
     Company, SeedStep, Split, SharePrice, MoneyTransaction,
-    ShareTransaction, FairValueMethod,
+    ShareTransaction, FairValueMethod, ShareholderList,
 )
 from .utils import UserChoiceField
 
@@ -11,12 +11,14 @@ User = get_user_model()
 
 
 class CompanyForm(forms.ModelForm):
+
     staff = UserChoiceField(queryset=User.objects.all())
     class Meta:
         model = Company
         fields = '__all__'
 
 class SeedStepForm(forms.ModelForm):
+
     class Meta:
         model = SeedStep
         widgets = {
@@ -27,6 +29,7 @@ class SeedStepForm(forms.ModelForm):
 
 
 class SplitForm(forms.ModelForm):
+
     class Meta:
         model = Split
         widgets = {
@@ -36,6 +39,7 @@ class SplitForm(forms.ModelForm):
 
 
 class SharePriceForm(forms.ModelForm):
+
     class Meta:
         model = SharePrice
         widgets = {
@@ -55,6 +59,7 @@ class MoneyTransactionForm(forms.ModelForm):
 
 
 class ShareTransactionForm(forms.ModelForm):
+
     class Meta:
         model = ShareTransaction
         widgets = {
@@ -68,6 +73,15 @@ class FairValueMethodForm(forms.ModelForm):
 
     class Meta:
         model = FairValueMethod
+        widgets = {
+            'date':forms.widgets.NumberInput(attrs={'type':'date'}),
+        }
+        fields = '__all__'
+
+class ShareholderListForm(forms.ModelForm):
+
+    class Meta:
+        model = ShareholderList
         widgets = {
             'date':forms.widgets.NumberInput(attrs={'type':'date'}),
         }

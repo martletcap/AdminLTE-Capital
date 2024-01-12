@@ -9,6 +9,7 @@
         </a>
     {% endif %}
     <!-- Duct tape -->
+    {% comment %}
     {% if has_add_permission and  cl.opts.verbose_name == 'shareholder'%}
         <a href="{% url 'upload_shareholders' %}" class="btn btn-sm btn-outline-gray-600 btn-info mr-2">
             <i class="fa fa-plus-circle"></i>
@@ -21,6 +22,7 @@
             {% blocktrans with cl.opts.verbose_name as name %}Update {{ name }}{% endblocktrans %}
         </a>
     {% endif %}
+    {% endcomment %}
     {% if has_add_permission and  cl.opts.verbose_name == 'share price'%}
         <a href="{% url 'update_prices' %}" class="btn btn-sm btn-outline-gray-600 btn-info mr-2">
             <i class="fa fa-plus-circle"></i>

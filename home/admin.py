@@ -7,11 +7,12 @@ from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
     Company, SeedStep, ShareType, Share, Split, SharePrice,
     MoneyTransaction, ShareTransaction, FairValueMethod,
+    ShareholderList, Shareholder,
 )
 from .forms import (
     CompanyForm, SeedStepForm, SplitForm,
     SharePriceForm, MoneyTransactionForm, ShareTransactionForm,
-    FairValueMethodForm,
+    FairValueMethodForm, ShareholderListForm,
 )
 
 
@@ -128,6 +129,18 @@ class FairValueMethodAdmin(SimpleHistoryAdmin):
     form = FairValueMethodForm
 
 
+class ShareholderListAdmin(SimpleHistoryAdmin):
+    list_display = ['company', 'formatted_date_field']
+    form = ShareholderListForm
+
+    def formatted_date_field(self, obj):
+        return obj.date.strftime('%Y/%m/%d')
+
+
+class ShareholderAdmin(SimpleHistoryAdmin):
+    list_display = ['shareholder_list', 'contact', 'share', 'amount', 'option']
+
+
 # Register your models here.
 admin.site.register(ContactType, SimpleHistoryAdmin)
 admin.site.register(Contact, ContactAdmin)
@@ -144,3 +157,5 @@ admin.site.register(SharePrice, SharePriceAdmin)
 admin.site.register(MoneyTransaction, MoneyTransactionAdmin)
 admin.site.register(ShareTransaction, ShareTransactionAdmin)
 admin.site.register(FairValueMethod, FairValueMethodAdmin)
+admin.site.register(ShareholderList, ShareholderListAdmin)
+admin.site.register(Shareholder, ShareholderAdmin)
