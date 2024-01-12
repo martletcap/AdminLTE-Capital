@@ -47,20 +47,20 @@ class ShareholderUploadForm(forms.Form):
     )
     type = forms.CharField()
     amount = forms.IntegerField()
-    option = forms.BooleanField(initial=True, required=False)
     comment = forms.CharField(max_length=10240, required=False)
+    option = forms.BooleanField(initial=True, required=False)
     
 
     def save(self, company:Company, date:datetime.date):
         share_type, _ = ShareType.objects.get_or_create(type=self.cleaned_data['type'])
         share, _ = Share.objects.get_or_create(type=share_type, company=company)
         contact_type = self.cleaned_data['contact_type']
-        contact, _ = Contact.objects.get_or_create(
-            name=self.cleaned_data['name'],
-            defaults={
-                'type': contact_type,
-            }
-        )
+        # Get or create contact and change contact type
+        contact = Contact.objects.filter(name=self.cleaned_data['name']).first()
+        if not contact:
+            contact = Contact(name=self.cleaned_data['name'])
+        contact.type = contact_type
+        contact.save()
         shareholder_list, _  = ShareholderList.objects.get_or_create(
             company = company,
             date = date,

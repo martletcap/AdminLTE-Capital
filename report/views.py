@@ -12,7 +12,7 @@ from core.settings import PORTFOLIO
 from utils.pdf_utils import shareholders_from_pdf
 from home.models import (
     Company, ContactType, Share, MoneyTransaction, ShareTransaction,
-    SharePrice, Split,
+    SharePrice, Split, ShareholderList, Shareholder,
 )
 from .forms import (
     UploadFileForm, ShareholderExtraForm, CompanySelectForm,
@@ -468,47 +468,46 @@ class SharePriceUpdateView(View):
         
 
 
-# class UpdateShareholdersView(View):
-#     def get(self, request):
-#         form = CompanySelectForm(request.GET)
-#         if not form.is_valid():
-#             context = {
-#                 'enctype':'multipart/form-data',
-#                 'method': "GET",
-#                 'url': resolve_url('update_shareholders'), 
-#                 'form': form,
-#             }
-#             return render(request, 'pages/simple_form.html', context=context)
-#         company = form.cleaned_data['company']
-#         last_date = Shareholder.objects.filter(
-#             share__company = company,
-#         ).order_by('-date')[:1].first()
-#         if not last_date:
-#             messages.warning(request, 'The company has no shareholders')
-#             return redirect('update_shareholders')
-#         shareholders = Shareholder.objects.filter(
-#             date=last_date.date,
-#             share__company = company,
-#         ).annotate(
-#             contact_type = F('owner__type'),
-#             type = F('share__type__type'),
-#             name = F('owner__name'),
-#         )
-#         initial_data = []
-#         for shareholder in shareholders:
-#             initial_data.append({
-#                 'amount':shareholder.amount,
-#                 'contact_type':shareholder.contact_type,
-#                 'type':shareholder.type,
-#                 'name':shareholder.name,
-#                 'complite': shareholder.complite,
-#             })
-#         extra_form = ShareholderExtraForm(initial={'company':company, 'date':date.today()})
-#         context = {
-#             'title': company.name,
-#             'table_headers': initial_data[0].keys(),
-#             'formset': ShareholderUploadFormSet(initial=initial_data),
-#             'form_url': resolve_url('confirm_shareholders'),
-#             'extra_form':extra_form,
-#         }
-#         return render(request, 'pages/table_formset.html', context=context)
+class UpdateShareholdersView(View):
+    def get(self, request):
+        form = CompanySelectForm(request.GET)
+        if not form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('update_shareholders'), 
+                'form': form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        company = form.cleaned_data['company']
+        last_shareholder_list = ShareholderList.objects.filter(
+            company = company,
+        ).order_by('-date')[:1].first()
+        if not last_shareholder_list:
+            messages.warning(request, 'The company has no shareholders')
+            return redirect('update_shareholders')
+        shareholders = Shareholder.objects.filter(
+            shareholder_list = last_shareholder_list,
+        ).annotate(
+            contact_type = F('contact__type'),
+            type = F('share__type__type'),
+            name = F('contact__name'),
+        )
+        initial_data = []
+        for shareholder in shareholders:
+            initial_data.append({
+                'amount':shareholder.amount,
+                'contact_type':shareholder.contact_type,
+                'type':shareholder.type,
+                'name':shareholder.name,
+                'option': shareholder.option,
+            })
+        extra_form = ShareholderExtraForm(initial={'company':company, 'date':date.today()})
+        context = {
+            'title': company.name,
+            'table_headers': initial_data[0].keys(),
+            'formset': ShareholderUploadFormSet(initial=initial_data),
+            'form_url': resolve_url('confirm_shareholders'),
+            'extra_form':extra_form,
+        }
+        return render(request, 'pages/table_formset.html', context=context)
