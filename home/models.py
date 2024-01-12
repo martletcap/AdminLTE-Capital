@@ -187,21 +187,6 @@ class Split(models.Model):
     after = models.IntegerField(default=1)
     
 
-class Shareholder(models.Model):
-
-    class Meta:
-        db_table = 'shareholder'
-        verbose_name_plural = '07. Shareholders'
-
-    id = models.AutoField(primary_key=True)
-    date = models.DateField()
-    amount = models.IntegerField()
-    owner = models.ForeignKey(Contact, on_delete=models.PROTECT)
-    complite = models.BooleanField(default=True)
-    share = models.ForeignKey(Share, on_delete=models.PROTECT)
-    comment = models.TextField(max_length=10240, blank=True)
-    history = HistoricalRecords()
-
 
 class SharePrice(models.Model):
 

@@ -5,11 +5,11 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
-    Company, SeedStep, ShareType, Share, Split, Shareholder, SharePrice,
+    Company, SeedStep, ShareType, Share, Split, SharePrice,
     MoneyTransaction, ShareTransaction, FairValueMethod,
 )
 from .forms import (
-    CompanyForm, SeedStepForm, SplitForm, ShareholderForm,
+    CompanyForm, SeedStepForm, SplitForm,
     SharePriceForm, MoneyTransactionForm, ShareTransactionForm,
     FairValueMethodForm,
 )
@@ -48,27 +48,6 @@ class SplitAdmin(SimpleHistoryAdmin):
     list_display = ['date', 'share', 'before', 'after']
     form = SplitForm
 
-
-class ShareholderAdmin(SimpleHistoryAdmin):
-    list_display = [
-        'formatted_date_field', 'amount', 'owner', 'complite', 'get_share_company', 'get_share_type',
-    ]
-    form = ShareholderForm
-
-    def formatted_date_field(self, obj):
-        return obj.date.strftime('%Y/%m/%d')
-
-    def get_share_company(self, obj):
-        return obj.share.company
-    
-    def get_share_type(self, obj):
-        return obj.share.type
-
-    get_share_company.admin_order_field = 'share__company'
-    get_share_company.short_description = 'Company'
-
-    get_share_type.admin_order_field = 'share__type'
-    get_share_type.short_description = 'Share type'
 
 
 class SharePriceAdmin(SimpleHistoryAdmin):
@@ -161,7 +140,6 @@ admin.site.register(SeedStep, SeedStepAdmin)
 admin.site.register(ShareType, SimpleHistoryAdmin)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Split, SplitAdmin)
-admin.site.register(Shareholder, ShareholderAdmin)
 admin.site.register(SharePrice, SharePriceAdmin)
 admin.site.register(MoneyTransaction, MoneyTransactionAdmin)
 admin.site.register(ShareTransaction, ShareTransactionAdmin)
