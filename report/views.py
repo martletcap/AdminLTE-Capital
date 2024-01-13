@@ -188,7 +188,6 @@ def upload_shareholders(request):
     
 
 def confirm_shareholders(request):
-    force = bool(request.GET.get('force'))
     extra_form = ShareholderListExtraForm(request.POST)
     shareholders_set_form = ShareholderUploadFormSet(request.POST)
     if not shareholders_set_form.is_valid() or not extra_form.is_valid():
@@ -196,20 +195,13 @@ def confirm_shareholders(request):
         messages.error(request, 'Invalid form. Please try again.') 
         return redirect('upload_shareholders')
     shareholder_list, created = extra_form.get_or_create()
-    print(force, created)
-    if not force and not created:
-        context = {
-            'text': 'ShareholderList already exists.',
-            'additionally':'Will all records for the current date be deleted '\
-                'and overwritten with new ones?',
-            'method': "POST",
-            'url': resolve_url('confirm_shareholders')+'?force=1', 
-            'forms':[extra_form],
-            'formsets':[shareholders_set_form]
-        }
-        return render(request, 'pages/confirm_form.html', context=context)
-    if force:
-        Shareholder.objects.filter(shareholder_list=shareholder_list).delete()
+    if not created:
+        messages.error(
+            request,
+            f'{extra_form.cleaned_data["company"]}|{extra_form.cleaned_data["date"]}.'\
+            ' Already exists.'
+        ) 
+        return redirect('upload_shareholders')
     for form in shareholders_set_form:
         form.save(shareholder_list)
     messages.success(request, 'Added successfully.')

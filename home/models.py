@@ -305,7 +305,7 @@ class Shareholder(models.Model):
         verbose_name_plural = '08. Shareholders'
     
     id = models.AutoField(primary_key=True)
-    shareholder_list = models.ForeignKey(ShareholderList, on_delete=models.PROTECT)
+    shareholder_list = models.ForeignKey(ShareholderList, on_delete=models.CASCADE)
     contact = models.ForeignKey(Contact, on_delete=models.PROTECT)
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
     amount = models.IntegerField()
