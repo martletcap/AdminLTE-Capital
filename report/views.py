@@ -346,129 +346,127 @@ class CompanyReportView(View):
         return render(request, 'pages/company_report.html', context)
     
 
-# class DetailedReportView(View):
-#     def get(self, request):
-#         res = {}
-#         context = {
-#             'result_headers':[
-#                 'Company', 'Marshal Invested', 'Restructuring', 'Martlet Invested',
-#                 'Total Amount', 'Perc. of ownership', 'Market Price', 'First transaction',
-#             ],
-#             'results':[],
-#             'links':[],
-#         }
-#         companies = Company.objects.all()
-#         for company in companies:
-#             context['links'].append(reverse('company_report')+f'?company={company.pk}')
-#             res[company.name] = {
-#                 'marshal_invested': 0,
-#                 'restructuring': 0,
-#                 'martlet_invested': 0,
-#                 'total_amount': 0,
-#                 'percentage_of_ownership': 0,
-#                 'market_price': 0,
-#                 'first_transaction': 0,
-#             }
+class DetailedReportView(View):
+    def get(self, request):
+        res = {}
+        context = {
+            'result_headers':[
+                'Company', 'Marshal Invested', 'Restructuring', 'Martlet Invested',
+                'Total Amount', 'Perc. of ownership', 'Market Price', 'First transaction',
+            ],
+            'results':[],
+            'links':[],
+        }
+        companies = Company.objects.all()
+        for company in companies:
+            context['links'].append(reverse('company_report')+f'?company={company.pk}')
+            res[company.name] = {
+                'marshal_invested': 0,
+                'restructuring': 0,
+                'martlet_invested': 0,
+                'total_amount': 0,
+                'percentage_of_ownership': 0,
+                'market_price': 0,
+                'first_transaction': 0,
+            }
 
-#         money_transactions = MoneyTransaction.objects.all().annotate(
-#             type = F('transaction_type__title'),
-#             company_name = F('company__name'),
-#             portfolio_name = F('portfolio__name')
-#         )
-#         for transaction in money_transactions:
-#             value = transaction.price
-#             if transaction.type == 'Sell':
-#                 value = -value
-#             if transaction.portfolio_name == 'Marshall':
-#                 res[transaction.company_name]['marshal_invested'] += value
-#             elif transaction.portfolio_name == 'Martlet':
-#                 res[transaction.company_name]['martlet_invested'] += value
+        money_transactions = MoneyTransaction.objects.all().annotate(
+            type = F('transaction_type__title'),
+            company_name = F('company__name'),
+            portfolio_name = F('portfolio__name')
+        )
+        for transaction in money_transactions:
+            value = transaction.price
+            if transaction.type == 'Sell':
+                value = -value
+            if transaction.portfolio_name == 'Marshall':
+                res[transaction.company_name]['marshal_invested'] += value
+            elif transaction.portfolio_name == 'Martlet':
+                res[transaction.company_name]['martlet_invested'] += value
 
 
-#         share_transactions = ShareTransaction.objects.annotate(
-#             company = F('share__company__name'),
-#             portfolio = F('money_transaction__portfolio__name'),
-#             type = F('money_transaction__transaction_type__title'),
-#         )
-#         for transaction in share_transactions:
-#             last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
-#             splits = Split.objects.filter(
-#                 date__gte = transaction.date,
-#                 share=transaction.share,
-#             ).annotate(
-#                 cof = F('after')/F('before'),
-#             ).values_list('cof')
-#             cof = 1
-#             for split in splits:
-#                 cof *= split[0]
-#             if last_price.exists():
-#                 last_price = last_price.first().price
-#             else:
-#                 last_price = 0
-#             if transaction.type == 'Sell':
-#                 res[transaction.company]['total_amount'] -= (
-#                     transaction.amount*cof
-#                 )
-#                 res[transaction.company]['market_price'] -= float(
-#                     transaction.amount*cof*last_price
-#                 )
-#             else:
-#                 res[transaction.company]['total_amount'] += (
-#                     transaction.amount*cof
-#                 )
-#                 res[transaction.company]['market_price'] += float(
-#                     transaction.amount*cof*last_price
-#                 )
+        share_transactions = ShareTransaction.objects.annotate(
+            company = F('share__company__name'),
+            portfolio = F('money_transaction__portfolio__name'),
+            type = F('money_transaction__transaction_type__title'),
+        )
+        for transaction in share_transactions:
+            last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
+            splits = Split.objects.filter(
+                date__gte = transaction.date,
+                share=transaction.share,
+            ).annotate(
+                cof = F('after')/F('before'),
+            ).values_list('cof')
+            cof = 1
+            for split in splits:
+                cof *= split[0]
+            if last_price.exists():
+                last_price = last_price.first().price
+            else:
+                last_price = 0
+            if transaction.type == 'Sell':
+                res[transaction.company]['total_amount'] -= (
+                    transaction.amount*cof
+                )
+                res[transaction.company]['market_price'] -= float(
+                    transaction.amount*cof*last_price
+                )
+            else:
+                res[transaction.company]['total_amount'] += (
+                    transaction.amount*cof
+                )
+                res[transaction.company]['market_price'] += float(
+                    transaction.amount*cof*last_price
+                )
 
-#         # Percentage of company ownership
-#         for key in res.keys():
-#             latest_shareholder = Shareholder.objects.filter(
-#                 share__company__name = key,
-#             ).order_by('-date')[:1].first()
-#             if latest_shareholder:
-#                 latest_date = latest_shareholder.date
-#                 our_amount = res[key]['total_amount']
-#                 total_amount = Shareholder.objects.filter(
-#                     share__company__name = key,
-#                     date = latest_date,
-#                 ).aggregate(
-#                     total_amount = Sum('amount')
-#                 )['total_amount']
-#                 if our_amount and total_amount:
-#                     res[key]['percentage_of_ownership'] = round(
-#                         100/total_amount*our_amount, 2
-#                     )
+        # Percentage of company ownership
+        for key in res.keys():
+            latest_shareholder_list = ShareholderList.objects.filter(
+                company__name = key,
+            ).order_by('-date')[:1].first()
+            if latest_shareholder_list:
+                our_amount = res[key]['total_amount']
+                total_amount = Shareholder.objects.filter(
+                    shareholder_list = latest_shareholder_list
+                ).aggregate(
+                    total_amount = Sum('amount')
+                )['total_amount']
+                if our_amount and total_amount:
+                    res[key]['percentage_of_ownership'] = round(
+                        100/total_amount*our_amount, 2
+                    )
         
-#         for company in companies:
-#                 restruct = MoneyTransaction.objects.filter(
-#                     company = company,
-#                     transaction_type__title = 'Restructuring',
-#                 ).order_by('-date')[:1].first()
-#                 if restruct:
-#                     res[company.name]['restructuring'] = float(restruct.price)
-#                 else:
-#                     res[company.name]['restructuring'] = 0
+        for company in companies:
+                restruct = MoneyTransaction.objects.filter(
+                    company = company,
+                    transaction_type__title = 'Restructuring',
+                ).order_by('-date')[:1].first()
+                if restruct:
+                    res[company.name]['restructuring'] = float(restruct.price)
+                else:
+                    res[company.name]['restructuring'] = 0
 
-#         for company in companies:
-#             first_transaction = MoneyTransaction.objects.filter(
-#                 company = company,
-#             ).order_by('date')[:1].first()
-#             if first_transaction:
-#                 res[company.name]['first_transaction'] = first_transaction.date 
-#             else:
-#                 res[company.name]['first_transaction'] = 0
+        for company in companies:
+            first_transaction = MoneyTransaction.objects.filter(
+                company = company,
+            ).order_by('date')[:1].first()
+            if first_transaction:
+                res[company.name]['first_transaction'] = first_transaction.date 
+            else:
+                res[company.name]['first_transaction'] = 0
 
-#         for key, value in res.items():
-#             context['results'].append(
-#                 (
-#                     key, value['marshal_invested'], value['restructuring'],
-#                     value['martlet_invested'], round(value['total_amount'], 2),
-#                     round(value['percentage_of_ownership'], 2),
-#                     round(value['market_price'], 2), value['first_transaction'],
-#                 )
-#             )
+        for key, value in res.items():
+            context['results'].append(
+                (
+                    key, value['marshal_invested'], value['restructuring'],
+                    value['martlet_invested'], round(value['total_amount'], 2),
+                    round(value['percentage_of_ownership'], 2),
+                    round(value['market_price'], 2), value['first_transaction'],
+                )
+            )
 
-#         return render(request, 'pages/detailed_report.html', context=context)
+        return render(request, 'pages/detailed_report.html', context=context)
         
 
 
