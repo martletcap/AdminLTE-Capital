@@ -247,105 +247,103 @@ class SharePriceUpdateView(View):
         return redirect('short_report')
     
 
-# class CompanyReportView(View):
-#     def get(self, request):
-#         form = CompanySelectForm(request.GET)
-#         if not form.is_valid():
-#             context = {
-#                 'enctype':'multipart/form-data',
-#                 'method': "GET",
-#                 'url': resolve_url('company_report'), 
-#                 'form': form,
-#             }
-#             return render(request, 'pages/simple_form.html', context=context)
-#         company = form.cleaned_data['company']
-#         contact = company.contact
-#         latest_shareholder = Shareholder.objects.filter(
-#             share__company = company,
-#         ).order_by('-date')[:1].first()
-#         if latest_shareholder:
-#             shareholders = Shareholder.objects.filter(
-#                 date = latest_shareholder.date,
-#                 share__company=company,
-#             )
-#         else:
-#             shareholders = []
+class CompanyReportView(View):
+    def get(self, request):
+        form = CompanySelectForm(request.GET)
+        if not form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('company_report'), 
+                'form': form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        company = form.cleaned_data['company']
+        contact = company.contact
+        latest_shareholder_list = ShareholderList.objects.filter(
+            company = company,
+        ).order_by('-date')[:1].first()
+        if latest_shareholder_list:
+            shareholders = Shareholder.objects.filter(
+                shareholder_list = latest_shareholder_list,
+            ).select_related('contact__type')
+        else:
+            shareholders = []
 
+        # Percentage of company ownership
+        percentage_of_ownership = 0
+        our_amount = 0
+        total_amount = 0
+        for shareholder in shareholders:
+            total_amount += shareholder.amount
+        share_transactions = ShareTransaction.objects.annotate(
+            portfolio = F('money_transaction__portfolio__name'),
+            type = F('money_transaction__transaction_type__title'),
+        ).filter(
+            share__company = company
+        )
+        for transaction in share_transactions:
+            splits = Split.objects.filter(
+                date__gte = transaction.date,
+                share=transaction.share,
+            ).annotate(
+                cof = F('after')/F('before'),
+            ).values_list('cof')
+            cof = 1
+            for split in splits:
+                cof *= split[0]
+            if transaction.type == 'Sell':
+                our_amount -= (
+                    transaction.amount*cof
+                )
+            else:
+                our_amount += (
+                    transaction.amount*cof
+                )
+        if total_amount and our_amount:
+            percentage_of_ownership = round(100/total_amount*our_amount, 2)
 
-#         # Percentage of company ownership
-#         percentage_of_ownership = 0
-#         our_amount = 0
-#         total_amount = 0
-#         for shareholder in shareholders:
-#             total_amount += shareholder.amount
-#         share_transactions = ShareTransaction.objects.annotate(
-#             portfolio = F('money_transaction__portfolio__name'),
-#             type = F('money_transaction__transaction_type__title'),
-#         ).filter(
-#             share__company = company
-#         )
-#         for transaction in share_transactions:
-#             splits = Split.objects.filter(
-#                 date__gte = transaction.date,
-#                 share=transaction.share,
-#             ).annotate(
-#                 cof = F('after')/F('before'),
-#             ).values_list('cof')
-#             cof = 1
-#             for split in splits:
-#                 cof *= split[0]
-#             if transaction.type == 'Sell':
-#                 our_amount -= (
-#                     transaction.amount*cof
-#                 )
-#             else:
-#                 our_amount += (
-#                     transaction.amount*cof
-#                 )
-#         if total_amount and our_amount:
-#             percentage_of_ownership = round(100/total_amount*our_amount, 2)
+        # Price chart
+        labels = []
+        datasets = {}
 
-#         # Price chart
-#         labels = []
-#         datasets = {}
+        shares = Share.objects.filter(
+            company = company,
+        )
+        for share in shares:
+            datasets[share.type.type] = []
 
-#         shares = Share.objects.filter(
-#             company = company,
-#         )
-#         for share in shares:
-#             datasets[share.type.type] = []
+        share_prices = SharePrice.objects.filter(
+            share__in = shares,
+        ).annotate(type = F('share__type__type')).order_by('date')
 
-#         share_prices = SharePrice.objects.filter(
-#             share__in = shares,
-#         ).annotate(type = F('share__type__type')).order_by('date')
+        last_date = date.min
+        for share_price in share_prices:
+            if share_price.date == last_date:
+                datasets[share_price.type][-1] = float(share_price.price)
+            else:
+                labels.append(str(share_price.date))
+                for key, array in datasets.items():
+                    if key == share_price.type:
+                        array.append(float(share_price.price))
+                    else:
+                        if len(array):
+                            array.append(array[-1])
+                        else:
+                            array.append(0)
+            last_date = share_price.date
 
-#         last_date = date.min
-#         for share_price in share_prices:
-#             if share_price.date == last_date:
-#                 datasets[share_price.type][-1] = float(share_price.price)
-#             else:
-#                 labels.append(str(share_price.date))
-#                 for key, array in datasets.items():
-#                     if key == share_price.type:
-#                         array.append(float(share_price.price))
-#                     else:
-#                         if len(array):
-#                             array.append(array[-1])
-#                         else:
-#                             array.append(0)
-#             last_date = share_price.date
-
-#         context = {
-#             'results':shareholders,
-#             'company':company,
-#             'contact':contact,
-#             'percentage_of_ownership': percentage_of_ownership,
-#             'chart1':{
-#                 'labels': labels,
-#                 'datasets':datasets
-#             },
-#         }
-#         return render(request, 'pages/company_report.html', context)
+        context = {
+            'results':shareholders,
+            'company':company,
+            'contact':contact,
+            'percentage_of_ownership': percentage_of_ownership,
+            'chart1':{
+                'labels': labels,
+                'datasets':datasets
+            },
+        }
+        return render(request, 'pages/company_report.html', context)
     
 
 # class DetailedReportView(View):
