@@ -582,18 +582,22 @@ class CurrentHoldingsView(View):
             money_transactions = MoneyTransaction.objects.filter(
                 date__lte = reporting_date,
                 company = company,
-                portfolio__name = "Martlet",
             ).annotate(
+                portfolio_name = F('portfolio__name'),
                 type = F('transaction_type__title')
             )
             for transaction in money_transactions:
                 if transaction.type == "Sell":
                     res[-1]['invested'] -= transaction.price
+                    if transaction.portfolio_name == 'Martlet':
+                        res[-1]['cost'] += transaction.price
                 elif transaction.type == "Restructuring":
-                    res[-1]['cost'] += transaction.price
+                    if transaction.portfolio_name == 'Martlet':
+                        res[-1]['cost'] += transaction.price
                 else:
                     res[-1]['invested'] += transaction.price
-                    res[-1]['cost'] += transaction.price
+                    if transaction.portfolio_name == 'Martlet':
+                        res[-1]['cost'] += transaction.price
 
             # Martlet ownership
             # and
