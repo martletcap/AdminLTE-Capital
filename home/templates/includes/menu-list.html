@@ -35,6 +35,13 @@
             <p>Detailed Report</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'current_holdings' as current_holdings %}
+          <a href="{{current_holdings }}" class="nav-link {% if current_holdings == request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Current Portfolio Holdings</p>
+          </a>
+        </li>
       </ul>
     </li>
     {% if app_list %}

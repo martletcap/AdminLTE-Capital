@@ -77,3 +77,12 @@ class ShareholderUploadForm(forms.Form):
 
 ShareholderUploadFormSet = formset_factory(ShareholderUploadForm, extra=0)
 SharePriceFormSet = formset_factory(SharePriceUpdateForm, extra=0)
+
+
+class PeriodForm(forms.Form):
+    reporting = forms.DateField(
+        widget=forms.widgets.NumberInput(attrs={'type':'date'})
+    )
+    previous = forms.DateField(
+        widget=forms.widgets.NumberInput(attrs={'type':'date'})
+    )
