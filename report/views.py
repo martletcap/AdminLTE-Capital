@@ -573,7 +573,7 @@ class CurrentHoldingsView(View):
             # Year of investment
             first_investment = MoneyTransaction.objects.filter(
                 company = company
-            ).order_by('-date')[:1].first()
+            ).order_by('date')[:1].first()
             if first_investment:
                 res[-1]['year'] = first_investment.date.year
             # Martlet direct investment cost
