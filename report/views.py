@@ -167,10 +167,11 @@ def upload_shareholders(request):
                 'name':shareholders[ind][2],
             })
         extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date.today()})
+        table_headers = initial_data[0].keys() if initial_data else []
         context = {
             'special_fields':special_fields,
             'title': company.name,
-            'table_headers': initial_data[0].keys(),
+            'table_headers': table_headers,
             'formset': ShareholderUploadFormSet(initial=initial_data),
             'form_url': resolve_url('confirm_shareholders'),
             'extra_form':extra_form,
@@ -191,7 +192,6 @@ def confirm_shareholders(request):
     extra_form = ShareholderListExtraForm(request.POST)
     shareholders_set_form = ShareholderUploadFormSet(request.POST)
     if not shareholders_set_form.is_valid() or not extra_form.is_valid():
-        print(shareholders_set_form.non_form_errors())
         messages.error(request, 'Invalid form. Please try again.') 
         return redirect('upload_shareholders')
     shareholder_list, created = extra_form.get_or_create()
@@ -519,9 +519,10 @@ class UpdateShareholdersView(View):
                 'option': shareholder.option,
             })
         extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date.today()})
+        table_headers = initial_data[0].keys() if initial_data else []
         context = {
             'title': company.name,
-            'table_headers': initial_data[0].keys(),
+            'table_headers': table_headers,
             'formset': ShareholderUploadFormSet(initial=initial_data),
             'form_url': resolve_url('confirm_shareholders'),
             'extra_form':extra_form,

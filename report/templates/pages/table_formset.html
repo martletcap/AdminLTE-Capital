@@ -209,7 +209,15 @@ s{% extends "layouts/base.html" %}
       // Add Row Button Click Event
       $('#addRowBtn').on('click', function () {
         addNewRow();
+        increaseTOTALFORMS();
       });
+
+      function increaseTOTALFORMS(){
+        var totalFormsInput = document.getElementById('id_form-TOTAL_FORMS');
+        var currentValue = parseInt(totalFormsInput.value, 10);
+        var newValue = currentValue + 1;
+        totalFormsInput.value = newValue;
+      }
 
       function addNewRow() {
         // DataTable change DOM, so first of all we need destroy DataTable
@@ -229,16 +237,27 @@ s{% extends "layouts/base.html" %}
 
         // Update IDs of input fields in the new row
         // And add event listener
-        newRow.find('input').each(function () {
+        // Help function
+        function NewIdAndNameFunc () {
             var currentId = $(this).attr('id');
-            $(this).on('input', updateOutput)
+            var currentName = $(this).attr('name');
             if (currentId) {
                 var newId = currentId.replace(/\d+/, function (match) {
                     return parseInt(match) + 1;
                 });
                 $(this).attr('id', newId);
             }
-        });
+            if (currentName) {
+                var newName = currentName.replace(/\d+/, function (match) {
+                    return parseInt(match) + 1;
+                });
+                $(this).attr('name', newName);
+            }
+        };
+
+        newRow.find('input').each(NewIdAndNameFunc)
+        newRow.find('input').each(()=>$(this).on('input', updateOutput))
+        newRow.find('select').each(NewIdAndNameFunc)
 
         // Append the new row to the table
         $('#example1 tbody').append(newRow);
