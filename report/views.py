@@ -763,7 +763,7 @@ class CurrentHoldingsView(View):
             context['results'].append((
                 r['company'],
                 int(r['year']),
-                int(r['ownership']),
+                round(r['ownership'], 2),
                 int(r['invested']),
                 int(r['cost']),
                 int(r['fair_value_rep']),
