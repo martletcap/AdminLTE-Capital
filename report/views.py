@@ -772,8 +772,8 @@ class CurrentHoldingsView(View):
                 int(r['new_investment']),
                 int(r['valuation_change_exclud']),
                 r['fair_value_method'],
-                int(r['fair_cost']),
-                int(r['fair_transfer_cost']),
+                round(r['fair_cost'], 2),
+                round(r['fair_transfer_cost'], 2),
                 int(r['enterprise']),
             ))
         return render(request, 'pages/current_holdings.html', context=context)
