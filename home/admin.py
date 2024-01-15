@@ -132,9 +132,35 @@ class FairValueMethodAdmin(SimpleHistoryAdmin):
 class ShareholderListAdmin(SimpleHistoryAdmin):
     list_display = ['company', 'formatted_date_field']
     form = ShareholderListForm
+    add_form_template = 'admin/change_form.html'
+    change_form_template = 'pages/shareholderlist_change_form.html'
 
     def formatted_date_field(self, obj):
         return obj.date.strftime('%Y/%m/%d')
+    
+    def render_change_form(
+        self, request, context, add=False, change=False, form_url="", obj=None
+    ):
+        context['result_headers'] = [
+            'Contact', 'Type', 'Share', 'Amount',
+        ]
+        context['results'] = []
+        context['links'] = []
+        shareholders = Shareholder.objects.filter(
+            shareholder_list = obj,
+        ).select_related('contact__type', 'share__type')
+        for shareholder in shareholders:
+            context['links'].append(
+                reverse(
+                    f'admin:{Shareholder._meta.app_label}_{Shareholder._meta.model_name}_change',
+                    kwargs = {'object_id':shareholder.pk},
+                )
+            )
+            context['results'].append((
+                shareholder.contact, shareholder.contact.type,
+                shareholder.share.type, shareholder.amount
+            ))
+        return super().render_change_form(request, context, add, change, form_url, obj)
 
 
 class ShareholderAdmin(SimpleHistoryAdmin):
