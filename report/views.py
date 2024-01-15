@@ -352,7 +352,9 @@ class DetailedReportView(View):
         context = {
             'result_headers':[
                 'Company', 'Marshal Invested', 'Restructuring', 'Martlet Invested',
-                'Total Amount', 'Perc. of ownership', 'Market Price', 'First transaction',
+                'Total Amount', 'Martlet % ownership (undiluted)',
+                'Martlet % ownership (fully diluted)', 'Market Price',
+                'First transaction',
             ],
             'results':[],
             'links':[],
@@ -365,7 +367,8 @@ class DetailedReportView(View):
                 'restructuring': 0,
                 'martlet_invested': 0,
                 'total_amount': 0,
-                'percentage_of_ownership': 0,
+                'percent_undiluted': 0,
+                'percent_fully': 0,
                 'market_price': 0,
                 'first_transaction': 0,
             }
@@ -427,14 +430,25 @@ class DetailedReportView(View):
             ).order_by('-date')[:1].first()
             if latest_shareholder_list:
                 our_amount = res[key]['total_amount']
-                total_amount = Shareholder.objects.filter(
+                total_fully = Shareholder.objects.filter(
                     shareholder_list = latest_shareholder_list
                 ).aggregate(
                     total_amount = Sum('amount')
                 )['total_amount']
-                if our_amount and total_amount:
-                    res[key]['percentage_of_ownership'] = round(
-                        100/total_amount*our_amount, 2
+                total_undiluted = Shareholder.objects.filter(
+                    shareholder_list = latest_shareholder_list,
+                    option = True,
+                ).aggregate(
+                    total_amount = Sum('amount')
+                )['total_amount']
+
+                if our_amount and total_fully:
+                    res[key]['percent_fully'] = round(
+                        100/total_fully*our_amount, 2
+                    )
+                if our_amount and total_undiluted:
+                    res[key]['percent_undiluted'] = round(
+                        100/total_undiluted*our_amount, 2
                     )
         
         for company in companies:
@@ -461,7 +475,7 @@ class DetailedReportView(View):
                 (
                     key, value['marshal_invested'], value['restructuring'],
                     value['martlet_invested'], round(value['total_amount'], 2),
-                    round(value['percentage_of_ownership'], 2),
+                    round(value['percent_undiluted'], 2), round(value['percent_fully'], 2),
                     round(value['market_price'], 2), value['first_transaction'],
                 )
             )
