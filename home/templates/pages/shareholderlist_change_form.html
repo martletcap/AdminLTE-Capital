@@ -157,6 +157,10 @@
                   {% endfor %}
                 </tbody>
             </table>
+            <a href="{% url "admin:home_shareholder_add" %}?shareholder_list={{ id }}" class="btn btn-sm btn-outline-gray-600 btn-info mr-2">
+                <i class="fa fa-plus-circle"></i>
+                {% blocktrans %}Add Shareholder{% endblocktrans %}
+            </a>
           </div>
           <!-- /.card -->
         </div>

@@ -160,6 +160,7 @@ class ShareholderListAdmin(SimpleHistoryAdmin):
                 shareholder.contact, shareholder.contact.type,
                 shareholder.share.type, shareholder.amount
             ))
+        context['id'] = obj.pk
         return super().render_change_form(request, context, add, change, form_url, obj)
 
 
