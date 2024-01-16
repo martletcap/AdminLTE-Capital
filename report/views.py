@@ -781,18 +781,18 @@ class CurrentHoldingsView(View):
         for r in res:
             context['results'].append((
                 r['company'],
-                int(r['year']),
+                round(r['year']),
                 f"{round(r['ownership'], 2)}%",
-                int(r['invested']),
-                int(r['cost']),
-                int(r['fair_value_rep']),
-                int(r['fair_value_prev']),
-                int(r['valuation_change']),
-                int(r['new_investment']),
-                int(r['valuation_change_exclud']),
+                round(r['invested']),
+                round(r['cost']),
+                round(r['fair_value_rep']),
+                round(r['fair_value_prev']),
+                round(r['valuation_change']),
+                round(r['new_investment']),
+                round(r['valuation_change_exclud']),
                 r['fair_value_method'],
                 round(r['fair_cost'], 2),
                 round(r['fair_transfer_cost'], 2),
-                int(r['enterprise']),
+                round(r['enterprise']),
             ))
         return render(request, 'pages/current_holdings.html', context=context)
