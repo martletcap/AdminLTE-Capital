@@ -670,12 +670,12 @@ class CurrentHoldingsView(View):
                     cof *= split[0]
 
                 if transaction.type == 'Sell':
-                    our_amount -= transaction.amount
+                    our_amount -= transaction.amount*cof
                     res[-1]['fair_value_rep'] -= (
                         transaction.amount*last_price*fair_value_cof*cof
                     )
                 else:
-                    our_amount += transaction.amount
+                    our_amount += transaction.amount*cof
                     res[-1]['fair_value_rep'] += (
                         transaction.amount*last_price*fair_value_cof*cof
                     )
