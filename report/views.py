@@ -680,7 +680,7 @@ class CurrentHoldingsView(View):
                         transaction.amount*last_price*fair_value_cof*cof
                     )
             if total_amount and our_amount:
-                res[-1]['ownership'] = 100/total_amount*our_amount
+                res[-1]['ownership'] = total_amount/our_amount*100
             # Martlet fair value previous_date
             our_share_transactions = ShareTransaction.objects.filter(
                 date__lte = previous_date,
@@ -782,7 +782,7 @@ class CurrentHoldingsView(View):
             context['results'].append((
                 r['company'],
                 int(r['year']),
-                round(r['ownership'], 2),
+                f"{round(r['ownership'], 2)}%",
                 int(r['invested']),
                 int(r['cost']),
                 int(r['fair_value_rep']),
