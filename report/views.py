@@ -547,7 +547,7 @@ class CurrentHoldingsView(View):
         previous_date = period_form.cleaned_data['previous']
         context = {
             'result_headers':[
-                'Company', 'Year of investment', 'Martlet ownership',
+                'Company', 'Total', 'Our', 'Year of investment', 'Martlet ownership',
                 'Martlet direct investment cost', 'Martlet cost based on transfer value',
                 f'Martlet fair value ({reporting_date})', f'Martlet fair value ({previous_date})',
                 f'Valuation change {reporting_date} vs {previous_date}',
@@ -567,6 +567,8 @@ class CurrentHoldingsView(View):
             'company':'',
             'year':0,
             'ownership':0,
+            'test_total':0,
+            'test_our':0,
             'invested': 0,
             'cost': 0,
             'fair_value_rep':0,
@@ -680,7 +682,9 @@ class CurrentHoldingsView(View):
                         transaction.amount*last_price*fair_value_cof*cof
                     )
             if total_amount and our_amount:
-                res[-1]['ownership'] = total_amount/our_amount*100
+                res[-1]['test_total'] = total_amount
+                res[-1]['test_our'] = our_amount
+                res[-1]['ownership'] = our_amount/total_amount*100
             # Martlet fair value previous_date
             our_share_transactions = ShareTransaction.objects.filter(
                 date__lte = previous_date,
@@ -783,6 +787,8 @@ class CurrentHoldingsView(View):
                 r['company'],
                 int(r['year']),
                 f"{round(r['ownership'], 2)}%",
+                int(r['test_total']),
+                int(r['test_our']),
                 int(r['invested']),
                 int(r['cost']),
                 int(r['fair_value_rep']),
