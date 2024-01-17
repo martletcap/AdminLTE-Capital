@@ -5,7 +5,7 @@ from django.views.generic import View
 from django.urls import reverse
 from django.shortcuts import render, resolve_url, redirect
 from django.db.models import (
-    F, OuterRef, Subquery, Sum,
+    F, Sum,
 )
 
 from core.settings import PORTFOLIO
@@ -149,7 +149,7 @@ def short_report(request):
 def upload_shareholders(request):
     if request.method == "POST":
         file = request.FILES.get('file')
-        company, shareholders = shareholders_from_pdf(file)
+        company, shareholders, date = shareholders_from_pdf(file)
         company = Company.objects.filter(name=company).first()
         if not company or not shareholders:
             messages.error(request, 'Unsupported file type or non-existent company')
@@ -166,7 +166,7 @@ def upload_shareholders(request):
                 'type':shareholders[ind][1],
                 'name':shareholders[ind][2],
             })
-        extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date.today()})
+        extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date})
         table_headers = initial_data[0].keys() if initial_data else []
         context = {
             'special_fields':special_fields,
@@ -176,7 +176,7 @@ def upload_shareholders(request):
             'form_url': resolve_url('confirm_shareholders'),
             'extra_form':extra_form,
         }
-        return render(request, 'pages/table_formset.html', context=context)
+        return render(request, 'pages/shareholders_formset.html', context=context)
     else:
         form = UploadFileForm()
         context = {
@@ -235,7 +235,7 @@ class SharePriceUpdateView(View):
             'formset': SharePriceFormSet(initial=initial_data),
             'form_url': resolve_url('update_prices'),
         }
-        return render(request, 'pages/table_formset.html', context=context)
+        return render(request, 'pages/prices_formset.html', context=context)
 
     def post(self, request):
         formset = SharePriceFormSet(request.POST)
@@ -527,7 +527,7 @@ class UpdateShareholdersView(View):
             'form_url': resolve_url('confirm_shareholders'),
             'extra_form':extra_form,
         }
-        return render(request, 'pages/table_formset.html', context=context)
+        return render(request, 'pages/shareholders_formset.html', context=context)
     
 
 

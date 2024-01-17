@@ -106,13 +106,7 @@ s{% extends "layouts/base.html" %}
                         <button type="submit" class="btn btn-success" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
                             {% trans "Send" %}
                         </button>
-                        <button type="button" class="btn btn-primary" id="addRowBtn">Add Row</button>
                     </form> 
-                </div>
-            </div>
-            <div class='card'>
-                <div class='card-body'>
-                    <div id='output'></div>
                 </div>
             </div>
         </div>
@@ -133,48 +127,6 @@ s{% extends "layouts/base.html" %}
   <script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
   <script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
   <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
-
-  <!-- Total info script  -->
-  <script>
-    function updateOutput(){
-        const rows = document.querySelectorAll('#example1 tbody tr');
-
-        const shareTypeAmounts = {};
-
-        rows.forEach(row => {
-            const shareTypeInput = row.querySelector('td:nth-child(4) input[type="text"]');
-            const amountInput = row.querySelector('td:nth-child(5) input[type="number"]');
-
-            const shareType = shareTypeInput.value;
-            const amount = parseFloat(amountInput.value) || 0;
-
-            if (shareTypeAmounts.hasOwnProperty(shareType)) {
-                shareTypeAmounts[shareType] += amount;
-            } else {
-                // Если это новый уникальный share_type, устанавливаем его сумму
-                shareTypeAmounts[shareType] = amount;
-            }
-        });
-        const outputDiv = document.getElementById('output');
-        let outputString = '';
-        let sum = 0
-
-        // Формируем строку для каждого уникального share_type
-        for (const shareType in shareTypeAmounts) {
-            if (shareTypeAmounts.hasOwnProperty(shareType)) {
-                sum += shareTypeAmounts[shareType]
-                outputString += `${shareType} - ${shareTypeAmounts[shareType].toLocaleString('en-US')};<br>`;
-            }
-        }
-        outputString += `<b>Total: ${sum}</b>`
-        outputDiv.innerHTML = outputString;
-    }
-    updateOutput();
-    const tableInputs = document.querySelectorAll('#example1 input');
-    tableInputs.forEach(input => {
-        input.addEventListener('input', updateOutput);
-    });
-  </script>
 
   <!-- DataTable scripts -->
   <script>
@@ -203,83 +155,5 @@ s{% extends "layouts/base.html" %}
     }); 
   </script>
 
-  <!-- New row script -->
-  <script>
-    $(document).ready(function () {
-      // Add Row Button Click Event
-      $('#addRowBtn').on('click', function () {
-        addNewRow();
-        increaseTOTALFORMS();
-      });
-
-      function increaseTOTALFORMS(){
-        var totalFormsInput = document.getElementById('id_form-TOTAL_FORMS');
-        var currentValue = parseInt(totalFormsInput.value, 10);
-        var newValue = currentValue + 1;
-        totalFormsInput.value = newValue;
-      }
-
-      function addNewRow() {
-        // DataTable change DOM, so first of all we need destroy DataTable
-        $("#example1").DataTable().destroy();
-
-        // Clone the first row (assuming it's your header row) to get the structure
-        var newRow = $('#example1 tbody tr:last').clone();
-        
-        // Get current row id
-        var currentNumber = parseInt(newRow.find('td:first').text()) || 0;
-        
-        // Clear input values in the new row
-        newRow.find('input').val('');
-        
-        // Set id for new row
-        newRow.find('td:first').text(currentNumber + 1);
-
-        // Update IDs of input fields in the new row
-        // And add event listener
-        // Help function
-        function NewIdAndNameFunc () {
-            var currentId = $(this).attr('id');
-            var currentName = $(this).attr('name');
-            if (currentId) {
-                var newId = currentId.replace(/\d+/, function (match) {
-                    return parseInt(match) + 1;
-                });
-                $(this).attr('id', newId);
-            }
-            if (currentName) {
-                var newName = currentName.replace(/\d+/, function (match) {
-                    return parseInt(match) + 1;
-                });
-                $(this).attr('name', newName);
-            }
-        };
-
-        newRow.find('input').each(NewIdAndNameFunc)
-        newRow.find('input').each(()=>$(this).on('input', updateOutput))
-        newRow.find('select').each(NewIdAndNameFunc)
-
-        // Append the new row to the table
-        $('#example1 tbody').append(newRow);
-
-        // Build againg
-        $("#example1").DataTable({
-            "paging": false,
-            "lengthChange": false,
-            "searching": false,
-            "ordering": false,
-            "info": true,
-            "autoWidth": false,
-            "responsive": false,
-            "aoColumnDefs":[
-                {
-                "aTargets": hiddenFieldIndexes,
-                "bVisible": false,
-                }
-            ]
-        });
-      }
-    });
-  </script>
 {% endblock %}
 

@@ -1,5 +1,6 @@
 import re
 import string
+from datetime import datetime
 
 import PyPDF2
 
@@ -9,7 +10,9 @@ def shareholders_from_pdf(pdf):
     reader = PyPDF2.PdfReader(pdf, strict=False)
     page = reader.pages[0].extract_text()
     company_name =  re.search(r'Company Name:\s(.+)(?:\s+|$)', page).group(1)
-    # company_number =  re.search(r'Company Number:\s(.+)(?:\s+|$)', page).group(1)
+    date = re.search(r'Statement date:(\d{2}/\d{2}/\d{4})', page).group(1)
+    if date:
+        date = datetime.strptime(date, '%d/%m/%Y').date()
     if not company_name: raise Exception('Unsupported file')
 
     res = []
@@ -33,4 +36,4 @@ def shareholders_from_pdf(pdf):
             # Deleting all escape sequence characters
             tmp.append(''.join(letter for letter in match if letter in printable))
         res.append(tmp)
-    return(company_name, res)
+    return(company_name, res, date)
