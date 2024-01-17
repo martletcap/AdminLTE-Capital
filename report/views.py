@@ -16,7 +16,7 @@ from home.models import (
 )
 from .forms import (
     UploadFileForm, ShareholderListExtraForm, CompanySelectForm,
-    ShareholderUploadFormSet, SharePriceFormSet, PeriodForm,
+    ShareholderUploadFormSet, SharePriceFormSet, PeriodForm, DateForm,
 )
 
 
@@ -661,6 +661,7 @@ class CurrentHoldingsView(View):
                 # Split
                 splits = Split.objects.filter(
                     date__gte = transaction.date,
+                    date__lte = reporting_date,
                     share=transaction.share,
                 ).annotate(
                     cof = F('after')/F('before'),
@@ -796,3 +797,136 @@ class CurrentHoldingsView(View):
                 round(r['enterprise']),
             ))
         return render(request, 'pages/current_holdings.html', context=context)
+    
+
+class SharesInfoView(View):
+    def get(self, request):
+        date_form = DateForm(request.GET)
+        if not date_form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('shares_info'), 
+                'form': date_form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        reporting_date = date_form.cleaned_data['date']
+        context = {
+            'result_headers':[
+                'Company', 'Enterprise (undiluted) as at last round',
+                'Enterprise (fully diluted) as at last round',
+                'Share price at last round', 'Martlet shares',
+                'Total number of shares issued', 'Option pool',
+                'Option pool size', 'Martlet % ownership (undiluted)',
+                'Martlet % ownership (fully diluted)',
+            ],
+            'results':[],
+            'links':[],
+        }
+        tmp = {
+            'company':'',
+            'enterprise_undiluted':0,
+            'enterprise_fully':0,
+            'share_price':0,
+            'our_shares':0,
+            'total_shares':0,
+            'option_pool':0,
+            'option_size':0,
+            'ownership_undiluted':0,
+            'ownership_fully':0,
+        }
+        res = []
+        companies = Company.objects.filter(
+            status = 1, # Portfolio status
+        )
+        for company in companies:
+            res.append(tmp.copy())
+            context['links'].append(reverse('company_report')+f'?company={company.pk}')
+            # Company
+            res[-1]['company']=company.name
+            # Enterprise valuation (undiluted)
+            # and
+            # Enterprise valuation (fully)
+            # and
+            # Total number of shares issued
+            # and
+            # Option pool
+            shareholder_list = ShareholderList.objects.filter(
+                company = company,
+                date__lte = reporting_date,
+            ).order_by('-date')[:1].first()
+            shareholders = Shareholder.objects.filter(
+                shareholder_list=shareholder_list
+            )
+            for shareholder in shareholders:
+                last_price = SharePrice.objects.filter(
+                    date__lte = reporting_date,
+                    share = shareholder.share, 
+                ).order_by('-date')[:1].first()
+                if not last_price:
+                    last_price = 0
+                if shareholder.option:
+                    res[-1]['total_shares']+=shareholder.amount
+                    res[-1]['enterprise_undiluted']+= (
+                        shareholder.amount * last_price
+                    )
+                else:
+                    res[-1]['option_pool']+=shareholder.amount
+                res[-1]['enterprise_fully'] += (
+                    shareholder.amount * last_price
+                )
+            # Martlet shares
+            share_transactions = ShareTransaction.objects.filter(
+                share__company = company,
+                date__lte = reporting_date,
+            )
+            for transaction in share_transactions:
+                splits = Split.objects.filter(
+                    date__gte = transaction.date,
+                    date__lte = reporting_date,
+                    share = transaction.share,
+                ).annotate(
+                    cof = F('after')/F('before'),
+                ).values_list('cof')
+                cof = 1
+                for split in splits:
+                    cof *= split[0]
+                res[-1]['our_shares'] += (
+                    transaction.amount*cof
+                )
+            # Share price at last round
+            # and
+            # Option pool size
+            if res[-1]['total_shares'] or res[-1]['option_pool']:
+                res[-1]['share_price'] = (
+                    res[-1]['enterprise_fully']/(res[-1]['total_shares']+res[-1]['option_pool'])
+                )
+                res[-1]['option_size'] = (
+                    res[-1]['option_pool']/(res[-1]['option_pool']+res[-1]['total_shares'])*100
+                )
+            # Martlet ownership (undiluted)
+            # and
+            # Martlet ownership (fully)
+            if res[-1]['our_shares'] and res[-1]['total_shares']:
+                res[-1]['ownership_undiluted'] = (
+                    res[-1]['our_shares']/res[-1]['total_shares']*100
+                )
+                res[-1]['ownership_fully'] = (
+                    res[-1]['our_shares']/(res[-1]['total_shares']+res[-1]['option_pool'])*100
+                )
+                
+        
+        for r  in res:
+            context['results'].append((
+                r['company'],
+                r['enterprise_undiluted'],
+                r['enterprise_fully'],
+                r['share_price'],
+                r['our_shares'],
+                r['total_shares'],
+                r['option_pool'],
+                r['option_size'],
+                r['ownership_undiluted'],
+                r['ownership_fully'],
+            ))
+        return render(request, 'pages/shares_info.html', context=context)

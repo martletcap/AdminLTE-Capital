@@ -86,3 +86,8 @@ class PeriodForm(forms.Form):
     previous = forms.DateField(
         widget=forms.widgets.NumberInput(attrs={'type':'date'})
     )
+
+class DateForm(forms.Form):
+    date = forms.DateField(
+        widget=forms.widgets.NumberInput(attrs={'type':'date'})
+    )

@@ -42,6 +42,13 @@
             <p>Current Portfolio Holdings</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'shares_info' as shares_info %}
+          <a href="{{ shares_info }}" class="nav-link {% if shares_info == request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Shares info</p>
+          </a>
+        </li>
       </ul>
     </li>
     {% if app_list %}
