@@ -863,7 +863,9 @@ class SharesInfoView(View):
                     date__lte = reporting_date,
                     share = shareholder.share, 
                 ).order_by('-date')[:1].first()
-                if not last_price:
+                if last_price:
+                    last_price = last_price.price
+                else:
                     last_price = 0
                 if shareholder.option:
                     res[-1]['total_shares']+=shareholder.amount
