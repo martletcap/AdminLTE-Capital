@@ -921,14 +921,14 @@ class SharesInfoView(View):
         for r  in res:
             context['results'].append((
                 r['company'],
-                r['enterprise_undiluted'],
-                r['enterprise_fully'],
-                r['share_price'],
-                r['our_shares'],
-                r['total_shares'],
-                r['option_pool'],
-                r['option_size'],
-                r['ownership_undiluted'],
-                r['ownership_fully'],
+                round(r['enterprise_undiluted']),
+                round(r['enterprise_fully']),
+                round(r['share_price'], 2),
+                round(r['our_shares']),
+                round(r['total_shares']),
+                round(r['option_pool']),
+                f"{round(r['option_size'], 2)}%",
+                f"{round(r['ownership_undiluted'])}%",
+                f"{round(r['ownership_fully'])}%",
             ))
         return render(request, 'pages/shares_info.html', context=context)
