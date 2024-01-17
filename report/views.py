@@ -928,7 +928,7 @@ class SharesInfoView(View):
                 round(r['total_shares']),
                 round(r['option_pool']),
                 f"{round(r['option_size'], 2)}%",
-                f"{round(r['ownership_undiluted'])}%",
-                f"{round(r['ownership_fully'])}%",
+                f"{round(r['ownership_undiluted'], 2)}%",
+                f"{round(r['ownership_fully'], 2)}%",
             ))
         return render(request, 'pages/shares_info.html', context=context)

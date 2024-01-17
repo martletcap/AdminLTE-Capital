@@ -53,8 +53,6 @@
                       {% for value in record %}
                         {% if forloop.counter0 == 0 %}
                           <td><a href="{{ links|index:external_loop }}">{{value}}</a></td>
-                        {% elif forloop.counter0 == 1 %}
-                          <td>{{ value|unlocalize }}</td>
                         {% else %}
                           <td>{{value}}</td>
                         {% endif %}
