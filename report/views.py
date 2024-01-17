@@ -163,7 +163,7 @@ def upload_shareholders(request):
             initial_data.append({
                 'amount':shareholders[ind][0],
                 'contact_type':contact_type if contact_type else blank_type,
-                'type':shareholders[ind][1],
+                'type':shareholders[ind][1].replace(' SHARES', ''),
                 'name':shareholders[ind][2],
             })
         extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date})
