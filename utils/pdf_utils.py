@@ -17,13 +17,16 @@ def shareholders_from_pdf(pdf):
     printable = set(string.ascii_letters + string.digits + string.punctuation + ' ')
     pattern = re.compile((
             r'Shareholding\s(?:[0-9]+):\s([0-9]+)\s([0-9A-Z\s\n\W]+)\s[a-z\s\n]+'
-            r'(?:Electronically\sfiled\sdocument\sfor\sCompany\sNumber:\s(?:[0-9]+))?'
             r'Name:\s([0-9A-Z\s\n\W]+)\n'
     ))
+    # Concat text
     text = ''
     for page in reader.pages:
         text +=  page.extract_text()
-        
+    # Remove problem areas
+    text = re.sub(r'Electronically\sfiled\sdocument\sfor\sCompany\sNumber:\s(?:[0-9]+)', '', text)
+    text = re.sub(r'\d+\stransferred\son\s\d+-\d+-\d+\s', '', text)
+    
     for group in pattern.finditer(text):
         tmp = []
         for match in group.groups():
