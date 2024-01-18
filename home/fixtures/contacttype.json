@@ -52,7 +52,7 @@
         "model": "base_info.contacttype",
         "pk": 8,
         "fields": {
-            "type": "No Name Info"
+            "type": "No Name Type Info"
         }
     }
 ]

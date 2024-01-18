@@ -1,4 +1,5 @@
 from datetime import date
+from collections import defaultdict
 
 from django.contrib import messages
 from django.views.generic import View
@@ -9,7 +10,7 @@ from django.db.models import (
 )
 
 from core.settings import PORTFOLIO
-from utils.pdf_utils import shareholders_from_pdf
+from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
 from home.models import (
     Company, ContactType, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
@@ -149,23 +150,70 @@ def short_report(request):
 def upload_shareholders(request):
     if request.method == "POST":
         file = request.FILES.get('file')
-        company, shareholders, date = shareholders_from_pdf(file)
-        company = Company.objects.filter(name=company).first()
-        if not company or not shareholders:
-            messages.error(request, 'Unsupported file type or non-existent company')
-            return redirect('upload_shareholders')
+        file_name = report_file_name(file)
         initial_data = []
         special_fields = []
-        for ind in range(len(shareholders)):
-            contact_type = ContactType.objects.filter(contact__name=shareholders[ind][2]).first()
-            blank_type = ContactType.objects.filter(type='No Type Info').first()
-            if not contact_type: special_fields.append(ind)
-            initial_data.append({
-                'amount':shareholders[ind][0],
-                'contact_type':contact_type if contact_type else blank_type,
-                'type':shareholders[ind][1].replace(' SHARES', ''),
-                'name':shareholders[ind][2],
-            })
+        company = None
+        # CS01 behavior
+        if file_name == "CS01":
+            company_name, res, date = CS01_parser(file)
+            company = Company.objects.filter(name=company_name).first()
+            for index, record in enumerate(res):
+                contact_type = ContactType.objects.filter(contact__name=record['owner']).first()
+                if not contact_type:
+                    contact_type = ContactType.objects.filter(type='No Type Info').first()
+                    special_fields.append(index)
+                initial_data.append({
+                    'amount': record['amount'],
+                    'contact_type': contact_type,
+                    'type': record['share'].replace(' SHARES', ''),
+                    'name': record['owner']
+                })
+        # SH01 behavior
+        elif file_name == "SH01":
+            company_name, res, date = SH01_parser(file)
+            company = Company.objects.filter(name=company_name).first()
+            # Total share amount
+            share_amounts = defaultdict(int)
+            for r in res:
+                share = r['share'].replace(' SHARES', '')
+                share_amounts[share]+= r['amount']
+            # Current shareholders
+            shareholder_list = ShareholderList.objects.filter(
+                company = company
+            ).order_by('-date')[:1].first()
+            shareholders = Shareholder.objects.filter(
+                shareholder_list = shareholder_list
+            ).annotate(
+                name = F('contact__name'),
+                type = F('share__type__type'),
+                contact_type = F('contact__type'),
+            )
+            for shareholder in shareholders:
+                share_amounts[shareholder.type]-=shareholder.amount
+                initial_data.append({
+                    'amount': shareholder.amount,
+                    'contact_type': shareholder.contact_type,
+                    'type': shareholder.type,
+                    'name': shareholder.name,
+                })
+            no_name_type_info = ContactType.objects.filter(type='No Name Type Info').first()
+            for key, value in share_amounts.items():
+                if value<0:
+                    messages.error(request, 'Liquidation error!')
+                    return redirect('upload_shareholders')
+                elif value>0:
+                    initial_data.append({
+                        'amount': value,
+                        'contact_type': no_name_type_info,
+                        'type': key,
+                        'name': 'No Name',
+                    })
+
+        if not company:
+            messages.error(request, 'Unsupported file type or non-existent company')
+            return redirect('upload_shareholders')
+    
         extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date})
         table_headers = initial_data[0].keys() if initial_data else []
         context = {
