@@ -252,9 +252,16 @@ def confirm_shareholders(request):
             ' Already exists.'
         ) 
         return redirect('upload_shareholders')
+    shares_before = Share.objects.filter(company=shareholder_list.company).count()
     for form in shareholders_set_form:
         form.save(shareholder_list)
+    shares_after = Share.objects.filter(company=shareholder_list.company).count()
     messages.success(request, 'Added successfully.')
+    if shares_before != shares_after:
+        return redirect(
+                reverse('update_prices')+'?'+
+                f'company={shareholder_list.company.pk}'
+            )
     return redirect('upload_shareholders')
 
 class SharePriceUpdateView(View):
@@ -269,11 +276,42 @@ class SharePriceUpdateView(View):
             }
             return render(request, 'pages/simple_form.html', context=context)
         shares = Share.objects.filter(company=form.cleaned_data['company'])
+        # price from GET
+        price = round(float(request.GET.get('price', 0)), 3)
+        # AVG company share price
+        avg_price = 0
+        market_value = 0
+        total_shares = 0
+        shareholder_list = ShareholderList.objects.filter(
+            company = form.cleaned_data['company'],
+        ).order_by('-date')[:1].first()
+        shareholders = Shareholder.objects.filter(
+            shareholder_list = shareholder_list,
+            option = True,
+        )
+        for shareholder in shareholders:
+            last_price = SharePrice.objects.filter(
+                share = shareholder.share
+            ).order_by('-date')[:1].first()
+            if last_price:
+                last_price = last_price.price
+            else:
+                last_price = 0
+            market_value += shareholder.amount*last_price
+            total_shares += shareholder.amount
+        if market_value and total_shares:
+            avg_price = market_value/total_shares
+
         initial_data = []
         for share in shares:
+            if not price:
+                last_price = SharePrice.objects.filter(
+                    share=share,
+                ).order_by('-date')[:1].first()
+                if last_price: last_price = last_price.price
             initial_data.append({
                 'share':share,
-                'price': round(float(request.GET.get('price', 0)), 3),
+                'price': round((price or last_price or avg_price), 3),
                 'date':  request.GET['date'] if request.GET.get('date') else date.today(),
             })
         if not initial_data: 
