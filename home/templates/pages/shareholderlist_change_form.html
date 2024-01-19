@@ -131,40 +131,47 @@
         </div>
     </div>
     <div class='row main-footer'>
-          <div class="card card-body border-0 shadow table-wrapper table-responsive">
-            <table id="example1" class="table table-bordered table-striped">
-              <thead>
-                  <tr>
-                    {% for header in result_headers %}
-                      <th>{{header}}</th>
+        <div class="col-12 mb-4">
+            <div class="card card-body border-0 shadow table-wrapper table-responsive">
+                <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        {% for header in result_headers %}
+                        <th>{{header}}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for record in results %}
+                        </tr>
+                        {% with forloop.counter0 as external_loop %}
+                        {% for value in record %}
+                            {% if forloop.counter0 == 0 %}
+                                {% comment %} <td>{{ value }}</td> {% endcomment %}
+                            <td><a href="{{ links|index:external_loop }}">{{value}}</a></td>
+                            {% else %}
+                            <td>{{value}}</td>
+                            {% endif %}
+                        {% endfor %}
+                        {% endwith %}
+                        </tr>
                     {% endfor %}
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for record in results %}
-                    </tr>
-                      {% with forloop.counter0 as external_loop %}
-                      {% for value in record %}
-                        {% if forloop.counter0 == 0 %}
-                            {% comment %} <td>{{ value }}</td> {% endcomment %}
-                          <td><a href="{{ links|index:external_loop }}">{{value}}</a></td>
-                        {% else %}
-                          <td>{{value}}</td>
-                        {% endif %}
-                      {% endfor %}
-                      {% endwith %}
-                    </tr>
-                  {% endfor %}
-                </tbody>
-            </table>
-            <a href="{% url "admin:home_shareholder_add" %}?shareholder_list={{ id }}" class="btn btn-sm btn-outline-gray-600 btn-info mr-2">
-                <i class="fa fa-plus-circle"></i>
-                {% blocktrans %}Add Shareholder{% endblocktrans %}
-            </a>
-          </div>
-          <!-- /.card -->
+                    </tbody>
+                </table>
+                <a href="{% url "admin:home_shareholder_add" %}?shareholder_list={{ id }}" class="btn btn-sm btn-outline-gray-600 btn-info mr-2">
+                    <i class="fa fa-plus-circle"></i>
+                    {% blocktrans %}Add Shareholder{% endblocktrans %}
+                </a>
+            </div>
+            <!-- /.card -->
+            <div class='card'>
+                <div class='card-body'>
+                    <div id='output'></div>
+                </div>
+            </div>
         </div>
-        <!-- /.row -->
+    </div>
+    <!-- /.row -->
 {% endblock %}
 
 {% block extra_scripts %}
@@ -193,4 +200,41 @@
     }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
   });
 </script>
+<!-- Total info script  -->
+  <script>
+    function updateOutput(){
+        const rows = document.querySelectorAll('#example1 tbody tr');
+
+        const shareTypeAmounts = {};
+
+        rows.forEach(row => {
+            const shareTypeInput = row.querySelector('td:nth-child(3)');
+            const amountInput = row.querySelector('td:nth-child(4)');
+
+            const shareType = shareTypeInput.innerHTML;
+            const amount = parseInt(amountInput.innerHTML.replace(',', '')) || 0;
+
+            if (shareTypeAmounts.hasOwnProperty(shareType)) {
+                shareTypeAmounts[shareType] += amount;
+            } else {
+                // Если это новый уникальный share_type, устанавливаем его сумму
+                shareTypeAmounts[shareType] = amount;
+            }
+        });
+        const outputDiv = document.getElementById('output');
+        let outputString = '';
+        let sum = 0
+
+        // Формируем строку для каждого уникального share_type
+        for (const shareType in shareTypeAmounts) {
+            if (shareTypeAmounts.hasOwnProperty(shareType)) {
+                sum += shareTypeAmounts[shareType]
+                outputString += `${shareType} - ${shareTypeAmounts[shareType].toLocaleString('en-US')};<br>`;
+            }
+        }
+        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b>`
+        outputDiv.innerHTML = outputString;
+    }
+    updateOutput();
+  </script>
 {% endblock extra_scripts %}
