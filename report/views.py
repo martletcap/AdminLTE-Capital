@@ -295,10 +295,8 @@ class SharePriceUpdateView(View):
             ).order_by('-date')[:1].first()
             if last_price:
                 last_price = last_price.price
-            else:
-                last_price = 0
-            market_value += shareholder.amount*last_price
-            total_shares += shareholder.amount
+                market_value += shareholder.amount*last_price
+                total_shares += shareholder.amount
         if market_value and total_shares:
             avg_price = market_value/total_shares
 
