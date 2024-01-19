@@ -147,8 +147,15 @@
                         {% with forloop.counter0 as external_loop %}
                         {% for value in record %}
                             {% if forloop.counter0 == 0 %}
-                                {% comment %} <td>{{ value }}</td> {% endcomment %}
-                            <td><a href="{{ links|index:external_loop }}">{{value}}</a></td>
+                                <td><a href="{{ links|index:external_loop }}">{{value}}</a></td>
+                            {% elif forloop.counter0 == 4 %}
+                                <td>
+                                {% if value == True %}
+                                    <img width="13" height="13" src="{% static "admin/img/icon-yes.svg" %}" alt="True">
+                                {% else %}
+                                    <img width="13" height="13" src="{% static "admin/img/icon-no.svg" %}" alt="False">
+                                {% endif %}
+                                </td>
                             {% else %}
                             <td>{{value}}</td>
                             {% endif %}
@@ -205,34 +212,77 @@
     function updateOutput(){
         const rows = document.querySelectorAll('#example1 tbody tr');
 
-        const shareTypeAmounts = {};
+        const sharesTypeOption = {};
+        const sharesTypeNoOption = {};
+        const sharesTypeTotal = {};
 
         rows.forEach(row => {
             const shareTypeInput = row.querySelector('td:nth-child(3)');
             const amountInput = row.querySelector('td:nth-child(4)');
+            const optionInput = row.querySelector('td:nth-child(5) img');
 
             const shareType = shareTypeInput.innerHTML;
             const amount = parseInt(amountInput.innerHTML.replace(',', '')) || 0;
+            const option = optionInput.alt == 'True';
 
-            if (shareTypeAmounts.hasOwnProperty(shareType)) {
-                shareTypeAmounts[shareType] += amount;
+            // Sum all shareholders
+            if (option){
+                if (sharesTypeOption[shareType]){
+                   sharesTypeOption[shareType] += amount
+                } else {
+                    sharesTypeOption[shareType] = amount
+                }
+                if (sharesTypeTotal[shareType]){
+                   sharesTypeTotal[shareType] += amount
+                } else {
+                    sharesTypeTotal[shareType] = amount
+                }
             } else {
-                // Если это новый уникальный share_type, устанавливаем его сумму
-                shareTypeAmounts[shareType] = amount;
+                if (sharesTypeNoOption[shareType]){
+                   sharesTypeNoOption[shareType] += amount
+                } else {
+                    sharesTypeNoOption[shareType] = amount
+                }
+                if (sharesTypeTotal[shareType]){
+                   sharesTypeTotal[shareType] += amount
+                } else {
+                    sharesTypeTotal[shareType] = amount
+                }
             }
         });
         const outputDiv = document.getElementById('output');
-        let outputString = '';
+        let outputString = 'Shares:<br>';
         let sum = 0
 
-        // Формируем строку для каждого уникального share_type
-        for (const shareType in shareTypeAmounts) {
-            if (shareTypeAmounts.hasOwnProperty(shareType)) {
-                sum += shareTypeAmounts[shareType]
-                outputString += `${shareType} - ${shareTypeAmounts[shareType].toLocaleString('en-US')};<br>`;
+        // Формируем строку для каждого уникального share_type из sharesTypeOption
+        for (const shareType in sharesTypeOption) {
+            if (sharesTypeOption.hasOwnProperty(shareType)) {
+                sum += sharesTypeOption[shareType]
+                outputString += `${shareType} - ${sharesTypeOption[shareType].toLocaleString('en-US')};<br>`;
             }
         }
-        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b>`
+        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b><br>`
+        sum = 0
+        outputString += '<br>Options: <br>';
+        // Формируем строку для каждого уникального share_type из sharesTypeNoOption
+        for (const shareType in sharesTypeNoOption) {
+            if (sharesTypeNoOption.hasOwnProperty(shareType)) {
+                sum += sharesTypeNoOption[shareType]
+                outputString += `${shareType} - ${sharesTypeNoOption[shareType].toLocaleString('en-US')};<br>`;
+            }
+        }
+        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b><br>`
+        sum = 0
+        outputString += '<br>Total: <br>';
+        // Формируем строку для каждого уникального share_type из sharesTypeTotal
+        for (const shareType in sharesTypeTotal) {
+            if (sharesTypeTotal.hasOwnProperty(shareType)) {
+                sum += sharesTypeTotal[shareType]
+                outputString += `${shareType} - ${sharesTypeTotal[shareType].toLocaleString('en-US')};<br>`;
+            }
+        }
+        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b><br>`
+
         outputDiv.innerHTML = outputString;
     }
     updateOutput();

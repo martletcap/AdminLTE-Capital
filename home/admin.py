@@ -142,7 +142,7 @@ class ShareholderListAdmin(SimpleHistoryAdmin):
         self, request, context, add=False, change=False, form_url="", obj=None
     ):
         context['result_headers'] = [
-            'Contact', 'Type', 'Share', 'Amount',
+            'Contact', 'Type', 'Share', 'Amount', 'Option',
         ]
         context['results'] = []
         context['links'] = []
@@ -158,7 +158,7 @@ class ShareholderListAdmin(SimpleHistoryAdmin):
             )
             context['results'].append((
                 shareholder.contact, shareholder.contact.type,
-                shareholder.share.type, shareholder.amount
+                shareholder.share.type, shareholder.amount, shareholder.option,
             ))
         context['id'] = obj.pk if obj else obj
         return super().render_change_form(request, context, add, change, form_url, obj)
