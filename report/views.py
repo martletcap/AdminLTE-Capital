@@ -309,7 +309,7 @@ class SharePriceUpdateView(View):
                 if last_price: last_price = last_price.price
             initial_data.append({
                 'share':share,
-                'price': round((price or last_price or avg_price), 3),
+                'price': (price or last_price or avg_price),
                 'date':  request.GET['date'] if request.GET.get('date') else date.today(),
             })
         if not initial_data: 
