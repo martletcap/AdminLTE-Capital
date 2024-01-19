@@ -190,7 +190,8 @@ def upload_shareholders(request):
                 contact_type = F('contact__type'),
             )
             for shareholder in shareholders:
-                share_amounts[shareholder.type]-=shareholder.amount
+                if shareholder.option:
+                    share_amounts[shareholder.type]-=shareholder.amount
                 initial_data.append({
                     'amount': shareholder.amount,
                     'contact_type': shareholder.contact_type,
