@@ -197,6 +197,7 @@ def upload_shareholders(request):
                     'contact_type': shareholder.contact_type,
                     'type': shareholder.type,
                     'name': shareholder.name,
+                    'option': shareholder.option,
                 })
             no_name_type_info = ContactType.objects.filter(type='No Name Type Info').first()
             for key, value in share_amounts.items():
