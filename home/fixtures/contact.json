@@ -1,0 +1,10 @@
+[
+    {
+        "model": "home.contact",
+        "pk": 1,
+        "fields": {
+            "name": "No Name",
+            "type": 8
+        }
+    }
+]
