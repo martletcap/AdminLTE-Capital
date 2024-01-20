@@ -116,26 +116,44 @@ def short_report(request):
     context['chart5'] = []
     context['chart6'] = []
     for key in sectors.keys():
+        company_pct = 0
+        investment_pct = 0
+        market_price_pct = 0
+        if total_companies and sectors[key]['num']:
+            company_pct = 100/total_companies*sectors[key]['num']
+        if total_money_invested and sectors[key]['investment']:
+            investment_pct = 100/total_money_invested*sectors[key]['investment']
+        if total_market_price and sectors[key]['market']:
+            market_price_pct = 100/total_market_price*sectors[key]['market']
         context['results_sector'].append((
             key, sectors[key]['num'],
-            round(100/total_companies*sectors[key]['num'], 1),
+            round(company_pct, 1),
             sectors[key]['investment'],
-            round(100/total_money_invested*sectors[key]['investment'], 1),
+            round(investment_pct, 1),
             round(sectors[key]['market'], 2),
-            round(100/total_market_price*sectors[key]['market'], 1),
+            round(market_price_pct, 1),
         ))
         context['sectors'].append(key)
         context['chart1'].append(sectors[key]['num'])
         context['chart3'].append(sectors[key]['investment'])
         context['chart5'].append(sectors[key]['market'])
     for key in locations.keys():
+        company_pct = 0
+        investment_pct = 0
+        market_price_pct = 0
+        if total_companies and locations[key]['num']:
+            company_pct = 100/total_companies*locations[key]['num']
+        if total_money_invested and locations[key]['investment']:
+            investment_pct = 100/total_money_invested*locations[key]['investment']
+        if total_market_price and locations[key]['market']:
+            market_price_pct = 100/total_market_price*locations[key]['market']
         context['results_location'].append((
             key, locations[key]['num'], 
-            round(100/total_companies*locations[key]['num'], 1),
+            round(company_pct, 1),
             locations[key]['investment'],
-            round(100/total_money_invested*locations[key]['investment'], 1),
+            round(investment_pct, 1),
             round(locations[key]['market'], 2),
-            round(100/total_market_price*locations[key]['market'], 1),
+            round(market_price_pct, 1),
         ))
         context['locations'].append(key)
         context['chart2'].append(locations[key]['num'])
