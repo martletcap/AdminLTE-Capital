@@ -221,18 +221,6 @@ def upload_shareholders(request):
                         'name': default_contact.name,
                     })
 
-            # for key, value in share_amounts.items():
-            #     if value<0:
-            #         messages.error(request, 'Liquidation error!')
-            #         return redirect('upload_shareholders')
-            #     elif value>0:
-            #         initial_data.append({
-            #             'amount': value,
-            #             'contact_type': default_contact.type,
-            #             'type': key,
-            #             'name': default_contact.name,
-            #         })
-
         if not company:
             messages.error(request, 'Unsupported file type or non-existent company')
             return redirect('upload_shareholders')

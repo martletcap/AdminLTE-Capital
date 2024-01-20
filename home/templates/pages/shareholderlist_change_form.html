@@ -224,64 +224,44 @@
             const shareType = shareTypeInput.innerHTML;
             const amount = parseInt(amountInput.innerHTML.replace(',', '')) || 0;
             const option = optionInput.alt == 'True';
-
-            // Sum all shareholders
+            let currentShares = {}
+            // Sum all shareholders Option or No Option
             if (option){
-                if (sharesTypeOption[shareType]){
-                   sharesTypeOption[shareType] += amount
-                } else {
-                    sharesTypeOption[shareType] = amount
-                }
-                if (sharesTypeTotal[shareType]){
-                   sharesTypeTotal[shareType] += amount
-                } else {
-                    sharesTypeTotal[shareType] = amount
-                }
+                currentShares = sharesTypeOption
             } else {
-                if (sharesTypeNoOption[shareType]){
-                   sharesTypeNoOption[shareType] += amount
-                } else {
-                    sharesTypeNoOption[shareType] = amount
-                }
-                if (sharesTypeTotal[shareType]){
-                   sharesTypeTotal[shareType] += amount
-                } else {
-                    sharesTypeTotal[shareType] = amount
-                }
+                currentShares = sharesTypeNoOption
+            }
+            if (currentShares[shareType]){
+                currentShares[shareType] += amount
+            } else {
+                currentShares[shareType] = amount
+            }
+            // Total Shares
+            if (sharesTypeTotal[shareType]){
+                sharesTypeTotal[shareType] += amount
+            } else {
+                sharesTypeTotal[shareType] = amount
             }
         });
         const outputDiv = document.getElementById('output');
-        let outputString = 'Shares:<br>';
-        let sum = 0
-
-        // Формируем строку для каждого уникального share_type из sharesTypeOption
-        for (const shareType in sharesTypeOption) {
-            if (sharesTypeOption.hasOwnProperty(shareType)) {
-                sum += sharesTypeOption[shareType]
+        // Output Formatting function
+        const outputFormatting = (outputString, title, shareDict) => {
+            outputString += `${title}:<br>`
+            let sum = 0;
+            for (const shareType in shareDict) {
+                sum += shareDict[shareType]
                 outputString += `${shareType} - ${sharesTypeOption[shareType].toLocaleString('en-US')};<br>`;
             }
+            outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b>`
+            return outputString
         }
-        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b><br>`
-        sum = 0
-        outputString += '<br>Options: <br>';
-        // Формируем строку для каждого уникального share_type из sharesTypeNoOption
-        for (const shareType in sharesTypeNoOption) {
-            if (sharesTypeNoOption.hasOwnProperty(shareType)) {
-                sum += sharesTypeNoOption[shareType]
-                outputString += `${shareType} - ${sharesTypeNoOption[shareType].toLocaleString('en-US')};<br>`;
-            }
-        }
-        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b><br>`
-        sum = 0
-        outputString += '<br>Total: <br>';
-        // Формируем строку для каждого уникального share_type из sharesTypeTotal
-        for (const shareType in sharesTypeTotal) {
-            if (sharesTypeTotal.hasOwnProperty(shareType)) {
-                sum += sharesTypeTotal[shareType]
-                outputString += `${shareType} - ${sharesTypeTotal[shareType].toLocaleString('en-US')};<br>`;
-            }
-        }
-        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b><br>`
+        // Format Output
+        let outputString = '';
+        outputString = outputFormatting(outputString, 'Shares', sharesTypeOption)
+        outputString += '<br><br>'
+        outputString = outputFormatting(outputString, 'Option', sharesTypeNoOption)
+        outputString += '<br><br>'
+        outputString = outputFormatting(outputString, 'Total', sharesTypeTotal)
 
         outputDiv.innerHTML = outputString;
     }
