@@ -212,8 +212,11 @@
     function updateOutput(){
         const rows = document.querySelectorAll('#example1 tbody tr');
 
+        // Option True
         const sharesTypeOption = {};
+        // Option False
         const sharesTypeNoOption = {};
+        // Option True or False
         const sharesTypeTotal = {};
 
         rows.forEach(row => {
@@ -251,7 +254,7 @@
             let sum = 0;
             for (const shareType in shareDict) {
                 sum += shareDict[shareType]
-                outputString += `${shareType} - ${sharesTypeOption[shareType].toLocaleString('en-US')};<br>`;
+                outputString += `${shareType} - ${shareDict[shareType].toLocaleString('en-US')};<br>`;
             }
             outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b>`
             return outputString
