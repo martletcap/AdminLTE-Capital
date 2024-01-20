@@ -91,3 +91,99 @@ class DateForm(forms.Form):
     date = forms.DateField(
         widget=forms.widgets.NumberInput(attrs={'type':'date'})
     )
+
+class SharesControlForm(forms.Form):
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.all(),
+        required=True,
+        empty_label=None,
+    )
+    shares = forms.IntegerField(required=True, min_value=0, initial=0)
+    options = forms.IntegerField(required=True, min_value=0, initial=0)
+
+    def create(self, date):
+        initial_data = []
+        # Collision check
+        collision = ShareholderList.objects.filter(
+            company = self.cleaned_data['company'],
+            date = date,
+        ).first()
+        if collision: return None
+        shareholder_list = ShareholderList.objects.filter(
+            company = self.cleaned_data['company'],
+            date__lt = date,
+        ).order_by('-date')[:1].first()
+        shareholders = Shareholder.objects.filter(
+            shareholder_list = shareholder_list,
+        )
+        for shareholder in shareholders:
+            initial_data.append({
+                'contact': shareholder.contact,
+                'share': shareholder.share,
+                'amount': shareholder.amount,
+                'option': shareholder.option,
+            })
+            if shareholder.option:
+                self.cleaned_data['shares'] -= shareholder.amount
+            else:
+                self.cleaned_data['options'] -= shareholder.amount
+        if self.cleaned_data['options']<0 or self.cleaned_data['shares']<0:
+            return None
+        shareholder_list = ShareholderList(
+            company = self.cleaned_data['company'],
+            date = date,
+        )
+        ordinary, _ = ShareType.objects.get_or_create(type='ORDINARY')
+        share, _ = Share.objects.get_or_create(company=self.cleaned_data['company'], type=ordinary)
+        default_contact = Contact.objects.get(pk=1) # "No Name" contact
+
+        # Option (false)
+        if self.cleaned_data['options']:
+            switch = False
+            for record in initial_data:
+                if (record['contact'] == default_contact and
+                    record['share'] == share and
+                    record['option'] == False
+                ):
+                    switch = True
+                    record['amount'] += self.cleaned_data['options']
+                    break
+            if not switch:
+                initial_data.append({
+                    'contact': default_contact,
+                    'share': share,
+                    'amount': self.cleaned_data['options'],
+                    'option': False,
+                })
+
+        # Option (true)
+        if self.cleaned_data['shares']:
+            switch = False
+            for record in initial_data:
+                if (record['contact'] == default_contact and
+                    record['share'] == share and
+                    record['option'] == True
+                ):
+                    switch = True
+                    record['amount'] += self.cleaned_data['shares']
+                    break
+            if not switch:
+                initial_data.append({
+                    'contact': default_contact,
+                    'share': share,
+                    'amount': self.cleaned_data['shares'],
+                    'option': True,
+                })
+        res = []
+        for record in initial_data:
+            res.append(Shareholder(
+                shareholder_list=shareholder_list,
+                **record,
+            ))
+        return res
+        
+        
+        
+        
+
+SharesControlFormSet = formset_factory(SharesControlForm, extra=0)

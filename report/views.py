@@ -18,6 +18,7 @@ from home.models import (
 from .forms import (
     UploadFileForm, ShareholderListExtraForm, CompanySelectForm,
     ShareholderUploadFormSet, SharePriceFormSet, PeriodForm, DateForm,
+    SharesControlFormSet,
 )
 
 
@@ -213,6 +214,7 @@ def upload_shareholders(request):
                             record['type'] == key):
                             record['amount']+=value
                             added = True
+                            break
                     if not added:
                         initial_data.append({
                         'amount': value,
@@ -249,8 +251,8 @@ def upload_shareholders(request):
 
 def confirm_shareholders(request):
     extra_form = ShareholderListExtraForm(request.POST)
-    shareholders_set_form = ShareholderUploadFormSet(request.POST)
-    if not shareholders_set_form.is_valid() or not extra_form.is_valid():
+    shareholders_formset = ShareholderUploadFormSet(request.POST)
+    if not shareholders_formset.is_valid() or not extra_form.is_valid():
         messages.error(request, 'Invalid form. Please try again.') 
         return redirect('upload_shareholders')
     shareholder_list, created = extra_form.get_or_create()
@@ -262,10 +264,10 @@ def confirm_shareholders(request):
         ) 
         return redirect('upload_shareholders')
     shares_before = Share.objects.filter(company=shareholder_list.company).count()
-    for form in shareholders_set_form:
+    for form in shareholders_formset:
         form.save(shareholder_list)
     shares_after = Share.objects.filter(company=shareholder_list.company).count()
-    messages.success(request, 'Added successfully.')
+    messages.success(request, 'Added successfully')
     if shares_before != shares_after:
         return redirect(
                 reverse('update_prices')+'?'+
@@ -1027,3 +1029,37 @@ class SharesInfoView(View):
                 f"{round(r['ownership_fully'], 2)}%",
             ))
         return render(request, 'pages/shares_info.html', context=context)
+
+class SharesControlView(View):
+    def get(self, request):
+        context = {'extra_form': DateForm()}
+        initail_data = []
+        for company in Company.objects.all():
+            initail_data.append({'company': company.pk})
+        context['formset'] = SharesControlFormSet(initial=initail_data)
+        return render(request, 'pages/shares_control.html', context=context)
+    
+    def post(self, request):
+        date_form = DateForm(request.POST)
+        control_formset = SharesControlFormSet(request.POST)
+        if not control_formset.is_valid() or not date_form.is_valid():
+            messages.error(request, 'Invalid Form')
+            return redirect('shares_control')
+        # Errors check
+        res = []
+        for form in control_formset:
+            if not form.cleaned_data['shares'] and not form.cleaned_data['options']:
+                continue
+            shareholders = form.create(date_form.cleaned_data['date'])
+            if shareholders is None:
+                messages.error(request, f'Liquidation or already exists: {form.cleaned_data["company"]}')
+                context = {'extra_form': date_form, 'formset':control_formset}
+                return render(request, 'pages/shares_control.html', context=context)
+            res.extend(shareholders)
+        # Final save
+        for obj in res:
+            obj.shareholder_list.save()
+            obj.save()
+
+        messages.success(request, 'Added successfully')
+        return redirect('shares_control')

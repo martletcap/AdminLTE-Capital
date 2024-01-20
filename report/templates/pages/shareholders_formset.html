@@ -77,7 +77,7 @@ s{% extends "layouts/base.html" %}
                             <thead>
                                 <tr>
                                 <th>#</th>
-                                {% for field in formset.1 %}
+                                {% for field in formset.0 %}
                                     <td>{{ field.label }}</td>
                                 {% endfor %}
                                 </tr>
