@@ -56,6 +56,13 @@
             <p>Shares Control</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'iframe' as iframe %}
+          <a href="{{ iframe }}" class="nav-link {% if iframe == request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>iFrame</p>
+          </a>
+        </li>
       </ul>
     </li>
     {% if app_list %}
