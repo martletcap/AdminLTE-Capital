@@ -51,13 +51,7 @@ def SH01_parser(pdf):
         text +=  page.extract_text()
 
     company_name =  re.search(r'Company Name:\s(.+)(?:\s+|$)', text).group(1)
-    try:
-        date = re.search(r'\d{2}/\d{2}/\d{4}\s(\d{2}/\d{2}/\d{4})', text).group(1)
-    except AttributeError:
-        date = re.search(
-            r'Received for filing in Electronic Format on the: (\d{2}/\d{2}/\d{4})',
-            text,
-        ).group(1)
+    date = re.search(r'allottedFrom To\s(\d{2}/\d{2}/\d{4})', text).group(1)
     date = datetime.strptime(date, '%d/%m/%Y').date()
 
     # Remove problem areas
