@@ -224,7 +224,8 @@
             const shareType = shareTypeInput.innerHTML;
             const amount = parseInt(amountInput.innerHTML.replace(',', '')) || 0;
             const option = optionInput.alt == 'True';
-            let currentShares = {}
+            
+            let currentShares;
             // Sum all shareholders Option or No Option
             if (option){
                 currentShares = sharesTypeOption

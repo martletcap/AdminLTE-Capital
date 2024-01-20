@@ -139,34 +139,59 @@ s{% extends "layouts/base.html" %}
     function updateOutput(){
         const rows = document.querySelectorAll('#example1 tbody tr');
 
-        const shareTypeAmounts = {};
+        const sharesTypeOption = {};
+        const sharesTypeNoOption = {};
+        const sharesTypeTotal = {};
 
         rows.forEach(row => {
             const shareTypeInput = row.querySelector('td:nth-child(4) input[type="text"]');
             const amountInput = row.querySelector('td:nth-child(5) input[type="number"]');
+            const optionInput = row.querySelector('td:nth-child(7) input[type="checkbox"]');
 
             const shareType = shareTypeInput.value;
-            const amount = parseFloat(amountInput.value) || 0;
-
-            if (shareTypeAmounts.hasOwnProperty(shareType)) {
-                shareTypeAmounts[shareType] += amount;
+            const amount = parseInt(amountInput.value) || 0;
+            const option = optionInput.checked
+            
+            let currentShares;
+            // Sum all shareholders Option or No Option
+            if (option){
+                currentShares = sharesTypeOption
             } else {
-                // Если это новый уникальный share_type, устанавливаем его сумму
-                shareTypeAmounts[shareType] = amount;
+                currentShares = sharesTypeNoOption
+            }
+            if (currentShares[shareType]){
+                currentShares[shareType] += amount
+            } else {
+                currentShares[shareType] = amount
+            }
+            // Total Shares
+            if (sharesTypeTotal[shareType]){
+                sharesTypeTotal[shareType] += amount
+            } else {
+                sharesTypeTotal[shareType] = amount
             }
         });
         const outputDiv = document.getElementById('output');
-        let outputString = '';
-        let sum = 0
-
-        // Формируем строку для каждого уникального share_type
-        for (const shareType in shareTypeAmounts) {
-            if (shareTypeAmounts.hasOwnProperty(shareType)) {
-                sum += shareTypeAmounts[shareType]
-                outputString += `${shareType} - ${shareTypeAmounts[shareType].toLocaleString('en-US')};<br>`;
+        // Output Formatting function
+        const outputFormatting = (outputString, title, shareDict) => {
+            outputString += `${title}:<br>`
+            let sum = 0;
+            for (const shareType in shareDict) {
+                sum += shareDict[shareType]
+                outputString += `${shareType} - ${sharesTypeOption[shareType].toLocaleString('en-US')};<br>`;
             }
+            outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b>`
+            return outputString
         }
-        outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b>`
+
+        // Format Output
+        let outputString = '';
+        outputString = outputFormatting(outputString, 'Shares', sharesTypeOption)
+        outputString += '<br><br>'
+        outputString = outputFormatting(outputString, 'Option', sharesTypeNoOption)
+        outputString += '<br><br>'
+        outputString = outputFormatting(outputString, 'Total', sharesTypeTotal)
+
         outputDiv.innerHTML = outputString;
     }
     updateOutput();
