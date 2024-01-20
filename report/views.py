@@ -12,7 +12,7 @@ from django.db.models import (
 from core.settings import PORTFOLIO
 from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
 from home.models import (
-    Company, ContactType, Share, MoneyTransaction, ShareTransaction,
+    Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
 )
 from .forms import (
@@ -199,18 +199,39 @@ def upload_shareholders(request):
                     'name': shareholder.name,
                     'option': shareholder.option,
                 })
-            no_name_type_info = ContactType.objects.filter(type='No Name Type Info').first()
+            default_contact = Contact.objects.get(pk=1) # "No Name" contact
             for key, value in share_amounts.items():
                 if value<0:
                     messages.error(request, 'Liquidation error!')
                     return redirect('upload_shareholders')
                 elif value>0:
-                    initial_data.append({
+                    added = False
+                    # If the default_contact with the same share is
+                    # already in the database, add it to it; if not, create it.
+                    for record in initial_data:
+                        if (record['name'] == default_contact.name and
+                            record['type'] == key):
+                            record['amount']+=value
+                            added = True
+                    if not added:
+                        initial_data.append({
                         'amount': value,
-                        'contact_type': no_name_type_info,
+                        'contact_type': default_contact.type,
                         'type': key,
-                        'name': 'No Name',
+                        'name': default_contact.name,
                     })
+
+            # for key, value in share_amounts.items():
+            #     if value<0:
+            #         messages.error(request, 'Liquidation error!')
+            #         return redirect('upload_shareholders')
+            #     elif value>0:
+            #         initial_data.append({
+            #             'amount': value,
+            #             'contact_type': default_contact.type,
+            #             'type': key,
+            #             'name': default_contact.name,
+            #         })
 
         if not company:
             messages.error(request, 'Unsupported file type or non-existent company')
