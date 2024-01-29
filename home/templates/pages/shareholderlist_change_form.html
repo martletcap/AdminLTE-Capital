@@ -225,7 +225,7 @@
             const optionInput = row.querySelector('td:nth-child(5) img');
 
             const shareType = shareTypeInput.innerHTML;
-            const amount = parseInt(amountInput.innerHTML.replace(',', '')) || 0;
+            const amount = parseInt(amountInput.innerHTML.replaceAll(',', '')) || 0;
             const option = optionInput.alt == 'True';
             
             let currentShares;
