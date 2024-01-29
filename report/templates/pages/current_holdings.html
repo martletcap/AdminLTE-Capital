@@ -119,9 +119,9 @@
       }else if([0, 1, 2, 10].includes(index)){
         resultRow.insertCell().innerHTML = '';
       }else if([11, 12].includes(index)){
-        resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toFixed(2)}</b>`;
+        resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
       } else {
-        resultRow.insertCell().innerHTML = `<b>${columnSums[index]}</b>`
+        resultRow.insertCell().innerHTML = `<b>${columnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
       }
     }
     
