@@ -66,9 +66,14 @@
             </table>
           </div>
           <!-- /.card -->
+          <div class='card'>
+            <div class='card-body'>
+                <div id='output'>
+                </div>
+            </div>
+          </div>
         </div>
         <!-- /.row -->
-
       </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
@@ -98,6 +103,41 @@
       "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
       "paging": false,
     }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+  });
+</script>
+<!-- Column total -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Get the table element
+    var table = document.getElementById('example1');
+    // Initialize an array to store the sum for each column
+    var columnSums = Array.from({ length: table.rows[0].cells.length }, () => 0);
+    // Iterate through each row in the table (skip the header row)
+    for (var i = 1; i < table.rows.length; i++) {
+      var row = table.rows[i];
+      // Iterate through each cell in the row
+      for (var j = 0; j < row.cells.length; j++) {
+        // Parse the cell value as a number (assuming the values are numeric)
+        var cellValue = parseFloat(row.cells[j].innerText.replace(',', ''));
+
+        // Add the cell value to the sum for the corresponding column
+        if (!isNaN(cellValue)) {
+          columnSums[j] += cellValue;
+        }
+      }
+    }
+    const numOfRecords = document.querySelectorAll('#example1 tbody tr').length;
+    let output = document.getElementById('output')
+    output.innerHTML += `<b>Martlet direct investment cost (sum): ${columnSums[3]}</b><br>`
+    output.innerHTML += `<b>Martlet cost based on transfer value (including new investment) (sum): ${columnSums[4]}</b><br>`
+    output.innerHTML += `<b>Martlet fair value reporting (sum): ${columnSums[5]}</b><br>`
+    output.innerHTML += `<b>Martlet fair value previous (sum): ${columnSums[6]}</b><br>`
+    output.innerHTML += `<b>Valuation change (sum): ${columnSums[7]}</b><br>`
+    output.innerHTML += `<b>New Martlet investment since (sum): ${columnSums[8]}</b><br>`
+    output.innerHTML += `<b>Valuation change (excluding new Martlet investment) (sum): ${columnSums[9]}</b><br>`
+    output.innerHTML += `<b>Fair value multiple to cost (avg): ${(columnSums[11]/numOfRecords).toFixed(2)}</b><br>`
+    output.innerHTML += `<b>Fair value multiple to transfer cost (avg): ${(columnSums[12]/numOfRecords).toFixed(2)}</b><br>`
+    output.innerHTML += `<b>Enterprise valuation (fully diluted) as at last round (sum): ${columnSums[13]}</b><br>`
   });
 </script>
 {% endblock extra_scripts %}
