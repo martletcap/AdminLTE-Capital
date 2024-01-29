@@ -114,12 +114,14 @@
     const numOfRecords = document.querySelectorAll('#example1 tbody tr').length;
     let resultRow = document.getElementById('example1').tFoot.insertRow();
     for(var index = 0; index<columnSums.length; index++){
-      if([0, 1, 2, 10].includes(index)){
-        resultRow.insertCell().textContent = '---';
+      if(index === 0){
+        resultRow.insertCell().innerHTML = '<b>Total:</b>';
+      }else if([0, 1, 2, 10].includes(index)){
+        resultRow.insertCell().innerHTML = '';
       }else if([11, 12].includes(index)){
-        resultRow.insertCell().textContent = (columnSums[index]/numOfRecords).toFixed(2);
+        resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toFixed(2)}</b>`;
       } else {
-        resultRow.insertCell().textContent = columnSums[index]
+        resultRow.insertCell().innerHTML = `<b>${columnSums[index]}</b>`
       }
     }
     
