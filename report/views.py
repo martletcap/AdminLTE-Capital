@@ -307,7 +307,7 @@ class SharePriceUpdateView(View):
             return render(request, 'pages/simple_form.html', context=context)
         shares = Share.objects.filter(company=form.cleaned_data['company'])
         # price from GET
-        price = round(float(request.GET.get('price', 0)), 3)
+        price = round(float(request.GET.get('price', 0)), 8)
         # AVG company share price
         avg_price = 0
         market_value = 0
