@@ -63,15 +63,10 @@
                     </tr>
                   {% endfor %}
                 </tbody>
+                <tfoot></tfoot>
             </table>
           </div>
           <!-- /.card -->
-          <div class='card'>
-            <div class='card-body'>
-                <div id='output'>
-                </div>
-            </div>
-          </div>
         </div>
         <!-- /.row -->
       </div><!-- /.container-fluid -->
@@ -95,16 +90,6 @@
 <script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
-<!-- Page specific script -->
-<script>
-  $(function () {
-    $("#example1").DataTable({
-      "responsive": true, "lengthChange": false, "autoWidth": false,
-      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
-      "paging": false,
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-  });
-</script>
 <!-- Column total -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
@@ -127,17 +112,27 @@
       }
     }
     const numOfRecords = document.querySelectorAll('#example1 tbody tr').length;
-    let output = document.getElementById('output')
-    output.innerHTML += `<b>Martlet direct investment cost (sum): ${columnSums[3]}</b><br>`
-    output.innerHTML += `<b>Martlet cost based on transfer value (including new investment) (sum): ${columnSums[4]}</b><br>`
-    output.innerHTML += `<b>Martlet fair value reporting (sum): ${columnSums[5]}</b><br>`
-    output.innerHTML += `<b>Martlet fair value previous (sum): ${columnSums[6]}</b><br>`
-    output.innerHTML += `<b>Valuation change (sum): ${columnSums[7]}</b><br>`
-    output.innerHTML += `<b>New Martlet investment since (sum): ${columnSums[8]}</b><br>`
-    output.innerHTML += `<b>Valuation change (excluding new Martlet investment) (sum): ${columnSums[9]}</b><br>`
-    output.innerHTML += `<b>Fair value multiple to cost (avg): ${(columnSums[11]/numOfRecords).toFixed(2)}</b><br>`
-    output.innerHTML += `<b>Fair value multiple to transfer cost (avg): ${(columnSums[12]/numOfRecords).toFixed(2)}</b><br>`
-    output.innerHTML += `<b>Enterprise valuation (fully diluted) as at last round (sum): ${columnSums[13]}</b><br>`
+    let resultRow = document.getElementById('example1').tFoot.insertRow();
+    for(var index = 0; index<columnSums.length; index++){
+      if([0, 1, 2, 10].includes(index)){
+        resultRow.insertCell().textContent = '---';
+      }else if([11, 12].includes(index)){
+        resultRow.insertCell().textContent = (columnSums[index]/numOfRecords).toFixed(2);
+      } else {
+        resultRow.insertCell().textContent = columnSums[index]
+      }
+    }
+    
+  });
+</script>
+<!-- DataTable scripts -->
+<script>
+  $(function () {
+    $("#example1").DataTable({
+      "responsive": true, "lengthChange": false, "autoWidth": false,
+      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+      "paging": false,
+    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
   });
 </script>
 {% endblock extra_scripts %}
