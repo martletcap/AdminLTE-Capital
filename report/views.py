@@ -1,5 +1,6 @@
 from datetime import date
 from collections import defaultdict
+from decimal import Decimal
 
 from django.contrib import messages
 from django.views.generic import View
@@ -751,7 +752,7 @@ class CurrentHoldingsView(View):
             fair_value_cof = 1
             if fair_value_method:
                 res[-1]['fair_value_method'] = fair_value_method.name
-                fair_value_cof = fair_value_method.percent/100
+                fair_value_cof = Decimal(fair_value_method.percent/100)
 
             our_amount = 0
             price_exist = set()
