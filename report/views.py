@@ -796,6 +796,18 @@ class CurrentHoldingsView(View):
                     res[-1]['fair_value_rep'] += (
                         transaction.amount*last_price*fair_value_cof*cof
                     )
+            # Add Loan to fair_value_prev
+            share_money_ids = ShareTransaction.objects.filter(
+                date__lte = reporting_date,
+                money_transaction__company = company,
+            ).values_list('money_transaction_id', flat=True)
+            money_transactions = MoneyTransaction.objects.filter(
+                company = company,
+                date__lte = reporting_date,
+            ).exclude(id__in = share_money_ids)
+            for transaction in money_transactions:
+                res[-1]['fair_value_rep'] += transaction.price
+
             if total_amount and our_amount:
                 res[-1]['ownership'] = our_amount/total_amount*100
             # Martlet fair value previous_date
@@ -844,6 +856,18 @@ class CurrentHoldingsView(View):
                         res[-1]['fair_value_prev'] += (
                             transaction.amount*last_price*fair_value_cof*cof
                         )
+            # Add Loan to fair_value_prev
+            share_money_ids = ShareTransaction.objects.filter(
+                date__lte = previous_date,
+                money_transaction__company = company,
+            ).values_list('money_transaction_id', flat=True)
+            money_transactions = MoneyTransaction.objects.filter(
+                company = company,
+                date__lte = previous_date,
+            ).exclude(id__in = share_money_ids)
+            for transaction in money_transactions:
+                res[-1]['fair_value_prev'] += transaction.price
+
             # Valuation change reporting_date vs previous_date
             res[-1]['valuation_change'] = (
                 res[-1]['fair_value_rep'] - res[-1]['fair_value_prev']
