@@ -67,6 +67,15 @@ class ShareTransactionForm(forms.ModelForm):
         }
         fields = '__all__'
 
+    def clean(self):
+        cleaned_data = super().clean()
+        transaction = cleaned_data.get('money_transaction')
+        share = cleaned_data.get('share')
+        if transaction and share and transaction.company != share.company:
+            self._errors['share'] = self.error_class(
+                ['The company of the share must match the company of the money transaction']
+            )
+
 
 class FairValueMethodForm(forms.ModelForm):
     percent = forms.IntegerField(min_value=0, max_value=100)
