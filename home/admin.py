@@ -1,3 +1,4 @@
+import sys
 from django.contrib import admin
 from django.urls import reverse
 from django.shortcuts import redirect
@@ -15,21 +16,24 @@ from .forms import (
     FairValueMethodForm, ShareholderListForm,
 )
 
+class SimpleHistoryAdminCustom(SimpleHistoryAdmin):
+    list_max_show_all = sys.maxsize
 
-class ContactAdmin(SimpleHistoryAdmin):
+
+class ContactAdmin(SimpleHistoryAdminCustom):
     list_display = ['name', 'email', 'phone', 'type']
 
 
-class LocationAdmin(SimpleHistoryAdmin):
+class LocationAdmin(SimpleHistoryAdminCustom):
     list_display = ['city', 'country']
 
 
-class CompanyAdmin(SimpleHistoryAdmin):
+class CompanyAdmin(SimpleHistoryAdminCustom):
     list_display = ['name', 'location', 'contact', 'sector', 'status', 'category']
     form = CompanyForm
 
 
-class SeedStepAdmin(SimpleHistoryAdmin):
+class SeedStepAdmin(SimpleHistoryAdminCustom):
     list_display = [
         'company', 'formatted_start_term_field', 'formatted_end_term_field',
     ]
@@ -42,16 +46,16 @@ class SeedStepAdmin(SimpleHistoryAdmin):
         return obj.end_term.strftime('%Y/%m/%d')
 
 
-class ShareAdmin(SimpleHistoryAdmin):
+class ShareAdmin(SimpleHistoryAdminCustom):
     list_display = ['type', 'company']
 
-class SplitAdmin(SimpleHistoryAdmin):
+
+class SplitAdmin(SimpleHistoryAdminCustom):
     list_display = ['date', 'share', 'before', 'after']
     form = SplitForm
 
 
-
-class SharePriceAdmin(SimpleHistoryAdmin):
+class SharePriceAdmin(SimpleHistoryAdminCustom):
     list_display = [
         'get_share_company', 'get_share_type', 'price', 'formatted_date_field'
     ]
@@ -73,7 +77,7 @@ class SharePriceAdmin(SimpleHistoryAdmin):
     get_share_type.short_description = 'Share type'
 
 
-class ShareTransactionAdmin(SimpleHistoryAdmin):
+class ShareTransactionAdmin(SimpleHistoryAdminCustom):
     list_display = [
         'get_money_transaction', 'date', 'share', 'amount',
     ]
@@ -99,7 +103,7 @@ class ShareTransactionAdmin(SimpleHistoryAdmin):
         return super().response_post_save_add(request, obj)
 
 
-class MoneyTransactionAdmin(SimpleHistoryAdmin):
+class MoneyTransactionAdmin(SimpleHistoryAdminCustom):
     list_display = [
         'formatted_date_field', 'price', 'company', 'transaction_type',
         'portfolio',
@@ -124,12 +128,12 @@ class MoneyTransactionAdmin(SimpleHistoryAdmin):
         return super().response_post_save_add(request, obj)
     
 
-class FairValueMethodAdmin(SimpleHistoryAdmin):
+class FairValueMethodAdmin(SimpleHistoryAdminCustom):
     list_display = ['company', 'name', 'percent', 'date']
     form = FairValueMethodForm
 
 
-class ShareholderListAdmin(SimpleHistoryAdmin):
+class ShareholderListAdmin(SimpleHistoryAdminCustom):
     list_display = ['company', 'formatted_date_field']
     form = ShareholderListForm
     add_form_template = 'admin/change_form.html'
@@ -164,20 +168,20 @@ class ShareholderListAdmin(SimpleHistoryAdmin):
         return super().render_change_form(request, context, add, change, form_url, obj)
 
 
-class ShareholderAdmin(SimpleHistoryAdmin):
+class ShareholderAdmin(SimpleHistoryAdminCustom):
     list_display = ['shareholder_list', 'contact', 'share', 'amount', 'option']
 
 
 # Register your models here.
-admin.site.register(ContactType, SimpleHistoryAdmin)
+admin.site.register(ContactType, SimpleHistoryAdminCustom)
 admin.site.register(Contact, ContactAdmin)
-admin.site.register(Sector, SimpleHistoryAdmin)
+admin.site.register(Sector, SimpleHistoryAdminCustom)
 admin.site.register(Location, LocationAdmin)
-admin.site.register(CompanyStatus, SimpleHistoryAdmin)
-admin.site.register(CategoryOfCompany, SimpleHistoryAdmin)
+admin.site.register(CompanyStatus, SimpleHistoryAdminCustom)
+admin.site.register(CategoryOfCompany, SimpleHistoryAdminCustom)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(SeedStep, SeedStepAdmin)
-admin.site.register(ShareType, SimpleHistoryAdmin)
+admin.site.register(ShareType, SimpleHistoryAdminCustom)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Split, SplitAdmin)
 admin.site.register(SharePrice, SharePriceAdmin)
