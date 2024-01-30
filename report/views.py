@@ -804,6 +804,7 @@ class CurrentHoldingsView(View):
             money_transactions = MoneyTransaction.objects.filter(
                 company = company,
                 date__lte = reporting_date,
+                transaction_type__title = "Loan"
             ).exclude(id__in = share_money_ids)
             for transaction in money_transactions:
                 res[-1]['fair_value_rep'] += transaction.price
@@ -864,6 +865,7 @@ class CurrentHoldingsView(View):
             money_transactions = MoneyTransaction.objects.filter(
                 company = company,
                 date__lte = previous_date,
+                transaction_type__title = "Loan",
             ).exclude(id__in = share_money_ids)
             for transaction in money_transactions:
                 res[-1]['fair_value_prev'] += transaction.price
