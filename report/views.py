@@ -84,7 +84,7 @@ def short_report(request):
     total_market_price = 0
     # Sum market price
     for transaction in share_transactions:
-        last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
+        last_price = SharePrice.objects.last_price(share=transaction.share)
         splits = Split.objects.filter(
             date__gte = transaction.date,
             share=transaction.share,
@@ -94,10 +94,6 @@ def short_report(request):
         cof = 1
         for split in splits:
             cof *= split[0]
-        if last_price.exists():
-            last_price = last_price.first().price
-        else:
-            last_price = 0
         if transaction.type == 'Sell':
             total = -float(transaction.amount*cof*last_price)
         else:
@@ -320,11 +316,10 @@ class SharePriceUpdateView(View):
             option = True,
         )
         for shareholder in shareholders:
-            last_price = SharePrice.objects.filter(
+            last_price = SharePrice.objects.last_price(
                 share = shareholder.share
-            ).order_by('-date')[:1].first()
+            )
             if last_price:
-                last_price = last_price.price
                 market_value += shareholder.amount*last_price
                 total_shares += shareholder.amount
         if market_value and total_shares:
@@ -332,11 +327,7 @@ class SharePriceUpdateView(View):
 
         initial_data = []
         for share in shares:
-            if not price:
-                last_price = SharePrice.objects.filter(
-                    share=share,
-                ).order_by('-date')[:1].first()
-                if last_price: last_price = last_price.price
+            last_price = SharePrice.objects.last_price(share=share)
             initial_data.append({
                 'share':share,
                 'price': (price or last_price or avg_price),
@@ -510,7 +501,7 @@ class DetailedReportView(View):
             type = F('money_transaction__transaction_type__title'),
         )
         for transaction in share_transactions:
-            last_price = SharePrice.objects.filter(share=transaction.share).order_by('-date')[:1]
+            last_price = SharePrice.objects.last_price(share=transaction.share)
             splits = Split.objects.filter(
                 date__gte = transaction.date,
                 share=transaction.share,
@@ -520,10 +511,6 @@ class DetailedReportView(View):
             cof = 1
             for split in splits:
                 cof *= split[0]
-            if last_price.exists():
-                last_price = last_price.first().price
-            else:
-                last_price = 0
             if transaction.type == 'Sell':
                 res[transaction.company]['total_amount'] -= (
                     transaction.amount*cof
@@ -910,15 +897,10 @@ class CurrentHoldingsView(View):
                 shareholder_list = shareholder_list
             )
             for shareholder in shareholders:
-                pass
-                last_price = SharePrice.objects.filter(
+                last_price = SharePrice.objects.last_price(
                     share=shareholder.share,
                     date__lte = reporting_date,
-                ).order_by('-date')[:1].first()
-                if last_price:
-                    last_price = last_price.price
-                else:
-                    last_price = 0
+                )
                 res[-1]['enterprise']+=shareholder.amount*last_price
 
         for r in res:
@@ -1001,14 +983,10 @@ class SharesInfoView(View):
                 shareholder_list=shareholder_list
             )
             for shareholder in shareholders:
-                last_price = SharePrice.objects.filter(
+                last_price = SharePrice.objects.last_price(
                     date__lte = reporting_date,
                     share = shareholder.share, 
-                ).order_by('-date')[:1].first()
-                if last_price:
-                    last_price = last_price.price
-                else:
-                    last_price = 0
+                )
                 if shareholder.option:
                     res[-1]['total_shares']+=shareholder.amount
                     res[-1]['enterprise_undiluted']+= (
