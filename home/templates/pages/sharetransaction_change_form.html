@@ -141,41 +141,50 @@
 
 <!-- Select -->
 <script>
+  // First Select
   $('#id_money_transaction').select2({
     theme: 'bootstrap4'
   });
-  $('#id_share').select2({
-    theme: 'bootstrap4',
-    // Функция для скрытия элементов с атрибутом disabled
-    templateResult: function(data, container) {
-        if (data.disabled) {
-        $(container).hide();
-        return null;
-        }
-        return data.text;
-    },
-    // Функция для отображения выбранных элементов
-    templateSelection: function(data, container) {
-        return data.text;
+
+  // Second select
+  // First select update handlser
+  $('#id_money_transaction').on('select2:select', function (e) {
+    if ($('#id_share').data('select2')) {
+      $('#id_share').select2('destroy');
+    }
+    let company = e.params.data.text.split('|')[0]
+    console.log(company)
+    $('#id_share option').each(function() {
+      var optionText = $(this).text();
+      if (optionText.startsWith(company)) {
+        $(this).prop('disabled', false);
+      } else {
+        $(this).prop('disabled', true);
+      }
+    });
+    // Duct tape
+    setTimeout(function () {
+      $('#id_share').select2({
+        theme: 'bootstrap4',
+        // Функция для скрытия элементов с атрибутом disabled
+        templateResult: function(data, container) {
+          if (data.disabled) {
+            return null
+          }
+          return data.text;
+        },
+      });
+    }, 200);
+  });
+  // Init trigger
+  $('#id_money_transaction').trigger({
+    type: 'select2:select',
+    params: {
+      data: {
+        text: $('#id_money_transaction').find(":selected").text()
+      }
     }
   });
 </script>
 
-<!-- Page scripts -->
-<script>
-    // You can select only the shares of the desired company
-    $('#id_money_transaction').on('select2:select', function (e) {
-        let company = e.params.data.text.split('|')[0]
-        console.log(company)
-        $('#id_share option').each(function() {
-            var optionText = $(this).text();
-            if (optionText.startsWith(company)) {
-                $(this).prop('disabled', false);
-            } else {
-                $(this).prop('disabled', true);
-            }
-        });
-        $('#id_share').val(null).trigger("change");
-    });
-</script>
 {% endblock extra_scripts %}
