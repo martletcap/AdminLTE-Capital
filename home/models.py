@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from simple_history.models import HistoricalRecords
 
-from .managers import SharePriceManager
+from .managers import SharePriceManager, SplitManager
 
 User = get_user_model()
 
@@ -186,6 +186,8 @@ class Split(models.Model):
     comment = models.TextField(max_length=10240, blank=True)
     before = models.IntegerField(default=1)
     after = models.IntegerField(default=1)
+
+    objects = SplitManager()
     
 
 

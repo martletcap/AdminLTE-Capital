@@ -85,15 +85,10 @@ def short_report(request):
     # Sum market price
     for transaction in share_transactions:
         last_price = SharePrice.objects.last_price(share=transaction.share)
-        splits = Split.objects.filter(
+        cof = Split.objects.cof(
             date__gte = transaction.date,
             share=transaction.share,
-        ).annotate(
-            cof = F('after')/F('before'),
-        ).values_list('cof')
-        cof = 1
-        for split in splits:
-            cof *= split[0]
+        )
         if transaction.type == 'Sell':
             total = -float(transaction.amount*cof*last_price)
         else:
@@ -390,15 +385,10 @@ class CompanyReportView(View):
             share__company = company
         )
         for transaction in share_transactions:
-            splits = Split.objects.filter(
+            cof = Split.objects.cof(
                 date__gte = transaction.date,
                 share=transaction.share,
-            ).annotate(
-                cof = F('after')/F('before'),
-            ).values_list('cof')
-            cof = 1
-            for split in splits:
-                cof *= split[0]
+            )
             if transaction.type == 'Sell':
                 our_amount -= (
                     transaction.amount*cof
@@ -502,15 +492,10 @@ class DetailedReportView(View):
         )
         for transaction in share_transactions:
             last_price = SharePrice.objects.last_price(share=transaction.share)
-            splits = Split.objects.filter(
+            cof = Split.objects.cof(
                 date__gte = transaction.date,
                 share=transaction.share,
-            ).annotate(
-                cof = F('after')/F('before'),
-            ).values_list('cof')
-            cof = 1
-            for split in splits:
-                cof *= split[0]
+            )
             if transaction.type == 'Sell':
                 res[transaction.company]['total_amount'] -= (
                     transaction.amount*cof
@@ -762,16 +747,11 @@ class CurrentHoldingsView(View):
                 else:
                     last_price = 0
                 # Split
-                splits = Split.objects.filter(
+                cof = Split.objects.cof(
                     date__gte = transaction.date,
                     date__lte = reporting_date,
                     share=transaction.share,
-                ).annotate(
-                    cof = F('after')/F('before'),
-                ).values_list('cof')
-                cof = 1
-                for split in splits:
-                    cof *= split[0]
+                )
 
                 if transaction.type == 'Sell':
                     our_amount -= transaction.amount*cof
@@ -816,15 +796,10 @@ class CurrentHoldingsView(View):
                 else:
                     last_price = 0
                 # Split
-                splits = Split.objects.filter(
+                cof = Split.objects.cof(
                     date__gte = transaction.date,
                     share=transaction.share,
-                ).annotate(
-                    cof = F('after')/F('before'),
-                ).values_list('cof')
-                cof = 1
-                for split in splits:
-                    cof *= split[0]
+                )
 
                 if transaction.type == 'Sell':
                     if transaction.share in price_exist:
@@ -1003,16 +978,11 @@ class SharesInfoView(View):
                 date__lte = reporting_date,
             )
             for transaction in share_transactions:
-                splits = Split.objects.filter(
+                cof = Split.objects.cof(
                     date__gte = transaction.date,
                     date__lte = reporting_date,
                     share = transaction.share,
-                ).annotate(
-                    cof = F('after')/F('before'),
-                ).values_list('cof')
-                cof = 1
-                for split in splits:
-                    cof *= split[0]
+                )
                 res[-1]['our_shares'] += (
                     transaction.amount*cof
                 )
