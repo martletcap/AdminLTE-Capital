@@ -141,14 +141,18 @@
 
 <!-- Select -->
 <script>
-  // MoneyTransaction Select
-  $('#id_money_transaction').select2({
+  // ShareholderList Select
+  $('#id_shareholder_list').select2({
+    theme: 'bootstrap4'
+  });
+  // Contact Select
+  $('#id_contact').select2({
     theme: 'bootstrap4'
   });
 
   // Share Select
-  // MoneyTransaction select update handlser
-  $('#id_money_transaction').on('select2:select', function (e) {
+  // ShareholderList select update handlser
+  $('#id_shareholder_list').on('select2:select', function (e) {
     if ($('#id_share').data('select2')) {
       $('#id_share').select2('destroy');
     }
@@ -176,8 +180,9 @@
       });
     }, 300);
   });
+
   // Init select trigger
-  $('#id_money_transaction').trigger({
+  $('#id_shareholder_list').trigger({
     type: 'select2:select',
     params: {
       data: {
