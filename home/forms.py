@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 from .models import (
     Company, SeedStep, Split, SharePrice, MoneyTransaction,
-    ShareTransaction, FairValueMethod, ShareholderList,
+    ShareTransaction, FairValueMethod, ShareholderList, Shareholder
 )
 from .utils import UserChoiceField
 
@@ -75,6 +75,7 @@ class ShareTransactionForm(forms.ModelForm):
             self._errors['share'] = self.error_class(
                 ['The company of the share must match the company of the money transaction']
             )
+        return cleaned_data
 
 
 class FairValueMethodForm(forms.ModelForm):
@@ -87,6 +88,7 @@ class FairValueMethodForm(forms.ModelForm):
         }
         fields = '__all__'
 
+
 class ShareholderListForm(forms.ModelForm):
 
     class Meta:
@@ -95,3 +97,20 @@ class ShareholderListForm(forms.ModelForm):
             'date':forms.widgets.NumberInput(attrs={'type':'date'}),
         }
         fields = '__all__'
+
+
+class ShareholderForm(forms.ModelForm):
+
+    class Meta:
+        model = Shareholder
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        shareholder_list = cleaned_data.get('shareholder_list')
+        share = cleaned_data.get('share')
+        if shareholder_list and share and shareholder_list.company != share.company:
+            self._errors['share'] = self.error_class(
+                ['The company of the share must match the company of the shareholder list']
+            )
+        return cleaned_data

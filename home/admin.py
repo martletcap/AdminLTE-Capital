@@ -13,7 +13,7 @@ from .models import (
 from .forms import (
     CompanyForm, SeedStepForm, SplitForm,
     SharePriceForm, MoneyTransactionForm, ShareTransactionForm,
-    FairValueMethodForm, ShareholderListForm,
+    FairValueMethodForm, ShareholderListForm, ShareholderForm
 )
 
 class SimpleHistoryAdminCustom(SimpleHistoryAdmin):
@@ -171,6 +171,7 @@ class ShareholderListAdmin(SimpleHistoryAdminCustom):
 
 class ShareholderAdmin(SimpleHistoryAdminCustom):
     list_display = ['shareholder_list', 'contact', 'share', 'amount', 'option']
+    form = ShareholderForm
 
 
 # Register your models here.
