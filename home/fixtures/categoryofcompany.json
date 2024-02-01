@@ -1,0 +1,16 @@
+[
+    {
+        "model": "base_info.categoryofcompany",
+        "pk": 1,
+        "fields": {
+            "category": "Companys"
+        }
+    },
+    {
+        "model": "base_info.categoryofcompany",
+        "pk": 2,
+        "fields": {
+            "category": "Strategic"
+        }
+    }
+]
