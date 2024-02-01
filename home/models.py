@@ -108,7 +108,7 @@ class Company(models.Model):
         verbose_name_plural = '02. Companys'
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=256, blank=True)
     comment = models.TextField(max_length=10240, blank=True)
     staff = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -121,7 +121,7 @@ class Company(models.Model):
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     sector = models.ForeignKey(Sector, on_delete=models.PROTECT)
     status = models.ForeignKey(CompanyStatus, on_delete=models.PROTECT)
-    link = models.CharField(max_length=256, blank=True)
+    number = models.IntegerField(blank=True, null=True)
     category = models.ForeignKey(CategoryOfCompany, on_delete=models.PROTECT)
     history = HistoricalRecords()
 
