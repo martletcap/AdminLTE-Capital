@@ -38,7 +38,7 @@
       <div class="container-fluid">
         <div class='row'>
           <div class="card card-body border-0 shadow table-wrapper table-responsive">
-            <table id="example1" class="table table-bordered table-striped">
+            <table id="table1" class="table table-bordered table-striped">
               <thead>
                   <tr>
                     {% for header in result_headers %}
@@ -47,12 +47,45 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for record in results %}
+                  {% for record in table1 %}
                     </tr>
                       {% with forloop.counter0 as external_loop %}
                       {% for value in record %}
                         {% if forloop.counter0 == 0 %}
-                          <td><a href="{{ links|index:external_loop }}">{{value}}</a></td>
+                          <td><a href="{{ links1|index:external_loop }}">{{value}}</a></td>
+                        {% elif forloop.counter0 == 1 %}
+                          <td>{{ value|unlocalize }}</td>
+                        {% else %}
+                          <td>{{value}}</td>
+                        {% endif %}
+                      {% endfor %}
+                      {% endwith %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot></tfoot>
+            </table>
+          </div>
+          <!-- /.card -->
+        </div>
+        <!-- /.row -->
+        <div class='row'>
+          <div class="card card-body border-0 shadow table-wrapper table-responsive">
+            <table id="table2" class="table table-bordered table-striped">
+              <thead>
+                  <tr>
+                    {% for header in result_headers %}
+                      <th>{{header}}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for record in table2 %}
+                    </tr>
+                      {% with forloop.counter0 as external_loop %}
+                      {% for value in record %}
+                        {% if forloop.counter0 == 0 %}
+                          <td><a href="{{ links2|index:external_loop }}">{{value}}</a></td>
                         {% elif forloop.counter0 == 1 %}
                           <td>{{ value|unlocalize }}</td>
                         {% else %}
@@ -92,52 +125,66 @@
 <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
 <!-- Column total -->
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Get the table element
-    var table = document.getElementById('example1');
-    // Initialize an array to store the sum for each column
-    var columnSums = Array.from({ length: table.rows[0].cells.length }, () => 0);
-    // Iterate through each row in the table (skip the header row)
-    for (var i = 1; i < table.rows.length; i++) {
-      var row = table.rows[i];
-      // Iterate through each cell in the row
-      for (var j = 0; j < row.cells.length; j++) {
-        // Parse the cell value as a number (assuming the values are numeric)
-        var cellValue = parseFloat(row.cells[j].innerText.replace(',', ''));
+  function calculateResults(id){
+    document.addEventListener('DOMContentLoaded', function () {
+      // Get the table element
+      var table = document.getElementById(id);
+      // Initialize an array to store the sum for each column
+      var columnSums = Array.from({ length: table.rows[0].cells.length }, () => 0);
+      // Iterate through each row in the table (skip the header row)
+      for (var i = 1; i < table.rows.length; i++) {
+        var row = table.rows[i];
+        // Iterate through each cell in the row
+        for (var j = 0; j < row.cells.length; j++) {
+          // Parse the cell value as a number (assuming the values are numeric)
+          var cellValue = parseFloat(row.cells[j].innerText.replace(',', ''));
 
-        // Add the cell value to the sum for the corresponding column
-        if (!isNaN(cellValue)) {
-          columnSums[j] += cellValue;
+          // Add the cell value to the sum for the corresponding column
+          if (!isNaN(cellValue)) {
+            columnSums[j] += cellValue;
+          }
         }
       }
-    }
-    const numOfRecords = document.querySelectorAll('#example1 tbody tr').length;
-    let resultRow = document.getElementById('example1').tFoot.insertRow();
-    for(var index = 0; index<columnSums.length; index++){
-      if(index === 0){
-        resultRow.insertCell().innerHTML = '<b>Total:</b>';
-      }else if([0, 1, 2, 10].includes(index)){
-        resultRow.insertCell().innerHTML = '';
-      }else if([11, 12].includes(index)){
-        resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
-      } else {
-        resultRow.insertCell().innerHTML = `<b>${columnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
+      const numOfRecords = document.querySelectorAll(`#${id} tbody tr`).length;
+      let resultRow = document.getElementById(id).tFoot.insertRow();
+      for(var index = 0; index<columnSums.length; index++){
+        if(index === 0){
+          resultRow.insertCell().innerHTML = '<b>Total:</b>';
+        }else if([0, 1, 2, 10].includes(index)){
+          resultRow.insertCell().innerHTML = '';
+        }else if([11, 12].includes(index)){
+          resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
+        } else {
+          resultRow.insertCell().innerHTML = `<b>${columnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
+        }
       }
-    }
-    
-  });
+      
+    });
+  }
+  calculateResults('table1');
+  calculateResults('table2');
 </script>
 <!-- DataTable scripts -->
 <script>
   $(function () {
-    $("#example1").DataTable({
+    $("#table1").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
       "paging": false,
       "order": [
         [5, 'desc']
       ]
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    }).buttons().container().appendTo('#table1_wrapper .col-md-6:eq(0)');
+  });
+  $(function () {
+    $("#table2").DataTable({
+      "responsive": true, "lengthChange": false, "autoWidth": false,
+      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+      "paging": false,
+      "order": [
+        [5, 'desc']
+      ]
+    }).buttons().container().appendTo('#table2_wrapper .col-md-6:eq(0)');
   });
 </script>
 {% endblock extra_scripts %}

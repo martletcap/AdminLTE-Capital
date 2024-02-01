@@ -633,6 +633,7 @@ class CurrentHoldingsView(View):
         
         reporting_date = period_form.cleaned_data['reporting']
         previous_date = period_form.cleaned_data['previous']
+        # General context
         context = {
             'result_headers':[
                 'Company', 'Year of investment', 'Martlet ownership',
@@ -645,12 +646,11 @@ class CurrentHoldingsView(View):
                 'Fair value multiple to transfer cost',
                 'Enterprise valuation as at last round',
             ],
-            'results':[],
-            'links':[],
+            'table1':[],
+            'table2':[],
+            'links1':[],
+            'links2':[],
         }
-        companies = Company.objects.filter(
-            status = 1, # Portfolio status
-        )
         tmp = {
             'company':'',
             'year':0,
@@ -667,9 +667,14 @@ class CurrentHoldingsView(View):
             'fair_transfer_cost':0,
             'enterprise':0,
         }
+        # Table 1
+        companies = Company.objects.filter(
+            status = 1, # Portfolio status
+            category = 1 # Companys category
+        )
         res = []
         for company in companies:
-            context['links'].append(reverse('company_report')+f'?company={company.pk}')
+            context['links1'].append(reverse('company_report')+f'?company={company.pk}')
             res.append(tmp.copy())
             # Company
             res[-1]['company'] = company.short_name
@@ -879,7 +884,240 @@ class CurrentHoldingsView(View):
                 res[-1]['enterprise']+=shareholder.amount*last_price
 
         for r in res:
-            context['results'].append((
+            context['table1'].append((
+                r['company'],
+                round(r['year']),
+                f"{round(r['ownership'], 2)}%",
+                round(r['invested']),
+                round(r['cost']),
+                round(r['fair_value_rep']),
+                round(r['fair_value_prev']),
+                round(r['valuation_change']),
+                round(r['new_investment']),
+                round(r['valuation_change_exclud']),
+                r['fair_value_method'],
+                round(r['fair_cost'], 2),
+                round(r['fair_transfer_cost'], 2),
+                round(r['enterprise']),
+            ))
+        # Table 2
+        companies = Company.objects.filter(
+            status = 1, # Portfolio status
+            category = 2 # Strategic category
+        )
+        res = []
+        for company in companies:
+            context['links2'].append(reverse('company_report')+f'?company={company.pk}')
+            res.append(tmp.copy())
+            # Company
+            res[-1]['company'] = company.short_name
+            # Year of investment
+            first_investment = MoneyTransaction.objects.filter(
+                company = company
+            ).order_by('date')[:1].first()
+            if first_investment:
+                res[-1]['year'] = first_investment.date.year
+            # Martlet direct investment cost
+            # and
+            # Martlet cost based on transfer value (including new investment)
+            money_transactions = MoneyTransaction.objects.filter(
+                date__lte = reporting_date,
+                company = company,
+            ).annotate(
+                portfolio_name = F('portfolio__name'),
+                type = F('transaction_type__title')
+            )
+            for transaction in money_transactions:
+                if transaction.type == "Sell":
+                    res[-1]['invested'] -= transaction.price
+                    if transaction.portfolio_name == 'Martlet':
+                        res[-1]['cost'] += transaction.price
+                elif transaction.type == "Restructuring":
+                    if transaction.portfolio_name == 'Martlet':
+                        res[-1]['cost'] += transaction.price
+                else:
+                    res[-1]['invested'] += transaction.price
+                    if transaction.portfolio_name == 'Martlet':
+                        res[-1]['cost'] += transaction.price
+
+            # Martlet ownership
+            # and
+            # Fair Value Method
+            # and
+            # Martlet fair value reporting_date
+            reporting_shareholder_list = ShareholderList.objects.filter(
+                company = company,
+                date__lte = reporting_date
+            ).order_by('-date')[:1].first()
+            total_amount = Shareholder.objects.filter(
+                shareholder_list = reporting_shareholder_list,
+            ).aggregate(
+                    total_amount = Sum('amount')
+            )['total_amount']
+
+            fair_value_method = FairValueMethod.objects.filter(
+                company = company,
+                date__lte = reporting_date, 
+            ).order_by('-date')[:1].first()
+            fair_value_cof = 1
+            if fair_value_method:
+                res[-1]['fair_value_method'] = fair_value_method.name
+                fair_value_cof = Decimal(fair_value_method.percent/100)
+
+            our_amount = 0
+            price_exist = set()
+            our_share_transactions = ShareTransaction.objects.filter(
+                date__lte = reporting_date,
+                share__company = company,
+            ).annotate(
+                type = F('money_transaction__transaction_type__title'),
+            )
+            for transaction in our_share_transactions:
+                # Last price
+                last_price = SharePrice.objects.filter(
+                    share = transaction.share,
+                    date__lte = reporting_date,
+                ).order_by('-date')[:1].first()
+                if last_price:
+                    if last_price.date > previous_date:
+                        price_exist.add(last_price.share)
+                    last_price = last_price.price
+                else:
+                    last_price = 0
+                # Split
+                cof = Split.objects.cof(
+                    date__gte = transaction.date,
+                    date__lte = reporting_date,
+                    share=transaction.share,
+                )
+
+                if transaction.type == 'Sell':
+                    our_amount -= transaction.amount*cof
+                    res[-1]['fair_value_rep'] -= (
+                        transaction.amount*last_price*fair_value_cof*cof
+                    )
+                else:
+                    our_amount += transaction.amount*cof
+                    res[-1]['fair_value_rep'] += (
+                        transaction.amount*last_price*fair_value_cof*cof
+                    )
+            # Add Loan to fair_value_prev
+            share_money_ids = ShareTransaction.objects.filter(
+                date__lte = reporting_date,
+                money_transaction__company = company,
+            ).values_list('money_transaction_id', flat=True)
+            money_transactions = MoneyTransaction.objects.filter(
+                company = company,
+                date__lte = reporting_date,
+                transaction_type__title = "Loan"
+            ).exclude(id__in = share_money_ids)
+            for transaction in money_transactions:
+                res[-1]['fair_value_rep'] += transaction.price
+
+            if total_amount and our_amount:
+                res[-1]['ownership'] = our_amount/total_amount*100
+            # Martlet fair value previous_date
+            our_share_transactions = ShareTransaction.objects.filter(
+                date__lte = previous_date,
+                share__company = company,
+            ).annotate(
+                type = F('money_transaction__transaction_type__title'),
+            )
+            for transaction in our_share_transactions:
+                # Last price
+                last_price = SharePrice.objects.filter(
+                    share = transaction.share,
+                    date__lte = previous_date,
+                ).order_by('-date')[:1].first()
+                if last_price:
+                    last_price = last_price.price
+                else:
+                    last_price = 0
+                # Split
+                cof = Split.objects.cof(
+                    date__gte = transaction.date,
+                    share=transaction.share,
+                )
+
+                if transaction.type == 'Sell':
+                    if transaction.share in price_exist:
+                        res[-1]['fair_value_prev'] -= (
+                            transaction.amount*last_price*cof
+                        )
+                    else:
+                        res[-1]['fair_value_prev'] -= (
+                            transaction.amount*last_price*fair_value_cof*cof
+                        )
+                else:
+                    if transaction.share in price_exist:
+                        res[-1]['fair_value_prev'] += (
+                            transaction.amount*last_price*cof
+                        )
+                    else:
+                        res[-1]['fair_value_prev'] += (
+                            transaction.amount*last_price*fair_value_cof*cof
+                        )
+            # Add Loan to fair_value_prev
+            share_money_ids = ShareTransaction.objects.filter(
+                date__lte = previous_date,
+                money_transaction__company = company,
+            ).values_list('money_transaction_id', flat=True)
+            money_transactions = MoneyTransaction.objects.filter(
+                company = company,
+                date__lte = previous_date,
+                transaction_type__title = "Loan",
+            ).exclude(id__in = share_money_ids)
+            for transaction in money_transactions:
+                res[-1]['fair_value_prev'] += transaction.price
+
+            # Valuation change reporting_date vs previous_date
+            res[-1]['valuation_change'] = (
+                res[-1]['fair_value_rep'] - res[-1]['fair_value_prev']
+            )
+            # New Martlet investment since previous_date
+            money_transactions = MoneyTransaction.objects.filter(
+                date__gt = previous_date,
+                company = company,
+                portfolio__name = 'Martlet',
+            ).annotate(
+                type = F('transaction_type__title')
+            )
+            for transaction in money_transactions:
+                if transaction.type == 'Sell':
+                    res[-1]['new_investment'] -= transaction.price
+                else:
+                    res[-1]['new_investment'] += transaction.price
+            # Valuation change reporting_date vs previous_date
+            res[-1]['valuation_change_exclud']=(
+                res[-1]['valuation_change'] - res[-1]['new_investment']
+            )
+            # Fair value multiple to cost
+            if res[-1]['fair_value_rep'] and res[-1]['invested']:
+                res[-1]['fair_cost'] = (
+                    res[-1]['fair_value_rep']/res[-1]['invested']
+                )
+            # Fair value multiple to transfer cost
+            if res[-1]['fair_value_rep'] and res[-1]['cost']:
+                res[-1]['fair_transfer_cost'] = (
+                    res[-1]['fair_value_rep']/res[-1]['cost']
+                )
+            # Enterprise valuation (fully diluted) as at last round
+            shareholder_list = ShareholderList.objects.filter(
+                date__lte = reporting_date,
+                company = company
+            ).order_by('-date')[:1].first()
+            shareholders = Shareholder.objects.filter(
+                shareholder_list = shareholder_list
+            )
+            for shareholder in shareholders:
+                last_price = SharePrice.objects.last_price(
+                    share=shareholder.share,
+                    date__lte = reporting_date,
+                )
+                res[-1]['enterprise']+=shareholder.amount*last_price
+
+        for r in res:
+            context['table2'].append((
                 r['company'],
                 round(r['year']),
                 f"{round(r['ownership'], 2)}%",
@@ -1009,7 +1247,7 @@ class SharesInfoView(View):
                 
         
         for r  in res:
-            context['results'].append((
+            context['table1'].append((
                 r['company'],
                 round(r['enterprise_undiluted']),
                 round(r['enterprise_fully']),
