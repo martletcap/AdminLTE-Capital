@@ -121,7 +121,7 @@ class Company(models.Model):
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
     sector = models.ForeignKey(Sector, on_delete=models.PROTECT)
     status = models.ForeignKey(CompanyStatus, on_delete=models.PROTECT)
-    number = models.IntegerField(blank=True, null=True)
+    number = models.CharField(max_length=12, blank=True)
     category = models.ForeignKey(CategoryOfCompany, on_delete=models.PROTECT)
     history = HistoricalRecords()
 
