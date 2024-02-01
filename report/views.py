@@ -161,14 +161,14 @@ def short_report(request):
 def upload_shareholders(request):
     if request.method == "POST":
         file = request.FILES.get('file')
-        file_name = report_file_name(file)
+        file_type = report_file_name(file)
         initial_data = []
         special_fields = []
         company = None
         # CS01 behavior
-        if file_name == "CS01":
-            company_name, res, date = CS01_parser(file)
-            company = Company.objects.filter(name=company_name).first()
+        if file_type == "CS01":
+            company_number, res, date = CS01_parser(file)
+            company = Company.objects.filter(number=company_number).first()
             for index, record in enumerate(res):
                 contact_type = ContactType.objects.filter(contact__name=record['owner']).first()
                 if not contact_type:
@@ -181,9 +181,9 @@ def upload_shareholders(request):
                     'name': record['owner']
                 })
         # SH01 behavior
-        elif file_name == "SH01":
-            company_name, res, date = SH01_parser(file)
-            company = Company.objects.filter(name=company_name).first()
+        elif file_type == "SH01":
+            company_number, res, date = SH01_parser(file)
+            company = Company.objects.filter(number=company_number).first()
             # Total share amount
             share_amounts = defaultdict(int)
             for r in res:
@@ -234,7 +234,7 @@ def upload_shareholders(request):
                     })
 
         if not company:
-            messages.error(request, 'Unsupported file type or non-existent company')
+            messages.error(request, 'Unsupported file type or non-existent company number')
             return redirect('upload_shareholders')
     
         extra_form = ShareholderListExtraForm(initial={'company':company, 'date':date})

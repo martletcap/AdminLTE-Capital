@@ -21,7 +21,7 @@ def CS01_parser(pdf):
     for page in reader.pages:
         text +=  page.extract_text()
 
-    company_name =  re.search(r'Company Name:\s(.+)(?:\s+|$)', text).group(1)
+    company_number =  re.search(r'Company Number:\s(.+)(?:\s+|$)', text).group(1)
     date = re.search(r'Statement date:(\d{2}/\d{2}/\d{4})', text).group(1)
     date = datetime.strptime(date, '%d/%m/%Y').date()
 
@@ -35,7 +35,7 @@ def CS01_parser(pdf):
             'share': line_correction(match.group(2)),
             'owner': line_correction(match.group(3)),
         })
-    return(company_name, res, date)
+    return(company_number, res, date)
 
 def SH01_parser(pdf):
     reader = PyPDF2.PdfReader(pdf, strict=False)
@@ -50,7 +50,7 @@ def SH01_parser(pdf):
     for page in reader.pages:
         text +=  page.extract_text()
 
-    company_name =  re.search(r'Company Name:\s(.+)(?:\s+|$)', text).group(1)
+    company_number =  re.search(r'Company Number:\s(.+)(?:\s+|$)', text).group(1)
     date = re.search(r'allottedFrom To\s(\d{2}/\d{2}/\d{4})', text).group(1)
     date = datetime.strptime(date, '%d/%m/%Y').date()
 
@@ -62,7 +62,7 @@ def SH01_parser(pdf):
             'share': line_correction(match.group(1)),
             'amount': int(line_correction(match.group(2))),
         })
-    return(company_name, res, date)
+    return(company_number, res, date)
 
 def report_file_name(pdf):
     if pdf.content_type != 'application/pdf':
