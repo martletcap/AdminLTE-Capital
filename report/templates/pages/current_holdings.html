@@ -100,10 +100,16 @@
             </table>
           </div>
           <!-- /.card -->
-          <div class='card'>
-            <div class='card-body'>
-                <div id='output' class="card card-body border-0 shadow table-wrapper table-responsive"></div>
-            </div>
+        </div>
+        <!-- /.row -->
+        <div class='row'>
+          <div class="card card-body border-0 shadow table-wrapper table-responsive">
+            <table id="table3" class="table table-bordered table-striped">
+              <thead>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
           </div>
           <!-- /.card -->
         </div>
@@ -133,90 +139,77 @@
 <!-- Column total -->
 <script>
   function calculateResults(id){
-    document.addEventListener('DOMContentLoaded', function () {
-      // Get the table element
-      var table = document.getElementById(id);
-      // Initialize an array to store the sum for each column
-      var columnSums = Array.from({ length: table.rows[0].cells.length }, () => 0);
-      // Iterate through each row in the table (skip the header row)
-      for (var i = 1; i < table.rows.length; i++) {
-        var row = table.rows[i];
-        // Iterate through each cell in the row
-        for (var j = 0; j < row.cells.length; j++) {
-          // Parse the cell value as a number (assuming the values are numeric)
-          var cellValue = parseFloat(row.cells[j].innerText.replaceAll(',', ''));
+    // Get the table element
+    var table = document.getElementById(id);
+    // Initialize an array to store the sum for each column
+    var columnSums = Array.from({ length: table.rows[0].cells.length }, () => 0);
+    // Iterate through each row in the table (skip the header row)
+    for (var i = 1; i < table.rows.length; i++) {
+      var row = table.rows[i];
+      // Iterate through each cell in the row
+      for (var j = 0; j < row.cells.length; j++) {
+        // Parse the cell value as a number (assuming the values are numeric)
+        var cellValue = parseFloat(row.cells[j].innerText.replaceAll(',', ''));
 
-          // Add the cell value to the sum for the corresponding column
-          if (!isNaN(cellValue)) {
-            columnSums[j] += cellValue;
-          }
+        // Add the cell value to the sum for the corresponding column
+        if (!isNaN(cellValue)) {
+          columnSums[j] += cellValue;
         }
       }
-      const numOfRecords = document.querySelectorAll(`#${id} tbody tr`).length;
-      let resultRow = document.getElementById(id).tFoot.insertRow();
-      for(var index = 0; index<columnSums.length; index++){
-        if(index === 0){
-          resultRow.insertCell().innerHTML = '<b>Total:</b>';
-        }else if([0, 1, 2, 10].includes(index)){
-          resultRow.insertCell().innerHTML = '';
-        }else if([11, 12].includes(index)){
-          resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
-        } else {
-          resultRow.insertCell().innerHTML = `<b>${columnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
-        }
+    }
+    const numOfRecords = document.querySelectorAll(`#${id} tbody tr`).length;
+    let resultRow = document.getElementById(id).tFoot.insertRow();
+    for(var index = 0; index<columnSums.length; index++){
+      if(index === 0){
+        resultRow.insertCell().innerHTML = '<b>Total:</b>';
+      }else if([0, 1, 2, 10].includes(index)){
+        resultRow.insertCell().innerHTML = '';
+      }else if([11, 12].includes(index)){
+        resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
+      } else {
+        resultRow.insertCell().innerHTML = `<b>${columnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
       }
-      
-    });
+    }
+    return [columnSums, numOfRecords]
+
   }
-  calculateResults('table1');
-  calculateResults('table2');
+  let [totalColumnSums, totalNumOfRecords] = calculateResults('table1');
+  let [columnSums, numOfRecords] = calculateResults('table2');
+  totalNumOfRecords += numOfRecords;
+  for(let index = 0; index<columnSums.length; index++){
+    totalColumnSums[index] += columnSums[index]
+  }
+
   // Grand total
   $(document).ready(function() {
-      const table1 = $('#table1 tfoot td');
-      const table2 = $('#table2 tfoot td');
+    var table1 = document.getElementById('table1');
+    var table3 = document.getElementById('table3');
+    // Получаем заголовки из table1
+    var headers = table1.getElementsByTagName('thead')[0].getElementsByTagName('tr')[0].cloneNode(true);
+    // Вставляем заголовки в table3
+    table3.getElementsByTagName('thead')[0].appendChild(headers);
 
-      const results = Array.from({ length: table1.length }, () => 0);
-      results[0] = 'Grand Total:'
-      function innerSum(table){
-        for(let index = 0; index<table.length; index++){
-          let value = $(table[index]).find('b').contents().unwrap().text();
-          value = parseInt(value.replaceAll(',', '')) 
-          if(!isNaN(value)){
-            results[index]+=value
-          }
-        }
+    // Создаем новую строку
+    var newRow = table3.getElementsByTagName('tbody')[0].insertRow();
+    // Добавляем ячейки в новую строку с данными из массива
+    for (var index = 0; index < totalColumnSums.length; index++) {
+      var cell = newRow.insertCell(index);
+      if(index === 0){
+        cell.innerHTML = '<b>Grand Total:</b>';
+      }else if([0, 1, 2, 10].includes(index)){
+        cell.innerHTML = '';
+      }else if([11, 12].includes(index)){
+        cell.innerHTML = `<b>${(totalColumnSums[index]/totalNumOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
+      } else {
+        cell.innerHTML = `<b>${totalColumnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
       }
-      innerSum(table1)
-      innerSum(table2)
-      console.log(results)
-      // Создаем таблицу в элементе с id "output"
-      const outputTable = $('<table>').appendTo('#output');
-      // Добавляем заголовки из первой таблицы
-      const headerRow = $('<thead>').appendTo(outputTable);
-      const headerRowContent = $('<tr>').appendTo(headerRow);
-      $('#table1 thead th').each(function() {
-          $('<th>').text($(this).text()).appendTo(headerRowContent);
-      });
-      // Добавляем строки с результатами в tbody
-      const tbody = $('<tbody>').appendTo(outputTable);
-      const resultRow = $('<tr>').appendTo(tbody);
-      results.forEach(function(result) {
-          $('<td>').text(result.toLocaleString('en-US')).appendTo(resultRow);
-      });
-      // Добавляем атрибут id к созданной таблице
-      outputTable.attr('id', 'output_table');
-      outputTable.addClass('table', 'table-bordered', 'table-striped');
+    }
+
   });
 
 </script>
 <!-- DataTable scripts -->
 <script>
-  $(function () {
-    $('#output_table').DataTable({
-      "responsive": true, "lengthChange": false, "autoWidth": false, "paging": false,
-      "searching":false,
-    }).buttons().container().appendTo('#output_table_wrapper .col-md-6:eq(0)');
-  });
   $(function () {
     $("#table1").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
@@ -236,6 +229,12 @@
         [5, 'desc']
       ]
     }).buttons().container().appendTo('#table2_wrapper .col-md-6:eq(0)');
+  });
+  $(function () {
+    $("#table3").DataTable({
+      "responsive": true, "lengthChange": false, "autoWidth": false,
+      "paging": false, "searching": false,
+    })
   });
 </script>
 {% endblock extra_scripts %}
