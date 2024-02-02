@@ -137,7 +137,7 @@
         // Iterate through each cell in the row
         for (var j = 0; j < row.cells.length; j++) {
           // Parse the cell value as a number (assuming the values are numeric)
-          var cellValue = parseFloat(row.cells[j].innerText.replace(',', ''));
+          var cellValue = parseFloat(row.cells[j].innerText.replaceAll(',', ''));
 
           // Add the cell value to the sum for the corresponding column
           if (!isNaN(cellValue)) {
