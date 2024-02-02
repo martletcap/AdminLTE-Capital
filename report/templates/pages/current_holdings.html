@@ -100,9 +100,16 @@
             </table>
           </div>
           <!-- /.card -->
+          <div class='card'>
+            <div class='card-body'>
+                <div id='output' class="card card-body border-0 shadow table-wrapper table-responsive"></div>
+            </div>
+          </div>
+          <!-- /.card -->
         </div>
         <!-- /.row -->
-      </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.container-fluid -->
     </section>
     <!-- /.content -->
   </div>
@@ -163,9 +170,53 @@
   }
   calculateResults('table1');
   calculateResults('table2');
+  // Grand total
+  $(document).ready(function() {
+      const table1 = $('#table1 tfoot td');
+      const table2 = $('#table2 tfoot td');
+
+      const results = Array.from({ length: table1.length }, () => 0);
+      results[0] = 'Grand Total:'
+      function innerSum(table){
+        for(let index = 0; index<table.length; index++){
+          let value = $(table[index]).find('b').contents().unwrap().text();
+          value = parseInt(value.replaceAll(',', '')) 
+          if(!isNaN(value)){
+            results[index]+=value
+          }
+        }
+      }
+      innerSum(table1)
+      innerSum(table2)
+      console.log(results)
+      // Создаем таблицу в элементе с id "output"
+      const outputTable = $('<table>').appendTo('#output');
+      // Добавляем заголовки из первой таблицы
+      const headerRow = $('<thead>').appendTo(outputTable);
+      const headerRowContent = $('<tr>').appendTo(headerRow);
+      $('#table1 thead th').each(function() {
+          $('<th>').text($(this).text()).appendTo(headerRowContent);
+      });
+      // Добавляем строки с результатами в tbody
+      const tbody = $('<tbody>').appendTo(outputTable);
+      const resultRow = $('<tr>').appendTo(tbody);
+      results.forEach(function(result) {
+          $('<td>').text(result.toLocaleString('en-US')).appendTo(resultRow);
+      });
+      // Добавляем атрибут id к созданной таблице
+      outputTable.attr('id', 'output_table');
+      outputTable.addClass('table', 'table-bordered', 'table-striped');
+  });
+
 </script>
 <!-- DataTable scripts -->
 <script>
+  $(function () {
+    $('#output_table').DataTable({
+      "responsive": true, "lengthChange": false, "autoWidth": false, "paging": false,
+      "searching":false,
+    }).buttons().container().appendTo('#output_table_wrapper .col-md-6:eq(0)');
+  });
   $(function () {
     $("#table1").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
