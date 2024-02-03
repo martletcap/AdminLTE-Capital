@@ -37,9 +37,8 @@ ALLOWED_HOSTS = ['*']
 
 # Add here your deployment HOSTS
 CSRF_TRUSTED_ORIGINS = [
-    'http://10.8.0.7:8000', # VPN address
-    'http://localhost:8000',
-    'http://localhost:5085',
+    'http://185.65.245.236:8080', # Server IP
+    'http://10.8.0.1:80',         # VPN address
 ]
 
 #Render Context
