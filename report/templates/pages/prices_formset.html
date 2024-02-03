@@ -66,6 +66,12 @@ s{% extends "layouts/base.html" %}
                     {% if title %}
                         <h5 class="card-title"><strong>{{title}}</strong></h5>
                     {% endif %}
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="mainPriceInput" placeholder="Enter Price">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="date" class="form-control" id="mainDateInput">
+                    </div>
                 </div>
                 <div class="card-body border-0 shadow table-wrapper table-responsive">
                     <form method="POST" enctype="multipart/form-data" action="{{form_url}}">
@@ -153,6 +159,25 @@ s{% extends "layouts/base.html" %}
       ]
       });
     }); 
+  </script>
+  <script>
+    const mainPriceInput = document.getElementById('mainPriceInput');
+    const mainDateInput = document.getElementById('mainDateInput');
+
+    mainPriceInput.addEventListener('input', function() {
+        const mainPrice = mainPriceInput.value;
+        const priceInputs = document.querySelectorAll('[id$="price"]');
+        priceInputs.forEach(function(input) {
+            input.value = mainPrice;
+        });
+    });
+    mainDateInput.addEventListener('input', function() {
+        const mainDate = mainDateInput.value;
+        const dateInputs = document.querySelectorAll('[id$="date"]');
+        dateInputs.forEach(function(input) {
+            input.value = mainDate;
+        });
+    });
   </script>
 
 {% endblock %}
