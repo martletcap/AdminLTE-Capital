@@ -10,7 +10,6 @@ from django.db.models import (
     F, Sum,
 )
 
-from core.settings import PORTFOLIO
 from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
 from home.models import (
     Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
@@ -57,7 +56,7 @@ def short_report(request):
     # Get money transactions
     money_transactions = MoneyTransaction.objects.filter(
         company__in = companies,
-        portfolio__name = PORTFOLIO,
+        portfolio__name = 'Martlet',
     ).annotate(
         area = F('company__sector__name'),
         city = F('company__location__city'),
