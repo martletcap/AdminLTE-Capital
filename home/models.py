@@ -190,7 +190,6 @@ class Split(models.Model):
     objects = SplitManager()
     
 
-
 class SharePrice(models.Model):
 
     class Meta:

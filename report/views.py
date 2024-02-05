@@ -1247,7 +1247,7 @@ class SharesInfoView(View):
                 
         
         for r  in res:
-            context['table1'].append((
+            context['results'].append((
                 r['company'],
                 round(r['enterprise_undiluted']),
                 round(r['enterprise_fully']),
