@@ -29,7 +29,7 @@ class LocationAdmin(SimpleHistoryAdminCustom):
 
 
 class CompanyAdmin(SimpleHistoryAdminCustom):
-    list_display = ['name', 'location', 'contact', 'sector', 'status', 'category']
+    list_display = ['name', 'location', 'contact', 'staff', 'sector', 'status', 'category']
     form = CompanyForm
 
 
