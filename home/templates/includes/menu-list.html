@@ -56,6 +56,7 @@
             <p>Shares Control</p>
           </a>
         </li>
+        {% comment %} 
         <li class="nav-item">
           {% url 'iframe' as iframe %}
           <a href="{{ iframe }}" class="nav-link {% if iframe == request.path %} active {% endif %}">
@@ -63,6 +64,7 @@
             <p>iFrame</p>
           </a>
         </li>
+        {% endcomment %}
       </ul>
     </li>
     {% if app_list %}
