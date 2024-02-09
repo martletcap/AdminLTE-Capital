@@ -329,8 +329,8 @@ class CompanyHouseParser(models.Model):
         unique_together = ('company_id', 'transaction_id',)
 
     id = models.AutoField(primary_key=True)
-    company_id = models.ForeignKey(Company, on_delete=models.PROTECT)
-    shareholder_list_id = models.ForeignKey(
+    company = models.ForeignKey(Company, on_delete=models.PROTECT)
+    shareholder_list = models.ForeignKey(
         Share, on_delete=models.SET_NULL, blank=True, null=True,
     )
     transaction_id = models.CharField(max_length=32)
