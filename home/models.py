@@ -319,3 +319,19 @@ class Shareholder(models.Model):
 
     def __self__(self):
         return f"{self.shareholder_list} - {self.contact}"
+    
+
+class CompanyHouseParser(models.Model):
+
+    class Meta:
+        db_table = 'company_house_parser'
+        verbose_name_plural = '12. Company House Parser'
+
+    id = models.AutoField(primary_key=True)
+    shareholder_list_id = models.ForeignKey(
+        Share, on_delete=models.SET_NULL, blank=True, null=True,
+    )
+    file_id = models.CharField(max_length=32, unique=True)
+    date = models.DateField(auto_now_add=True)
+    comment = models.TextField(max_length=10240, blank=True)
+    status = models.BooleanField(default=False)

@@ -8,7 +8,7 @@ from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
     Company, SeedStep, ShareType, Share, Split, SharePrice,
     MoneyTransaction, ShareTransaction, FairValueMethod,
-    ShareholderList, Shareholder,
+    ShareholderList, Shareholder, CompanyHouseParser,
 )
 from .forms import (
     CompanyForm, SeedStepForm, SplitForm,
@@ -193,3 +193,4 @@ admin.site.register(ShareTransaction, ShareTransactionAdmin)
 admin.site.register(FairValueMethod, FairValueMethodAdmin)
 admin.site.register(ShareholderList, ShareholderListAdmin)
 admin.site.register(Shareholder, ShareholderAdmin)
+admin.site.register(CompanyHouseParser, SimpleHistoryAdmin)

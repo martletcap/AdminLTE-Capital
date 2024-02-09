@@ -14,3 +14,11 @@ env
 *.sqlite*
 
 .env
+
+# Docker
+.dockerignore
+Dockerfile
+
+# Trash
+*.pdf
+test.py
