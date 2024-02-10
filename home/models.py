@@ -326,12 +326,11 @@ class CompanyHouseParser(models.Model):
     class Meta:
         db_table = 'company_house_parser'
         verbose_name_plural = '12. Company House Parser'
-        unique_together = ('company_id', 'transaction_id',)
 
     id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     shareholder_list = models.ForeignKey(
-        Share, on_delete=models.SET_NULL, blank=True, null=True,
+        ShareholderList, on_delete=models.PROTECT, blank=True, null=True,
     )
     transaction_id = models.CharField(max_length=32)
     parsing_datetime = models.DateTimeField(auto_now_add=True)
