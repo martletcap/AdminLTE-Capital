@@ -220,7 +220,8 @@ def upload_shareholders(request):
                     # already in the database, add it to it; if not, create it.
                     for record in initial_data:
                         if (record['name'] == default_contact.name and
-                            record['type'] == key):
+                            record['type'] == key and
+                            record['option'] == True):
                             record['amount']+=value
                             added = True
                             break
