@@ -16,5 +16,6 @@ urlpatterns = [
     path('utils/update/', views.UpdateShareholdersView.as_view(), name='update_shareholders'),
     path('utils/confirm/', views.confirm_shareholders, name='confirm_shareholders'),
     path('utils/updateprices/', views.SharePriceUpdateView.as_view(), name='update_prices'),
-    path('utils/sharescontrol/', views.SharesControlView.as_view(), name='shares_control')
+    path('utils/sharescontrol/', views.SharesControlView.as_view(), name='shares_control'),
+    path('utils/parse_shareholders/', views.ParseShareholders.as_view(), name='parse_shareholders'),
 ]

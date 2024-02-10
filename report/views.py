@@ -11,6 +11,7 @@ from django.db.models import (
 )
 
 from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
+from utils.tasks import shareholders_parsing
 from home.models import (
     Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
@@ -1294,3 +1295,9 @@ class SharesControlView(View):
 
         messages.success(request, 'Added successfully')
         return redirect('shares_control')
+    
+
+class ParseShareholders(View):
+    def get(self, request):
+        shareholders_parsing.delay()
+        return redirect(resolve_url('index'))

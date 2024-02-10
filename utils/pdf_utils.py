@@ -3,6 +3,7 @@ import string
 from datetime import datetime
 
 import PyPDF2
+from PyPDF2.errors import PyPdfError
 
 def line_correction(line:str):
     printable = set(string.ascii_letters + string.digits + string.punctuation + ' ')
@@ -65,9 +66,10 @@ def SH01_parser(pdf):
     return(company_number, res, date)
 
 def report_file_name(pdf):
-    if pdf.content_type != 'application/pdf':
-        return None
-    reader = PyPDF2.PdfReader(pdf, strict=False)
+    try:
+        reader = PyPDF2.PdfReader(pdf, strict=False)
+    except PyPdfError:
+        return
     page = reader.pages[0].extract_text()
     match = re.search(r'([0-9A-Z]{4})\s\(ef\)', page)
     if match:
