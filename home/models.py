@@ -337,3 +337,4 @@ class CompanyHouseParser(models.Model):
     file_date = models.DateField()
     comment = models.TextField(max_length=10240, blank=True)
     status = models.BooleanField(default=False)
+    history = HistoricalRecords()
