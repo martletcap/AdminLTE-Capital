@@ -86,13 +86,12 @@ def last_company_file_items(company):
 def item_to_shareholder_list(company, item, parser_record):
     cur_shareholder_list = None
     file = company_house_pdf(company.number, item['id'])
-    print(company.number)
-    print(item['id'])
     # CS01 behavior
     if item['type'] == 'CS01':
         try:
             _, res, date = CS01_parser(file)
         except:
+            parser_record.comment = 'Unsupported file format.'
             return
         if not res:
             parser_record.comment = 'ShareholderList file is empty.'
@@ -127,6 +126,7 @@ def item_to_shareholder_list(company, item, parser_record):
         try:
             _, res, date = SH01_parser(file)
         except:
+            parser_record.comment = 'Unsupported file format.'
             return
         # Total share amount
         share_amounts = defaultdict(int)

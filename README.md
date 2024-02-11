@@ -21,3 +21,4 @@
   * DB_PORT
 * Configure nginx
 * ```gunicorn --config gunicorn-cfg.py core.wsgi```
+* ```celery -A core worker -l INFO```

@@ -3,7 +3,7 @@ from collections import defaultdict
 from decimal import Decimal
 
 from django.contrib import messages
-from django.views.generic import View
+from django.views.generic import View, RedirectView
 from django.urls import reverse
 from django.shortcuts import render, resolve_url, redirect
 from django.db.models import (
@@ -11,7 +11,7 @@ from django.db.models import (
 )
 
 from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
-from utils.tasks import shareholders_parsing
+from utils.tasks import parse_company_shareholders
 from home.models import (
     Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
@@ -1297,7 +1297,18 @@ class SharesControlView(View):
         return redirect('shares_control')
     
 
-class ParseShareholders(View):
-    def get(self, request):
-        shareholders_parsing.delay()
+class ParseCompanyShareholders(View):
+    def get(self, request, *args, **kwargs):
+        form = CompanySelectForm(request.GET)
+        if not form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('parse_company_shareholders'), 
+                'form': form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        company = form.cleaned_data['company']
+        parse_company_shareholders.delay(company.pk)
         return redirect(resolve_url('index'))
+        

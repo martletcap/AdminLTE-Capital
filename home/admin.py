@@ -174,6 +174,9 @@ class ShareholderAdmin(SimpleHistoryAdminCustom):
     list_display = ['shareholder_list', 'contact', 'share', 'amount', 'option']
     form = ShareholderForm
 
+class CompanyHouseParserAdmin(SimpleHistoryAdmin):
+    list_display = ['company', 'parsing_datetime', 'file_date', 'status']
+
 
 # Register your models here.
 admin.site.register(ContactType, SimpleHistoryAdminCustom)
@@ -193,4 +196,4 @@ admin.site.register(ShareTransaction, ShareTransactionAdmin)
 admin.site.register(FairValueMethod, FairValueMethodAdmin)
 admin.site.register(ShareholderList, ShareholderListAdmin)
 admin.site.register(Shareholder, ShareholderAdmin)
-admin.site.register(CompanyHouseParser, SimpleHistoryAdmin)
+admin.site.register(CompanyHouseParser, CompanyHouseParserAdmin)
