@@ -17,11 +17,11 @@ def parse_all_shareholders():
                 transaction_id = item['id'],
                 file_date = item['date'],
             )
-            res_shareholder_list = item_to_shareholder_list(
+            res_shareholder_list, message = item_to_shareholder_list(
                 company,
                 item,
-                parser_record,
             )
+            parser_record.comment = message
             parser_record.shareholder_list = res_shareholder_list
             parser_record.save()
        
@@ -35,11 +35,11 @@ def parse_company_shareholders(id):
             transaction_id = item['id'],
             file_date = item['date'],
         )
-        res_shareholder_list = item_to_shareholder_list(
+        res_shareholder_list, message = item_to_shareholder_list(
             company,
             item,
-            parser_record,
         )
+        parser_record.comment = message
         parser_record.shareholder_list = res_shareholder_list
         parser_record.save()
             

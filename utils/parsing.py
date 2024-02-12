@@ -71,8 +71,8 @@ def company_house_pdf(company_number, transaction_id):
     return BytesIO(response.content)
 
 def last_company_file_items(company):
-    # Only files newer than 2024 01 01
-    last_date = date(2024, 1, 1)
+    # Only files newer than 2023 10 1
+    last_date = date(2023, 10, 1)
     last_parsing_date = CompanyHouseParser.objects.filter(
         company = company
     ).order_by('-file_date').first()
@@ -83,7 +83,7 @@ def last_company_file_items(company):
     # Sorting from minimum to maximum date
     return sorted(items, key=lambda x: x['date'])
 
-def item_to_shareholder_list(company, item, parser_record):
+def item_to_shareholder_list(company, item):
     cur_shareholder_list = None
     file = company_house_pdf(company.number, item['id'])
     # CS01 behavior
@@ -91,16 +91,13 @@ def item_to_shareholder_list(company, item, parser_record):
         try:
             _, res, date = CS01_parser(file)
         except:
-            parser_record.comment = 'Unsupported file format.'
-            return
+            return None, 'Unsupported file format.'
         if not res:
-            parser_record.comment = 'ShareholderList file is empty.'
-            return
+            return None, 'ShareholderList file is empty.'
         cur_shareholder_list, created = ShareholderList.objects.get_or_create(company=company, date=date)
         # If a ShareholderList already exists, do not create a new one
         if not created:
-            parser_record.comment = 'ShareholderList already exists.'
-            return
+            return None, 'ShareholderList already exists.'
         for record in res:
             # Get or crate Contact
             contact, _ = Contact.objects.get_or_create(
@@ -126,8 +123,7 @@ def item_to_shareholder_list(company, item, parser_record):
         try:
             _, res, date = SH01_parser(file)
         except:
-            parser_record.comment = 'Unsupported file format.'
-            return
+            return None, 'Unsupported file format.'
         # Total share amount
         share_amounts = defaultdict(int)
         for r in res:
@@ -159,8 +155,7 @@ def item_to_shareholder_list(company, item, parser_record):
         default_contact = Contact.objects.get(pk=1) # "No Name" contact
         for key, value in share_amounts.items():
             if value<0:
-                parser_record.comment = 'Liquidation error!'
-                return
+                return None, 'Liquidation error!'
             elif value>0:
                 added = False
                 # If the default_contact with the same share is
@@ -182,8 +177,7 @@ def item_to_shareholder_list(company, item, parser_record):
         cur_shareholder_list, created = ShareholderList.objects.get_or_create(company=company, date=date)
         # If a ShareholderList already exists, do not create a new one
         if not created:
-            parser_record.comment = 'ShareholderList already exists.'
-            return
+            return None, 'ShareholderList already exists.'
         for record in records:
             share_type, _ = ShareType.objects.get_or_create(type=record['type'])
             share, _ = Share.objects.get_or_create(type=share_type, company = company)
@@ -194,4 +188,4 @@ def item_to_shareholder_list(company, item, parser_record):
                 amount = record['amount'],
                 option = record['option'],
             )
-    return cur_shareholder_list
+    return cur_shareholder_list, None
