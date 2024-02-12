@@ -1,7 +1,10 @@
 import sys
-from django.contrib import admin
+
 from django.urls import reverse
+from django.contrib import admin
+from django.db.models import Sum
 from django.shortcuts import redirect
+from django.utils.safestring import mark_safe
 from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (
@@ -175,7 +178,28 @@ class ShareholderAdmin(SimpleHistoryAdminCustom):
     form = ShareholderForm
 
 class CompanyHouseParserAdmin(SimpleHistoryAdmin):
-    list_display = ['company', 'parsing_datetime', 'file_date', 'status']
+    list_display = [
+        'company', 'parsing_datetime', 'file_date', 'status', 'shares_field', 'file_link'
+    ]
+
+    def shares_field(self, obj):
+        shareholder_list = obj.shareholder_list
+        if shareholder_list is None:
+            return 0
+        sum = Shareholder.objects.filter(
+            shareholder_list=shareholder_list,
+            option = True,
+        ).aggregate(total_amount=Sum('amount'))['total_amount']
+        return sum
+
+    def file_link(self, obj):
+        link = "<a href='https://find-and-update.company-information.service.gov.uk/company/{0}/filing-history/{1}/document?format=pdf&download=1'>Link</a>"
+        return mark_safe(link.format(obj.company.number, obj.transaction_id))
+
+    # shares_field
+    shares_field.short_description = 'Shares amount'
+    # file link
+    file_link.short_description = 'Download'
 
 
 # Register your models here.
