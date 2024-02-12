@@ -179,7 +179,8 @@ class ShareholderAdmin(SimpleHistoryAdminCustom):
 
 class CompanyHouseParserAdmin(SimpleHistoryAdmin):
     list_display = [
-        'company', 'parsing_datetime', 'file_date', 'status', 'shares_field', 'file_link'
+        'company', 'parsing_datetime', 'file_date', 'parsed_field', 
+        'status', 'shares_field', 'file_link_field',
     ]
 
     def shares_field(self, obj):
@@ -192,14 +193,22 @@ class CompanyHouseParserAdmin(SimpleHistoryAdmin):
         ).aggregate(total_amount=Sum('amount'))['total_amount']
         return sum
 
-    def file_link(self, obj):
+    def file_link_field(self, obj):
         link = "<a href='https://find-and-update.company-information.service.gov.uk/company/{0}/filing-history/{1}/document?format=pdf&download=1'>Link</a>"
         return mark_safe(link.format(obj.company.number, obj.transaction_id))
+    
+    def parsed_field(self, obj):
+        if obj.shareholder_list:
+            return mark_safe('<img src="/static/admin/img/icon-yes.svg" alt="True">')
+        return mark_safe('<img src="/static/admin/img/icon-no.svg" alt="False">')
+    
 
     # shares_field
     shares_field.short_description = 'Shares amount'
     # file link
-    file_link.short_description = 'Download'
+    file_link_field.short_description = 'Download'
+    #  parsed field
+    parsed_field.short_description = 'Parsed'
 
 
 # Register your models here.
