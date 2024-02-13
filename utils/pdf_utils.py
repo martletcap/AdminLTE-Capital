@@ -31,7 +31,7 @@ def CS01_parser(pdf):
     text = re.sub(r'\d+\stransferred\son\s\d+-\d+-\d+\s', '', text)
 
     for match in pattern.finditer(text):
-        amount = line_correction(match.group(1))
+        amount = int(line_correction(match.group(1)))
         share = line_correction(match.group(2))
         owner = line_correction(match.group(3))
         res.append({
@@ -63,7 +63,7 @@ def SH01_parser(pdf):
 
     for match in pattern.finditer(text):
         share = line_correction(match.group(1))
-        amount = line_correction(match.group(2))
+        amount = int(line_correction(match.group(2)))
         res.append({
             'share': share,
             'amount': amount,

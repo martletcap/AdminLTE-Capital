@@ -43,10 +43,10 @@ def company_filling_history(
             link.format(company_number),
             params=params, headers=headers
         )
-        data = response.json()
         # Check credentials
         assert response.status_code != 401, 'Invalid COMPANY_HOUSE_KEY!'
         assert response.ok == True, 'Company House parsing error!'
+        data = response.json()
 
         items = data['items']
         if len(items)<items_per_page: parse = False
