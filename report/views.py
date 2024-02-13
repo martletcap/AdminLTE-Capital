@@ -11,7 +11,6 @@ from django.db.models import (
 )
 
 from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
-from utils.tasks import parse_company_shareholders
 from home.models import (
     Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
