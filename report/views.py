@@ -1295,20 +1295,4 @@ class SharesControlView(View):
 
         messages.success(request, 'Added successfully')
         return redirect('shares_control')
-    
-
-class ParseCompanyShareholders(View):
-    def get(self, request, *args, **kwargs):
-        form = CompanySelectForm(request.GET)
-        if not form.is_valid():
-            context = {
-                'enctype':'multipart/form-data',
-                'method': "GET",
-                'url': resolve_url('parse_company_shareholders'), 
-                'form': form,
-            }
-            return render(request, 'pages/simple_form.html', context=context)
-        company = form.cleaned_data['company']
-        parse_company_shareholders.delay(company.pk)
-        return redirect(resolve_url('index'))
         

@@ -188,4 +188,4 @@ def item_to_shareholder_list(company, item):
                 amount = record['amount'],
                 option = record['option'],
             )
-    return cur_shareholder_list, None
+    return cur_shareholder_list, ''

@@ -7,7 +7,7 @@
 /node_modules/
 build/
 env
-.venv/
+.venv*/
 /staticfiles/
 
 #src
@@ -17,7 +17,7 @@ env
 
 # Docker
 .dockerignore
-Dockerfile
+Dockerfile*
 
 # Trash
 *.pdf

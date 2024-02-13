@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     "base_info", # Just separating models
     'report', # Reports app
 
-    'simple_history', # expand history
+    'simple_history', # Expand history
+    'django_celery_beat', # Scheduler
 ]
 
 MIDDLEWARE = [
@@ -181,3 +182,4 @@ USE_THOUSAND_SEPARATOR = True
 
 # Celery
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
