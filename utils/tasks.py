@@ -24,5 +24,9 @@ def parse_all_shareholders():
             parser_record.comment = message
             parser_record.shareholder_list = res_shareholder_list
             parser_record.save()
+            # if there is an error, do not check the following files
+            # for this company
+            if res_shareholder_list is None:
+                break
 
 

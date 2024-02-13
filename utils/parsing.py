@@ -74,13 +74,21 @@ def company_house_pdf(company_number, transaction_id):
 def last_company_file_items(company):
     # Only files newer than 2023 10 1
     last_date = date(2023, 10, 1)
-    last_parsing_date = CompanyHouseParser.objects.filter(
+    last_parsing = CompanyHouseParser.objects.filter(
         company = company
-    ).order_by('-file_date').first()
-    if last_parsing_date:
-        last_date = max(last_date, last_parsing_date.file_date)
+    ).order_by('-file_date', '-id').first()
+    last_transaction_id = None
+    if last_parsing:
+        last_date = max(last_date, last_parsing.file_date)
+        # If the previous transaction is confirmed,
+        # do not try to parse the same file
+        if last_parsing.status:
+            last_transaction_id = last_parsing.transaction_id
     
     items = company_filling_history(company.number, last_date)
+    for index, value in enumerate(items):
+        if value['id'] == last_transaction_id:
+            del items[index]
     # Sorting from minimum to maximum date
     return sorted(items, key=lambda x: x['date'])
 
