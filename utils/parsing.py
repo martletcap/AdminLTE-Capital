@@ -8,6 +8,7 @@ import requests
 from dotenv import load_dotenv
 
 from utils.pdf_utils import CS01_parser, SH01_parser
+from utils.general import share_name_correction
 from home.models import (
     ContactType, Contact, ShareType, Share, ShareholderList, Shareholder,
     CompanyHouseParser,
@@ -108,7 +109,7 @@ def item_to_shareholder_list(company, item):
             )
             # Get or crate Share
             share_type, _ = ShareType.objects.get_or_create(
-                type = record['share']
+                type = share_name_correction(record['share'])
             )
             share, _ = Share.objects.get_or_create(type=share_type, company=company)
             # Create shareholder
@@ -127,7 +128,7 @@ def item_to_shareholder_list(company, item):
         # Total share amount
         share_amounts = defaultdict(int)
         for r in res:
-            share = r['share'].replace(' SHARES', '')
+            share = share_name_correction(r['share'])
             share_amounts[share]+= r['amount']
         # Prev shareholders
         shareholder_list = ShareholderList.objects.filter(

@@ -31,10 +31,13 @@ def CS01_parser(pdf):
     text = re.sub(r'\d+\stransferred\son\s\d+-\d+-\d+\s', '', text)
 
     for match in pattern.finditer(text):
+        amount = line_correction(match.group(1))
+        share = line_correction(match.group(2))
+        owner = line_correction(match.group(3))
         res.append({
-            'amount': int(line_correction(match.group(1))),
-            'share': line_correction(match.group(2)),
-            'owner': line_correction(match.group(3)),
+            'amount': amount,
+            'share': share,
+            'owner': owner,
         })
     return(company_number, res, date)
 
@@ -54,14 +57,16 @@ def SH01_parser(pdf):
     company_number =  re.search(r'Company Number:\s(.+)(?:\s+|$)', text).group(1)
     date = re.search(r'allottedFrom To\s(\d{2}/\d{2}/\d{4})', text).group(1)
     date = datetime.strptime(date, '%d/%m/%Y').date()
-
+    
     # Remove problem areas
     text = text[text.find('Statement of Capital (Share Capital)'):]
 
     for match in pattern.finditer(text):
+        share = line_correction(match.group(1))
+        amount = line_correction(match.group(2))
         res.append({
-            'share': line_correction(match.group(1)),
-            'amount': int(line_correction(match.group(2))),
+            'share': share,
+            'amount': amount,
         })
     return(company_number, res, date)
 

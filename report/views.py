@@ -11,6 +11,7 @@ from django.db.models import (
 )
 
 from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
+from utils.general import share_name_correction
 from home.models import (
     Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
@@ -176,7 +177,7 @@ def upload_shareholders(request):
                 initial_data.append({
                     'amount': record['amount'],
                     'contact_type': contact_type,
-                    'type': record['share'].replace(' SHARES', ''),
+                    'type': share_name_correction(record['share']),
                     'name': record['owner']
                 })
         # SH01 behavior
@@ -186,7 +187,7 @@ def upload_shareholders(request):
             # Total share amount
             share_amounts = defaultdict(int)
             for r in res:
-                share = r['share'].replace(' SHARES', '')
+                share = share_name_correction(r['share'])
                 share_amounts[share]+= r['amount']
             # Current shareholders
             shareholder_list = ShareholderList.objects.filter(
