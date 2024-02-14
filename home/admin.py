@@ -180,7 +180,7 @@ class ShareholderAdmin(SimpleHistoryAdminCustom):
 class CompanyHouseParserAdmin(SimpleHistoryAdmin):
     list_display = [
         'company', 'parsing_datetime', 'file_date', 'parsed_field', 
-        'status', 'shares_field', 'file_link_field',
+        'status', 'shares_field', 'file_link_field', 'comment',
     ]
 
     def shares_field(self, obj):
