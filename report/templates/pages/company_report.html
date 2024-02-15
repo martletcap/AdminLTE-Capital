@@ -122,7 +122,35 @@
     </div>
     <div class="row main-header mt-3 mr-1">
         <div class="card card-body border-0 shadow table-wrapper table-responsive">
-            <table id="example2" class="table table-bordered table-striped">
+            <table id="table2" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Number of</th>
+                    <th>Cost per share</th>
+                    <th>Type of transaction</th>
+                    <th>Type of share</th>
+                    <th>Portfolio</th>
+                    <th>Comment</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for record in table1 %}
+                    </tr>
+                        {% for field in record %}
+                            <td>{{field}}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- /.card -->
+    </div>
+    <div class="row main-header mt-3 mr-1">
+        <div class="card card-body border-0 shadow table-wrapper table-responsive">
+            <table id="table2" class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Owner</th>
@@ -132,7 +160,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for record in results %}
+                {% for record in table2 %}
                     </tr>
                         <td>{{ record.contact }}</td>
                         <td>{{ record.contact.type }}</td>

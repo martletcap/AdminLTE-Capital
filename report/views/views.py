@@ -16,12 +16,12 @@ from home.models import (
     Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
 )
-from .forms import (
+from report.forms import (
     UploadFileForm, ShareholderListExtraForm, CompanySelectForm,
     ShareholderUploadFormSet, SharePriceFormSet, PeriodForm, DateForm,
     SharesControlFormSet,
 )
-
+from .table import extended_transaction_table
 
 def short_report(request):
     context = {}
@@ -430,9 +430,10 @@ class CompanyReportView(View):
                         else:
                             array.append(0)
             last_date = share_price.date
-
+        
         context = {
-            'results':shareholders,
+            'table1':extended_transaction_table(company),
+            'table2':shareholders,
             'company':company,
             'contact':contact,
             'percentage_of_ownership': percentage_of_ownership,
