@@ -46,8 +46,8 @@ def SH01_parser(pdf):
     res = []
     # Pattern
     pattern = re.compile((
-            r'Class\sof\sShares:\s([A-Z0-9\W]+)Currency:'
-            r'.+Number\sallotted\s(\d+)'
+            r'Class\sof\sShares:\s([A-Z0-9\W]+)\sNumber'
+            r'\sallotted\s(\d+)'
     ))
     # Concat text
     text = ''
@@ -60,6 +60,7 @@ def SH01_parser(pdf):
     
     # Remove problem areas
     text = text[text.find('Statement of Capital (Share Capital)'):]
+    text = re.sub(r'Currency: (.+)Number', 'Number', text)
 
     for match in pattern.finditer(text):
         share = line_correction(match.group(1))

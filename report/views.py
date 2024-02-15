@@ -191,7 +191,8 @@ def upload_shareholders(request):
                 share_amounts[share]+= r['amount']
             # Current shareholders
             shareholder_list = ShareholderList.objects.filter(
-                company = company
+                company = company,
+                date__lt = date,
             ).order_by('-date')[:1].first()
             shareholders = Shareholder.objects.filter(
                 shareholder_list = shareholder_list
