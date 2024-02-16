@@ -179,9 +179,10 @@ class ShareholderAdmin(SimpleHistoryAdminCustom):
 
 class CompanyHouseParserAdmin(SimpleHistoryAdmin):
     list_display = [
-        'company', 'parsing_datetime', 'file_date', 'parsed_field', 
+        'company', 'formatted_parsing_datetime_field', 'file_date', 'parsed_field', 
         'status', 'shares_field', 'file_link_field', 'comment',
     ]
+    change_list_template = 'pages/companyhouseparser_change_list.html'
 
     def shares_field(self, obj):
         shareholder_list = obj.shareholder_list
@@ -201,6 +202,9 @@ class CompanyHouseParserAdmin(SimpleHistoryAdmin):
         if obj.shareholder_list:
             return mark_safe('<img src="/static/admin/img/icon-yes.svg" alt="True">')
         return mark_safe('<img src="/static/admin/img/icon-no.svg" alt="False">')
+    
+    def formatted_parsing_datetime_field(self, obj):
+        return obj.parsing_datetime.strftime('%Y/%m/%d %H:%M')
     
 
     # shares_field
