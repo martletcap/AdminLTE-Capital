@@ -314,7 +314,10 @@ class Shareholder(models.Model):
     share = models.ForeignKey(Share, on_delete=models.PROTECT)
     amount = models.IntegerField()
     comment = models.TextField(max_length=10240, blank=True)
-    option = models.BooleanField(default=True)
+    option = models.BooleanField(
+        verbose_name = 'Share',
+        default=True
+    )
     history = HistoricalRecords()
 
     def __self__(self):

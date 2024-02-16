@@ -150,7 +150,7 @@ class ShareholderListAdmin(SimpleHistoryAdminCustom):
         self, request, context, add=False, change=False, form_url="", obj=None
     ):
         context['result_headers'] = [
-            'Contact', 'Type', 'Share', 'Amount', 'Option',
+            'Contact', 'Type', 'Share', 'Amount', 'Share',
         ]
         context['results'] = []
         context['links'] = []
