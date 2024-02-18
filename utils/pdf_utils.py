@@ -46,7 +46,7 @@ def SH01_parser(pdf):
     res = []
     # Pattern
     pattern = re.compile((
-            r'Class\sof\sShares:\s([A-Z0-9\W]+)\sNumber'
+            r'Class\sof\sShares:\s([A-Z0-9\W]+)\s?Number'
             r'\sallotted\s(\d+)'
     ))
     # Concat text
