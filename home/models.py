@@ -333,7 +333,7 @@ class CompanyHouseParser(models.Model):
     id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     shareholder_list = models.ForeignKey(
-        ShareholderList, on_delete=models.PROTECT, blank=True, null=True,
+        ShareholderList, on_delete=models.SET_NULL, blank=True, null=True,
     )
     transaction_id = models.CharField(max_length=32)
     parsing_datetime = models.DateTimeField(auto_now_add=True)

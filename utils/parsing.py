@@ -1,6 +1,5 @@
 import os
 from io import BytesIO
-from django.db.models import F
 from datetime import datetime, date
 from collections import defaultdict
 
@@ -8,10 +7,12 @@ import requests
 from dotenv import load_dotenv
 
 from utils.pdf_utils import CS01_parser, SH01_parser
-from utils.general import share_name_correction
+from utils.model import (
+    copy_shareholder_list, compare_shareholderlist, CS01_to_shareholderlist,
+    SH01_to_shareholderlist,
+)
 from home.models import (
-    ContactType, Contact, ShareType, Share, ShareholderList, Shareholder,
-    CompanyHouseParser,
+    ShareholderList, CompanyHouseParser,
 )
 
 
@@ -93,108 +94,56 @@ def last_company_file_items(company):
     return sorted(items, key=lambda x: x['date'])
 
 def item_to_shareholder_list(company, item):
-    cur_shareholder_list = None
     file = company_house_pdf(company.number, item['id'])
-    # CS01 behavior
+
+    res = []
+    date = None
+    # CS01 - shareholder list
+    # SH01 - list of shares
     if item['type'] == 'CS01':
         try:
             _, res, date = CS01_parser(file)
         except:
             return None, 'Unsupported file format.'
-        if not res:
-            return None, 'ShareholderList file is empty.'
-        cur_shareholder_list, created = ShareholderList.objects.get_or_create(company=company, date=date)
-        # If a ShareholderList already exists, do not create a new one
-        if not created:
-            return None, 'ShareholderList already exists.'
-        for record in res:
-            # Get or crate Contact
-            contact, _ = Contact.objects.get_or_create(
-                name = record['owner'],
-                defaults={
-                    'type':ContactType.objects.get(id=7) # No Type Info
-                }
-            )
-            # Get or crate Share
-            share_type, _ = ShareType.objects.get_or_create(
-                type = share_name_correction(record['share'])
-            )
-            share, _ = Share.objects.get_or_create(type=share_type, company=company)
-            # Create shareholder
-            Shareholder.objects.create(
-                shareholder_list = cur_shareholder_list,
-                contact = contact,
-                share = share,
-                amount = record['amount'],
-            )
-    # SH01 behavior
     elif item['type'] == 'SH01':
         try:
             _, res, date = SH01_parser(file)
         except:
             return None, 'Unsupported file format.'
-        # Total share amount
-        share_amounts = defaultdict(int)
-        for r in res:
-            share = share_name_correction(r['share'])
-            share_amounts[share]+= r['amount']
-        # Prev shareholders
-        shareholder_list = ShareholderList.objects.filter(
-            company = company,
-            date__lt = date,
-        ).order_by('-date')[:1].first()
-        shareholders = Shareholder.objects.filter(
-            shareholder_list = shareholder_list,
-        ).annotate(
-            name = F('contact__name'),
-            type = F('share__type__type'),
-            contact_type = F('contact__type'),
-        )
-        # To copy
-        records = []
-        for shareholder in shareholders:
-                if shareholder.option:
-                    share_amounts[shareholder.type]-=shareholder.amount
-                records.append({
-                    'amount': shareholder.amount,
-                    'type': shareholder.type,
-                    'option': shareholder.option,
-                    'contact':shareholder.contact
-                })
-        default_contact = Contact.objects.get(pk=1) # "No Name" contact
-        for key, value in share_amounts.items():
-            if value<0:
-                return None, 'Liquidation error!'
-            elif value>0:
-                added = False
-                # If the default_contact with the same share is
-                # already in the database, add it to it; if not, create it.
-                for record in records:
-                    if (record['contact'] == default_contact and
-                        record['type'] == key and
-                        record['option'] == True):
-                        record['amount']+=value
-                        added = True
-                        break
-                if not added:
-                    records.append({
-                    'amount': value,
-                    'type': key,
-                    'option': True,
-                    'contact':default_contact,
-                    })
-        cur_shareholder_list, created = ShareholderList.objects.get_or_create(company=company, date=date)
-        # If a ShareholderList already exists, do not create a new one
-        if not created:
-            return None, 'ShareholderList already exists.'
-        for record in records:
-            share_type, _ = ShareType.objects.get_or_create(type=record['type'])
-            share, _ = Share.objects.get_or_create(type=share_type, company = company)
-            Shareholder.objects.create(
-                shareholder_list = cur_shareholder_list,
-                contact = record['contact'],
-                share = share,
-                amount = record['amount'],
-                option = record['option'],
-            )
-    return cur_shareholder_list, ''
+        
+    shareholder_list = ShareholderList.objects.filter(
+        company = company,
+        date = date,
+    ).order_by('-id').first()
+
+    # The list already exists but there are results
+    if shareholder_list and res:
+        # If the sheet matches, return it; if not, throw an error.
+        tmp = defaultdict(int)
+        for i in res:
+            tmp[i['share']]+=i['amount']
+        if compare_shareholderlist(shareholder_list, tmp):
+            return shareholder_list, ''
+        return None, 'A list for this date already exists.'
+    # There is no list and results
+    elif not shareholder_list and not res:
+        # Copy last existing or return an error
+        new_list = copy_shareholder_list(company, date)
+        return new_list, ''
+    # There is no sheet and there are results.
+    elif not shareholder_list and res:
+        new_list = None
+        comment = ''
+        # CS01 - create new
+        if item['type'] == 'CS01':
+            new_list = CS01_to_shareholderlist(res, date, company)
+        # SH01 - expande previous
+        elif item['type'] ==  'SH01':
+            new_list = SH01_to_shareholderlist(res, date, company)
+            if not new_list:
+                comment = 'Liquidation error!'
+        return new_list, comment
+    # The list exists and the results are empty
+    elif shareholder_list and not res:
+        # Return an existing sheet
+        return shareholder_list, ''
