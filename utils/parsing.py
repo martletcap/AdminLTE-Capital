@@ -53,7 +53,7 @@ def company_filling_history(
         if len(items)<items_per_page: parse = False
         for item in items:
             item_date = datetime.strptime(item['date'], "%Y-%m-%d").date()
-            if item_date<last_date:
+            if item_date<=last_date:
                 parse = False
                 break
             if item['type'] not in supported_file_types:
@@ -78,18 +78,14 @@ def last_company_file_items(company):
     last_parsing = CompanyHouseParser.objects.filter(
         company = company
     ).order_by('-file_date', '-id').first()
-    last_transaction_id = None
     if last_parsing:
+        # if the previous error has not been corrected,
+        # do not parse further files
+        if last_parsing.shareholder_list is None:
+            return []
         last_date = max(last_date, last_parsing.file_date)
-        # If the previous transaction is confirmed,
-        # do not try to parse the same file
-        if last_parsing.status:
-            last_transaction_id = last_parsing.transaction_id
     
     items = company_filling_history(company.number, last_date)
-    for index, value in enumerate(items):
-        if value['id'] == last_transaction_id:
-            del items[index]
     # Sorting from minimum to maximum date
     return sorted(items, key=lambda x: x['date'])
 
