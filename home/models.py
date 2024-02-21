@@ -158,6 +158,21 @@ class ShareType(models.Model):
         return self.type
 
 
+class ShareTypeVariant(models.Model):
+    
+    class Meta:
+        app_label = 'base_info'
+        db_table = 'share_type_variant'
+
+    id = models.AutoField(primary_key=True)
+    share_type = models.ForeignKey(ShareType, on_delete=models.CASCADE)
+    variant = models.CharField(max_length=255, unique=True)
+    history = HistoricalRecords()
+
+    def __str__(self) -> str:
+        return f'{self.variant}'
+
+
 class Share(models.Model):
 
     class Meta:

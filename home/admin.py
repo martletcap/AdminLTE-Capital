@@ -9,8 +9,8 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
-    Company, SeedStep, ShareType, Share, Split, SharePrice,
-    MoneyTransaction, ShareTransaction, FairValueMethod,
+    Company, SeedStep, ShareType, ShareTypeVariant, Share, Split,
+    SharePrice, MoneyTransaction, ShareTransaction, FairValueMethod,
     ShareholderList, Shareholder, CompanyHouseParser,
 )
 from .forms import (
@@ -225,6 +225,7 @@ admin.site.register(CategoryOfCompany, SimpleHistoryAdminCustom)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(SeedStep, SeedStepAdmin)
 admin.site.register(ShareType, SimpleHistoryAdminCustom)
+admin.site.register(ShareTypeVariant, SimpleHistoryAdminCustom)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Split, SplitAdmin)
 admin.site.register(SharePrice, SharePriceAdmin)
