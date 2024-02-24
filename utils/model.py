@@ -1,11 +1,14 @@
 from datetime import date
 from collections import defaultdict
 
-from home.models import Company, Contact, ContactType, Share, ShareType, ShareholderList, Shareholder
+from home.models import (
+    Company, Contact, ContactType, Share, ShareType, ShareTypeVariant,
+    ShareholderList, Shareholder,
+)
 from utils.general import share_name_correction
 
 
-def copy_shareholder_list(company, date):
+def copy_shareholderlist(company, date):
     prev_shareholder_list = ShareholderList.objects.filter(
         company = company,
         date__lt = date,
@@ -39,7 +42,7 @@ def compare_shareholderlist(shareholder_list:ShareholderList, amounts:dict):
     ).select_related('share__type')
     cur_amounts = defaultdict(int)
     for shareholder in shareholders:
-        cur_amounts[shareholder.share.type.type]+=shareholder.amount
+        cur_amounts[shareholder.share.type]+=shareholder.amount
 
     for key, value in amounts.items():
         cur_amounts[key] -= value
@@ -57,7 +60,7 @@ def CS01_to_shareholderlist(shareholders:list, date:date, company:Company):
     )
     for record in shareholders:
         owner = record['owner']
-        share_title = record['share']
+        share_type = record['share']
         amount = record['amount']
         # Get or crate Contact
         contact, _ = Contact.objects.get_or_create(
@@ -65,9 +68,6 @@ def CS01_to_shareholderlist(shareholders:list, date:date, company:Company):
             defaults={'type':default_contact_type}
         )
         # Get or crate Share
-        share_type, _ = ShareType.objects.get_or_create(
-            type = share_name_correction(share_title),
-        )
         share, _ = Share.objects.get_or_create(
             type = share_type,
             company = company,
@@ -86,7 +86,7 @@ def SH01_to_shareholderlist(shares, date, company):
     share_amounts = defaultdict(int)
     for share in shares:
         # Correct name
-        share_type = share_name_correction(share['share'])
+        share_type = share['share']
         share_amounts[share_type] += share['amount']
     # Prev shareholders
     prev_shareholder_list = ShareholderList.objects.filter(
@@ -102,10 +102,10 @@ def SH01_to_shareholderlist(shares, date, company):
     new_records = []
     for shareholder in prev_shareholders:
         if shareholder.option:
-            share_amounts[shareholder.share.type.type] -= shareholder.amount
+            share_amounts[shareholder.share.type] -= shareholder.amount
         new_records.append({
             'amount': shareholder.amount,
-            'type': shareholder.share.type.type,
+            'type': shareholder.share.type,
             'option': shareholder.option,
             'contact': shareholder.contact,
         })
@@ -135,7 +135,7 @@ def SH01_to_shareholderlist(shares, date, company):
         company = company, date = date,
     )
     for record in new_records:
-        share_type, _ = ShareType.objects.get_or_create(type=record['type'])
+        share_type = record['type']
         share, _ = Share.objects.get_or_create(type=share_type, company=company)
         Shareholder.objects.create(
             shareholder_list = new_shareholder_list,
@@ -145,3 +145,27 @@ def SH01_to_shareholderlist(shares, date, company):
             option = record['option'],
         )
     return new_shareholder_list
+
+def non_existent_variants_list(records):
+    result = set()
+    for record in records:
+        share_name = record['share']
+        if (
+            share_name in result or
+            ShareTypeVariant.objects.filter(variant=share_name).exists()
+        ):
+            continue
+        result.add(share_name)
+    return result
+
+def convert_shares_to_share_types(records):
+    result = list()
+    cache = dict()
+    for record in records:
+        share_name = record['share']
+        if share_name not in cache:
+            cache[share_name] = ShareTypeVariant.objects.get(variant=share_name).share_type
+        new_record = dict(record)
+        new_record['share'] = cache[share_name]
+        result.append(new_record)
+    return result

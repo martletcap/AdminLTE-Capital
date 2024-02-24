@@ -8,11 +8,12 @@ from dotenv import load_dotenv
 
 from utils.pdf_utils import CS01_parser, SH01_parser
 from utils.model import (
-    copy_shareholder_list, compare_shareholderlist, CS01_to_shareholderlist,
-    SH01_to_shareholderlist,
+    copy_shareholderlist, compare_shareholderlist, CS01_to_shareholderlist,
+    SH01_to_shareholderlist, non_existent_variants_list,
+    convert_shares_to_share_types,
 )
 from home.models import (
-    ShareholderList, CompanyHouseParser,
+    ShareholderList, CompanyHouseParser
 )
 
 
@@ -112,6 +113,15 @@ def item_to_shareholder_list(company, item):
         date = date,
     ).order_by('-id').first()
 
+    # Checking that all share variants are already in the database
+    distressed_shares = non_existent_variants_list(res)
+    if len(distressed_shares) != 0:
+        comment = f'Non-existent stock options: {", ".join(distressed_shares)}'
+        return None, comment
+    
+    # Convert all share_name to ShareType instances
+    res = convert_shares_to_share_types(res)
+
     # The list already exists but there are results
     if shareholder_list and res:
         # If the sheet matches, return it; if not, throw an error.
@@ -124,7 +134,7 @@ def item_to_shareholder_list(company, item):
     # There is no list and results
     elif not shareholder_list and not res:
         # Copy last existing or return an error
-        new_list = copy_shareholder_list(company, date)
+        new_list = copy_shareholderlist(company, date)
         return new_list, ''
     # There is no sheet and there are results.
     elif not shareholder_list and res:
