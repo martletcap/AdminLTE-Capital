@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.short_report, name='index'),
     # Reports
     path('report/short/', views.short_report, name='short_report'),
+    path('report/date_short/', views.date_short_report, name='date_short_report'),
     path('report/company/', views.CompanyReportView.as_view(), name='company_report'),
     path('report/detailed/', views.DetailedReportView.as_view(), name='detailed_report'),
     path('report/current_holdings/', views.CurrentHoldingsView.as_view(), name='current_holdings'),
