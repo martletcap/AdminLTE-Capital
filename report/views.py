@@ -1501,8 +1501,9 @@ class QuarterGraphslView(View):
         labels = []
         market_prices = []
         investments = []
-        cur_date = date.today()
-        for date_gte, date_lt in previous_quarters(8):
+        # Report for N quarters in reverse order
+        N = 8
+        for date_gte, date_lt in previous_quarters(N):
             labels.append(get_fiscal_quarter(date_gte))
             
             share_transactions = ShareTransaction.objects.filter(
@@ -1541,13 +1542,28 @@ class QuarterGraphslView(View):
                 else:
                     price = float(transaction.price)
                 total_invested += price
-            
             market_prices.append(int(total_market_price))
             investments.append(int(total_invested))
+        # Changing the order
+        labels = labels[::-1]
+        market_prices = market_prices[::-1]
+        investments = investments[::-1]
         
+        # Calculate growth
+        # First record have no growth
+        growths = [0]
+        previous_months = [market_prices[0]]
+        for index in range(1, len(market_prices)):
+            prev_value = previous_months[index-1]
+            prev_growth = growths[index-1]
+            growth = market_prices[index]-(prev_value+prev_growth)
+            growths.append(growth)
+            previous_months.append(prev_value+prev_growth)
+
         context = {
-            'labels':labels[::-1],
-            'market_prices':market_prices[::-1],
-            'investments':investments[::-1],
+            'labels':labels,
+            'investments':investments,
+            'growths':growths,
+            'previous_months':previous_months,
         }
         return render(request, 'pages/quarter_report.html', context)

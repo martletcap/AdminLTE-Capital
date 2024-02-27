@@ -18,8 +18,8 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">ChartJS</li>
+              <li class="breadcrumb-item"><a href="#">Report</a></li>
+              <li class="breadcrumb-item active">Quarter Report</li>
             </ol>
           </div>
         </div>
@@ -85,11 +85,19 @@
           {
             label               : 'Gross Portfolio Fair Value ("GPFV")',
             backgroundColor     : 'rgba(68,114,200,255)',
-            data                : {{ market_prices|safe }}
+            stack: "Market Price",
+            data                : {{ previous_months|safe }}
+          },
+          {
+            label               : 'Growth',
+            backgroundColor     : 'rgba(255,192,0,255)',
+            stack: "Market Price",
+            data                : {{ growths|safe }}
           },
           {
             label               : 'Investment',
             backgroundColor     : 'rgba(237,125,49,255)',
+            stack: "Investment",
             data                : {{ investments|safe }}
           },
         ]
@@ -98,7 +106,15 @@
       var barChartOptions = {
         responsive              : true,
         maintainAspectRatio     : false,
-        datasetFill             : false
+        datasetFill             : false,
+        scales: {
+          xAxes: [{
+            stacked: true,
+          }],
+          yAxes: [{
+            stacked: true,
+          }]
+        },
       }
 
       new Chart(barChartCanvas, {
