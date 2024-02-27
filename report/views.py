@@ -3,7 +3,7 @@ from collections import defaultdict
 from decimal import Decimal
 
 from django.contrib import messages
-from django.views.generic import View, RedirectView
+from django.views.generic import View
 from django.urls import reverse
 from django.shortcuts import render, resolve_url, redirect
 from django.db.models import (
@@ -120,9 +120,9 @@ def short_report(request):
         context['results_sector'].append((
             key, sectors[key]['num'],
             round(company_pct, 1),
-            sectors[key]['investment'],
+            int(sectors[key]['investment']),
             round(investment_pct, 1),
-            round(sectors[key]['market'], 2),
+            int(sectors[key]['market']),
             round(market_price_pct, 1),
         ))
         context['sectors'].append(key)
@@ -142,9 +142,9 @@ def short_report(request):
         context['results_location'].append((
             key, locations[key]['num'], 
             round(company_pct, 1),
-            locations[key]['investment'],
+            int(locations[key]['investment']),
             round(investment_pct, 1),
-            round(locations[key]['market'], 2),
+            int(locations[key]['market']),
             round(market_price_pct, 1),
         ))
         context['locations'].append(key)
@@ -153,8 +153,8 @@ def short_report(request):
         context['chart6'].append(locations[key]['market'])
     # Footer-total
     context['footer'] = [
-        'Total:', total_companies, 100, round(total_money_invested, 2),
-        100, round(total_market_price, 2), 100,
+        'Total:', total_companies, 100, int(total_money_invested),
+        100, int(total_market_price), 100,
     ]
     return render(request, 'pages/short_report.html', context=context)
 
@@ -269,9 +269,9 @@ def date_short_report(request):
         context['results_sector'].append((
             key, sectors[key]['num'],
             round(company_pct, 1),
-            sectors[key]['investment'],
+            int(sectors[key]['investment']),
             round(investment_pct, 1),
-            round(sectors[key]['market'], 2),
+            int(sectors[key]['market']),
             round(market_price_pct, 1),
         ))
         context['sectors'].append(key)
@@ -291,9 +291,9 @@ def date_short_report(request):
         context['results_location'].append((
             key, locations[key]['num'], 
             round(company_pct, 1),
-            locations[key]['investment'],
+            int(locations[key]['investment']),
             round(investment_pct, 1),
-            round(locations[key]['market'], 2),
+            int(locations[key]['market']),
             round(market_price_pct, 1),
         ))
         context['locations'].append(key)
@@ -302,8 +302,8 @@ def date_short_report(request):
         context['chart6'].append(locations[key]['market'])
     # Footer-total
     context['footer'] = [
-        'Total:', total_companies, 100, round(total_money_invested, 2),
-        100, round(total_market_price, 2), 100,
+        'Total:', total_companies, 100, int(total_money_invested),
+        100, int(total_market_price), 100,
     ]
     return render(request, 'pages/short_report.html', context=context)
 
@@ -1542,8 +1542,8 @@ class QuarterGraphslView(View):
                     price = float(transaction.price)
                 total_invested += price
             
-            market_prices.append(total_market_price)
-            investments.append(total_invested)
+            market_prices.append(int(total_market_price))
+            investments.append(int(total_invested))
         
         context = {
             'labels':labels[::-1],
