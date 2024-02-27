@@ -12,6 +12,7 @@ urlpatterns = [
     path('report/detailed/', views.DetailedReportView.as_view(), name='detailed_report'),
     path('report/current_holdings/', views.CurrentHoldingsView.as_view(), name='current_holdings'),
     path('report/shares_info/', views.SharesInfoView.as_view(), name='shares_info'),
+    path('report/quarter/', views.QuarterGraphslView.as_view(), name='quarter_report'),
     # Utils
     path('utils/upload/', views.upload_shareholders, name='upload_shareholders'),
     path('utils/update/', views.UpdateShareholdersView.as_view(), name='update_shareholders'),

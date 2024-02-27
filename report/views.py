@@ -11,7 +11,7 @@ from django.db.models import (
 )
 
 from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
-from utils.general import share_name_correction
+from utils.general import share_name_correction, previous_quarters, get_fiscal_quarter
 from home.models import (
     Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
     SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
@@ -1495,3 +1495,59 @@ class SharesControlView(View):
         messages.success(request, 'Added successfully')
         return redirect('shares_control')
         
+
+class QuarterGraphslView(View):
+    def get(self, request):
+        labels = []
+        market_prices = []
+        investments = []
+        cur_date = date.today()
+        for date_gte, date_lt in previous_quarters(8):
+            labels.append(get_fiscal_quarter(date_gte))
+            
+            share_transactions = ShareTransaction.objects.filter(
+                date__lt = date_lt,
+            ).annotate(
+                    type = F('money_transaction__transaction_type__title'),
+            )
+            total_market_price = 0
+            # Sum market price
+            for transaction in share_transactions:
+                last_price = SharePrice.objects.last_price(share=transaction.share)
+                cof = Split.objects.cof(
+                    date__gte = transaction.date,
+                    date__lt = date_lt,
+                    share=transaction.share,
+                )
+                if transaction.type == 'Sell':
+                    total = -float(transaction.amount*cof*last_price)
+                else:
+                    total = float(transaction.amount*cof*last_price)
+                total_market_price += total
+
+            # Get money transactions
+            money_transactions = MoneyTransaction.objects.filter(
+                portfolio__name = 'Martlet',
+                date__gte = date_gte,
+                date__lt = date_lt
+            ).annotate(
+                type = F('transaction_type__title'),
+            )
+            total_invested = 0
+            # Sum all investments
+            for transaction in money_transactions:
+                if transaction.type == 'Sell':
+                    price = -float(transaction.price)
+                else:
+                    price = float(transaction.price)
+                total_invested += price
+            
+            market_prices.append(total_market_price)
+            investments.append(total_invested)
+        
+        context = {
+            'labels':labels[::-1],
+            'market_prices':market_prices[::-1],
+            'investments':investments[::-1],
+        }
+        return render(request, 'pages/quarter_report.html', context)

@@ -63,6 +63,13 @@
             <p>Shares Control</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'quarter_report' as quarter_report %}
+          <a href="{{ quarter_report }}" class="nav-link {% if quarter_report == request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Quarter Diagram</p>
+          </a>
+        </li>
         {% comment %} 
         <li class="nav-item">
           {% url 'iframe' as iframe %}
