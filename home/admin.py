@@ -179,8 +179,8 @@ class ShareholderAdmin(SimpleHistoryAdminCustom):
 
 class CompanyHouseParserAdmin(SimpleHistoryAdmin):
     list_display = [
-        'company', 'formatted_parsing_datetime_field', 'file_date', 'parsed_field', 
-        'status', 'shares_field', 'file_link_field', 'comment',
+        'company', 'formatted_parsing_datetime_field', 'formatted_file_date',
+        'parsed_field', 'status', 'shares_field', 'file_link_field', 'comment',
     ]
     change_form_template = 'pages/companyhouseparse_change_form.html'
     change_list_template = 'pages/companyhouseparser_change_list.html'
@@ -207,13 +207,20 @@ class CompanyHouseParserAdmin(SimpleHistoryAdmin):
     def formatted_parsing_datetime_field(self, obj):
         return obj.parsing_datetime.strftime('%Y/%m/%d %H:%M')
     
+    def formatted_file_date(self, obj):
+        return obj.file_date.strftime('%Y/%m/%d')
+    
 
     # shares_field
     shares_field.short_description = 'Shares amount'
     # file link
     file_link_field.short_description = 'Download'
-    #  parsed field
+    # parsed field
     parsed_field.short_description = 'Parsed'
+    # parsing datetime field
+    formatted_parsing_datetime_field.short_description = 'Parsing DateTime'
+    # file date field
+    formatted_file_date.short_description = 'File Date'
 
 
 # Register your models here.
