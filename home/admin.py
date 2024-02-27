@@ -182,6 +182,7 @@ class CompanyHouseParserAdmin(SimpleHistoryAdmin):
         'company', 'formatted_parsing_datetime_field', 'file_date', 'parsed_field', 
         'status', 'shares_field', 'file_link_field', 'comment',
     ]
+    change_form_template = 'pages/companyhouseparse_change_form.html'
     change_list_template = 'pages/companyhouseparser_change_list.html'
 
     def shares_field(self, obj):
