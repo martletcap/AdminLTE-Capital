@@ -47,6 +47,7 @@ class Sector(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
+    short_name = models.CharField(max_length=255, null=True)
     history = HistoricalRecords()
 
     def __str__(self) -> str:
