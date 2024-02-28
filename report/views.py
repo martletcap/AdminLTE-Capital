@@ -1567,3 +1567,164 @@ class QuarterGraphslView(View):
             'previous_months':previous_months,
         }
         return render(request, 'pages/quarter_report.html', context)
+    
+
+
+class CategoryPerformanceView(View):
+    def brake_into_categories(self, records:list):
+        # Category boundaries
+        GOLD_MAX=float('inf')
+        GOLD_MIN = 500_000
+        SILVER_MAX = 500_000
+        SILVER_MIN = 100_000
+        BRONZE_MAX = 100_000
+        BRONZE_MIN = 0
+        
+        gold = []
+        silver = []
+        bronze = []
+
+        for record in records:
+            val = record['fair_value']
+            if BRONZE_MIN <= val < BRONZE_MAX:
+                bronze.append(record)
+            elif SILVER_MIN <= val < SILVER_MAX:
+                silver.append(record)
+            elif GOLD_MIN <= val < GOLD_MAX:
+                gold.append(record)
+        
+        return gold, silver, bronze
+
+
+    def build_record(self, company:Company):
+        res = {
+            'name':'',
+            'sector':'',
+            'first_investment':0,
+            'shareholding_pct': 0,
+            'fair_value':0,
+            'cost':0,
+            'multiple_times':0,
+        }
+        # Name
+        res['name'] = company.short_name
+        # Sector
+        res['sector'] = company.sector.short_name
+        # First investment date
+        first_investment = MoneyTransaction.objects.filter(
+            company=company,
+        ).order_by('date')[:1].first()
+        if first_investment:
+            res['first_investment'] = first_investment.date.year
+        # Shareholding percent
+        last_share_amount = 0
+        our_share_amount = 0
+        last_shareholder_list = ShareholderList.objects.filter(
+            company=company,
+        ).order_by('-date')[:1].first()
+        if last_shareholder_list:
+            last_share_amount = Shareholder.objects.filter(
+                shareholder_list = last_shareholder_list,
+            ).aggregate(total=Sum('amount'))['total']
+        our_share_transactions = ShareTransaction.objects.filter(
+            money_transaction__company=company,
+        ).select_related(
+            'share',
+        ).annotate(type=F('money_transaction__transaction_type__title'))
+        for transaction in our_share_transactions:
+            if transaction.type == 'Sell':
+                our_share_amount -= transaction.amount
+            else:
+                our_share_amount += transaction.amount
+        if last_share_amount:
+            res['shareholding_pct'] = 100/last_share_amount*our_share_amount
+        # Martlet fair value
+        for transaction in our_share_transactions:
+            last_price = SharePrice.objects.last_price(share=transaction.share)
+            cof = Split.objects.cof(
+                date__gte = transaction.date,
+                share=transaction.share,
+            )
+            if transaction.type == 'Sell':
+                res['fair_value'] -= (transaction.amount*cof*last_price)
+            else:
+                res['fair_value'] += (transaction.amount*cof*last_price)
+        # Add Loan to fair_value_prev
+        share_money_ids = ShareTransaction.objects.filter(
+            money_transaction__company = company,
+        ).values_list('money_transaction_id', flat=True)
+        money_transactions = MoneyTransaction.objects.filter(
+            company = company,
+            transaction_type__title = "Loan"
+        ).exclude(id__in = share_money_ids)
+        for transaction in money_transactions:
+            res['fair_value'] += transaction.price
+        # Martlet cost
+        martlet_money_transactions = MoneyTransaction.objects.filter(
+            company=company,
+            portfolio__name = 'Martlet',
+        ).annotate(type=F('transaction_type__title'))
+        for transaction in martlet_money_transactions:
+            if transaction.type == 'Sell':
+                res['cost'] -= transaction.price
+            else:
+                res['cost'] += transaction.price
+        # Multiple times 
+        if res['cost']:
+            res['multiple_times'] = res['fair_value']/res['cost']
+        
+        return res
+    
+    def add_percent_columns(self, records:list):
+        total_fair_value = 0
+        total_cost = 0
+        for record in records:
+            total_fair_value += record['fair_value']
+            total_cost += record['cost']
+        
+        for record in records:
+            record['fair_value_pct'] = 0
+            record['cost_pct'] = 0
+            if total_fair_value:
+                record['fair_value_pct'] = 100/total_fair_value*record['fair_value']
+            if total_cost:
+                record['cost_pct'] = 100/total_cost*record['cost']        
+        return records
+    
+    def format_records(self, records):
+        for record in records:
+            record['shareholding_pct'] = round(record['shareholding_pct'], 2)
+            record['fair_value'] = int(record['fair_value'])
+            record['fair_value_pct'] = round(record['fair_value_pct'], 2)
+            record['cost'] = int(record['cost'])
+            record['cost_pct'] = round(record['cost_pct'], 2)
+            record['multiple_times'] = round(record['multiple_times'], 2)
+        return records
+
+    def get(self, request):
+        headers = [
+            'Company', 'Sector', 'Year of first investment', 'Shareholding',
+            'Martlet fair value', 'Percent of Total Portfolio', 'Martlet cost',
+            'Percent of Total Portfolio', 'Multiple Times'
+        ]
+        companies = Company.objects.all().select_related(
+            'sector'
+        )
+        records = []
+        for company in companies:
+            records.append(self.build_record(company))
+        records = self.add_percent_columns(records)
+        records = self.format_records(records)
+        gold, silver, bronze = self.brake_into_categories(records)
+        context = {
+            'result_headers':headers,
+            'gold':gold,
+            'silver':silver,
+            'bronze':bronze,
+        }
+        return render(request, 'pages/category_performance.html', context)
+        
+
+
+
+

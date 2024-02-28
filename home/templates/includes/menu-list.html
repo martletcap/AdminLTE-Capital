@@ -70,6 +70,13 @@
             <p>Quarter Diagram</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'category_performance_report' as category_performance_report %}
+          <a href="{{ category_performance_report }}" class="nav-link {% if category_performance_report == request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Category Performance</p>
+          </a>
+        </li>
         {% comment %} 
         <li class="nav-item">
           {% url 'iframe' as iframe %}
