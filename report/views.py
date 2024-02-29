@@ -22,142 +22,6 @@ from report.forms import (
     SharesControlFormSet,
 )
 
-
-def short_report(request):
-    context = {}
-    context['result_headers'] = [
-        'Area', 'No. Com.', 'Pct. Com.', 'Investment', 'Investment Pct.',
-        'Market Price', 'Market Price Pct.'
-    ]
-    sectors = {}
-    locations = {}
-    template = {
-        'num': 0,
-        'investment': 0,
-        'market': 0,
-    }
-
-    # Get companies
-    companies = Company.objects.filter(
-        status = 1, # Portfolio status (fixture)
-    ).annotate(
-        area = F('sector__name'),
-        city = F('location__city')
-    )
-    total_companies = 0
-    # Count companies by sector and city
-    for company in companies:
-        if not sectors.get(company.area):
-            sectors[company.area]=template.copy()
-        if not locations.get(company.city):
-            locations[company.city]=template.copy()
-        sectors[company.area]['num']+=1
-        locations[company.city]['num']+=1
-        total_companies += 1
-    # Get money transactions
-    money_transactions = MoneyTransaction.objects.filter(
-        company__in = companies,
-        portfolio__name = 'Martlet',
-    ).annotate(
-        area = F('company__sector__name'),
-        city = F('company__location__city'),
-        type = F('transaction_type__title'),
-    )
-    total_money_invested = 0
-    # Sum all investments
-    for transaction in money_transactions:
-        if transaction.type == 'Sell':
-            price = -float(transaction.price)
-        else:
-            price = float(transaction.price)
-        total_money_invested += price
-        sectors[transaction.area]['investment']+=price
-        locations[transaction.city]['investment']+=price
-    # Get share transactions
-    share_transactions = ShareTransaction.objects.filter(
-        money_transaction__company__in = companies,
-    ).annotate(
-        type = F('money_transaction__transaction_type__title'),
-        area = F('money_transaction__company__sector__name'),
-        city = F('money_transaction__company__location__city'),
-    )
-    total_market_price = 0
-    # Sum market price
-    for transaction in share_transactions:
-        last_price = SharePrice.objects.last_price(share=transaction.share)
-        cof = Split.objects.cof(
-            date__gte = transaction.date,
-            share=transaction.share,
-        )
-        if transaction.type == 'Sell':
-            total = -float(transaction.amount*cof*last_price)
-        else:
-            total = float(transaction.amount*cof*last_price)
-        total_market_price += total
-        sectors[transaction.area]['market']+=total
-        locations[transaction.city]['market']+=total
-    # Representation
-    context['results_sector'] = []
-    context['results_location'] = []
-    context['sectors'] = []
-    context['locations'] = []
-    context['chart1'] = []
-    context['chart2'] = []
-    context['chart3'] = []
-    context['chart4'] = []
-    context['chart5'] = []
-    context['chart6'] = []
-    for key in sectors.keys():
-        company_pct = 0
-        investment_pct = 0
-        market_price_pct = 0
-        if total_companies and sectors[key]['num']:
-            company_pct = 100/total_companies*sectors[key]['num']
-        if total_money_invested and sectors[key]['investment']:
-            investment_pct = 100/total_money_invested*sectors[key]['investment']
-        if total_market_price and sectors[key]['market']:
-            market_price_pct = 100/total_market_price*sectors[key]['market']
-        context['results_sector'].append((
-            key, sectors[key]['num'],
-            round(company_pct, 1),
-            int(sectors[key]['investment']),
-            round(investment_pct, 1),
-            int(sectors[key]['market']),
-            round(market_price_pct, 1),
-        ))
-        context['sectors'].append(key)
-        context['chart1'].append(sectors[key]['num'])
-        context['chart3'].append(sectors[key]['investment'])
-        context['chart5'].append(sectors[key]['market'])
-    for key in locations.keys():
-        company_pct = 0
-        investment_pct = 0
-        market_price_pct = 0
-        if total_companies and locations[key]['num']:
-            company_pct = 100/total_companies*locations[key]['num']
-        if total_money_invested and locations[key]['investment']:
-            investment_pct = 100/total_money_invested*locations[key]['investment']
-        if total_market_price and locations[key]['market']:
-            market_price_pct = 100/total_market_price*locations[key]['market']
-        context['results_location'].append((
-            key, locations[key]['num'], 
-            round(company_pct, 1),
-            int(locations[key]['investment']),
-            round(investment_pct, 1),
-            int(locations[key]['market']),
-            round(market_price_pct, 1),
-        ))
-        context['locations'].append(key)
-        context['chart2'].append(locations[key]['num'])
-        context['chart4'].append(locations[key]['investment'])
-        context['chart6'].append(locations[key]['market'])
-    # Footer-total
-    context['footer'] = [
-        'Total:', total_companies, 100, int(total_money_invested),
-        100, int(total_market_price), 100,
-    ]
-    return render(request, 'pages/short_report.html', context=context)
-
 def date_short_report(request):
     date_form = DateForm(request.GET)
     if not date_form.is_valid():
@@ -306,6 +170,14 @@ def date_short_report(request):
         100, int(total_market_price), 100,
     ]
     return render(request, 'pages/short_report.html', context=context)
+
+def index(request):
+    # Duct tape
+    _mutable = request.GET._mutable
+    request.GET._mutable = True
+    request.GET['date'] = date.today()
+    request.GET._mutable = _mutable
+    return date_short_report(request)
 
 def upload_shareholders(request):
     if request.method == "POST":
@@ -497,7 +369,7 @@ class SharePriceUpdateView(View):
             return redirect('update_prices')
         for form in formset:
             form.save()
-        return redirect('short_report')
+        return redirect('index')
     
 
 class CompanyReportView(View):
