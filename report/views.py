@@ -22,13 +22,13 @@ from report.forms import (
     SharesControlFormSet,
 )
 
-def date_short_report(request):
+def short_report(request):
     date_form = DateForm(request.GET)
     if not date_form.is_valid():
         context = {
             'enctype':'multipart/form-data',
             'method': "GET",
-            'url': resolve_url('date_short_report'), 
+            'url': resolve_url('short_report'), 
             'form': date_form,
         }
         return render(request, 'pages/simple_form.html', context=context)
@@ -177,7 +177,7 @@ def index(request):
     request.GET._mutable = True
     request.GET['date'] = date.today()
     request.GET._mutable = _mutable
-    return date_short_report(request)
+    return short_report(request)
 
 def upload_shareholders(request):
     if request.method == "POST":
@@ -1468,7 +1468,7 @@ class CategoryPerformanceView(View):
         return gold, silver, bronze
 
 
-    def build_record(self, company:Company):
+    def build_record(self, company:Company, reporting_date:date):
         res = {
             'name':'',
             'sector':'',
@@ -1493,6 +1493,7 @@ class CategoryPerformanceView(View):
         our_share_amount = 0
         last_shareholder_list = ShareholderList.objects.filter(
             company=company,
+            date__lte = reporting_date,
         ).order_by('-date')[:1].first()
         if last_shareholder_list:
             last_share_amount = Shareholder.objects.filter(
@@ -1500,6 +1501,7 @@ class CategoryPerformanceView(View):
             ).aggregate(total=Sum('amount'))['total']
         our_share_transactions = ShareTransaction.objects.filter(
             money_transaction__company=company,
+            date__lte = reporting_date,
         ).select_related(
             'share',
         ).annotate(type=F('money_transaction__transaction_type__title'))
@@ -1512,9 +1514,13 @@ class CategoryPerformanceView(View):
             res['shareholding_pct'] = 100/last_share_amount*our_share_amount
         # Martlet fair value
         for transaction in our_share_transactions:
-            last_price = SharePrice.objects.last_price(share=transaction.share)
+            last_price = SharePrice.objects.last_price(
+                share=transaction.share,
+                date__lte = reporting_date,
+            )
             cof = Split.objects.cof(
                 date__gte = transaction.date,
+                date__lte = reporting_date,
                 share=transaction.share,
             )
             if transaction.type == 'Sell':
@@ -1524,9 +1530,11 @@ class CategoryPerformanceView(View):
         # Add Loan to fair_value_prev
         share_money_ids = ShareTransaction.objects.filter(
             money_transaction__company = company,
+            date__lte = reporting_date,
         ).values_list('money_transaction_id', flat=True)
         money_transactions = MoneyTransaction.objects.filter(
             company = company,
+            date__lte = reporting_date,
             transaction_type__title = "Loan"
         ).exclude(id__in = share_money_ids)
         for transaction in money_transactions:
@@ -1534,6 +1542,7 @@ class CategoryPerformanceView(View):
         # Martlet cost
         martlet_money_transactions = MoneyTransaction.objects.filter(
             company=company,
+            date__lte = reporting_date,
             portfolio__name = 'Martlet',
         ).annotate(type=F('transaction_type__title'))
         for transaction in martlet_money_transactions:
@@ -1573,7 +1582,17 @@ class CategoryPerformanceView(View):
             record['multiple_times'] = round(record['multiple_times'], 2)
         return records
 
-    def get(self, request):
+    def post(self, request):
+        date_form = DateForm(request.POST)
+        if not date_form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('short_report'), 
+                'form': date_form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        reporting_date = date_form.cleaned_data['date']
         headers = [
             'Company', 'Sector', 'Year of first investment', 'Shareholding',
             'Martlet fair value', 'Percent of Total Portfolio', 'Martlet cost',
@@ -1586,7 +1605,7 @@ class CategoryPerformanceView(View):
         )
         records = []
         for company in companies:
-            records.append(self.build_record(company))
+            records.append(self.build_record(company, reporting_date))
         records = self.add_percent_columns(records)
         records = self.format_records(records)
         gold, silver, bronze = self.brake_into_categories(records)
@@ -1597,6 +1616,16 @@ class CategoryPerformanceView(View):
             'bronze':bronze,
         }
         return render(request, 'pages/category_performance.html', context)
+
+    def get(self, request):
+        date_form = DateForm()
+        context = {
+            'enctype':'multipart/form-data',
+            'method': "POST",
+            'url': resolve_url('category_performance_report'), 
+            'form': date_form,
+        }
+        return render(request, 'pages/simple_form.html', context=context)
         
 
 
