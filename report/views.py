@@ -39,7 +39,7 @@ def short_report(request):
 
     # Get companies
     companies = Company.objects.filter(
-        status = 1, # Portfolio status
+        status = 1, # Portfolio status (fixture)
     ).annotate(
         area = F('sector__name'),
         city = F('location__city')
@@ -185,7 +185,7 @@ def date_short_report(request):
 
     # Get companies
     companies = Company.objects.filter(
-        status = 1, # Portfolio status
+        status = 1, # Portfolio status (fixture)
     ).annotate(
         area = F('sector__name'),
         city = F('location__city')
@@ -869,8 +869,8 @@ class CurrentHoldingsView(View):
         }
         # Table 1
         companies = Company.objects.filter(
-            status = 1, # Portfolio status
-            category = 1 # Companys category
+            status = 1, # Portfolio status (fixture)
+            category = 1 # Companys category (fixture)
         )
         res = []
         for company in companies:
@@ -1102,8 +1102,8 @@ class CurrentHoldingsView(View):
             ))
         # Table 2
         companies = Company.objects.filter(
-            status = 1, # Portfolio status
-            category = 2 # Strategic category
+            status = 1, # Portfolio status (fixture)
+            category = 2 # Strategic category (fixture)
         )
         res = []
         for company in companies:
@@ -1374,7 +1374,7 @@ class SharesInfoView(View):
         }
         res = []
         companies = Company.objects.filter(
-            status = 1, # Portfolio status
+            status = 1, # Portfolio status (fixture)
         )
         for company in companies:
             res.append(tmp.copy())
@@ -1707,7 +1707,9 @@ class CategoryPerformanceView(View):
             'Martlet fair value', 'Percent of Total Portfolio', 'Martlet cost',
             'Percent of Total Portfolio', 'Multiple Times'
         ]
-        companies = Company.objects.all().select_related(
+        companies = Company.objects.filter(
+            category = 1, # Companys category (fixture)
+        ).select_related(
             'sector'
         )
         records = []
