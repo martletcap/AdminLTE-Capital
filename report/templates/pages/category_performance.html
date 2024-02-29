@@ -174,19 +174,19 @@
     $("#gold").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
-      "order": [[5, 'desc']],
+      "order": [[4, 'desc']], 'pageLength': 100,
     }).buttons().container().appendTo('#gold_wrapper .col-md-6:eq(0)');
 
     $("#silver").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
-      "order": [[5, 'desc']],
+      "order": [[4, 'desc']], 'pageLength': 100,
     }).buttons().container().appendTo('#silver_wrapper .col-md-6:eq(0)');
 
     $("#bronze").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
-      "order": [[5, 'desc']],
+      "order": [[4, 'desc']], 'pageLength': 100,
     }).buttons().container().appendTo('#bronze_wrapper .col-md-6:eq(0)');
   });
 </script>
