@@ -15,17 +15,18 @@ def share_name_correction(line:str):
     # Del spaces from start or end
     return line.strip()
 
-def previous_quarters(n):
+def previous_quarters(number, start_date=None):
     first_month_of_quarter = {1:1, 2:4, 3:7, 4:10}
 
-    current_date = datetime.now()
-    current_quarter = current_date.month//4+1
+    if start_date is None:
+        start_date = datetime.now()
+    current_quarter = start_date.month//4+1
     prev_quarter = datetime(
-        current_date.year, first_month_of_quarter[current_quarter], 1,
+        start_date.year, first_month_of_quarter[current_quarter], 1,
     )
 
     quarter_offset = 0
-    while n>quarter_offset:
+    while number>quarter_offset:
         date_lt = prev_quarter - relativedelta(months=3*quarter_offset)
         date_gte = prev_quarter - relativedelta(months=3*(quarter_offset+1))
         yield date_gte, date_lt

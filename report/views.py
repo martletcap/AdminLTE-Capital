@@ -1370,12 +1370,32 @@ class SharesControlView(View):
 
 class QuarterGraphslView(View):
     def get(self, request):
+        date_form = DateForm()
+        context = {
+            'enctype':'multipart/form-data',
+            'method': "POST",
+            'url': resolve_url('quarter_report'), 
+            'form': date_form,
+        }
+        return render(request, 'pages/simple_form.html', context=context)
+
+    def post(self, request):
+        date_form = DateForm(request.POST)
+        if not date_form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('quarter_report'), 
+                'form': date_form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        reporting_date = date_form.cleaned_data['date']
         labels = []
         market_prices = []
         investments = []
         # Report for N quarters in reverse order
         N = 8
-        for date_gte, date_lt in previous_quarters(N):
+        for date_gte, date_lt in previous_quarters(N, reporting_date):
             labels.append(get_fiscal_quarter(date_gte))
             
             share_transactions = ShareTransaction.objects.filter(
@@ -1439,7 +1459,6 @@ class QuarterGraphslView(View):
             'previous_months':previous_months,
         }
         return render(request, 'pages/quarter_report.html', context)
-    
 
 
 class CategoryPerformanceView(View):
