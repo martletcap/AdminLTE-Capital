@@ -45,27 +45,28 @@
             <div class='card-body'>
               <table id="gold" class="table table-bordered table-striped">
                 <thead>
-                    <tr>
-                      {% for header in result_headers %}
-                        <th>{{header}}</th>
-                      {% endfor %}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for record in gold %}
-                      </tr>
-                        <td>{{ record.name }}</td>
-                        <td>{{ record.sector }}</td>
-                        <td>{{ record.first_investment|unlocalize }}</td>
-                        <td>{{ record.shareholding_pct }}</td>
-                        <td>{{ record.fair_value }}</td>
-                        <td>{{ record.fair_value_pct }}</td>
-                        <td>{{ record.cost }}</td>
-                        <td>{{ record.cost_pct }}</td>
-                        <td>{{ record.multiple_times }}</td>
-                      </tr>
+                  <tr>
+                    {% for header in result_headers %}
+                      <th>{{header}}</th>
                     {% endfor %}
-                  </tbody>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for record in gold %}
+                    </tr>
+                      <td>{{ record.name }}</td>
+                      <td>{{ record.sector }}</td>
+                      <td>{{ record.first_investment|unlocalize }}</td>
+                      <td>{{ record.shareholding_pct }}</td>
+                      <td>{{ record.fair_value }}</td>
+                      <td>{{ record.fair_value_pct }}</td>
+                      <td>{{ record.cost }}</td>
+                      <td>{{ record.cost_pct }}</td>
+                      <td>{{ record.multiple_times }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot></tfoot>
               </table>
             </div>
           </div>
@@ -82,27 +83,28 @@
             <div class='card-body'>
               <table id="silver" class="table table-bordered table-striped">
                 <thead>
-                    <tr>
-                      {% for header in result_headers %}
-                        <th>{{header}}</th>
-                      {% endfor %}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for record in silver %}
-                      </tr>
-                        <td>{{ record.name }}</td>
-                        <td>{{ record.sector }}</td>
-                        <td>{{ record.first_investment|unlocalize }}</td>
-                        <td>{{ record.shareholding_pct }}</td>
-                        <td>{{ record.fair_value }}</td>
-                        <td>{{ record.fair_value_pct }}</td>
-                        <td>{{ record.cost }}</td>
-                        <td>{{ record.cost_pct }}</td>
-                        <td>{{ record.multiple_times }}</td>
-                      </tr>
+                  <tr>
+                    {% for header in result_headers %}
+                      <th>{{header}}</th>
                     {% endfor %}
-                  </tbody>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for record in silver %}
+                    </tr>
+                      <td>{{ record.name }}</td>
+                      <td>{{ record.sector }}</td>
+                      <td>{{ record.first_investment|unlocalize }}</td>
+                      <td>{{ record.shareholding_pct }}</td>
+                      <td>{{ record.fair_value }}</td>
+                      <td>{{ record.fair_value_pct }}</td>
+                      <td>{{ record.cost }}</td>
+                      <td>{{ record.cost_pct }}</td>
+                      <td>{{ record.multiple_times }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot></tfoot>
               </table>
             </div>
           </div>
@@ -119,29 +121,43 @@
             <div class='card-body'>
               <table id="bronze" class="table table-bordered table-striped">
                 <thead>
-                    <tr>
-                      {% for header in result_headers %}
-                        <th>{{header}}</th>
-                      {% endfor %}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for record in bronze %}
-                      </tr>
-                        <td>{{ record.name }}</td>
-                        <td>{{ record.sector }}</td>
-                        <td>{{ record.first_investment|unlocalize }}</td>
-                        <td>{{ record.shareholding_pct }}</td>
-                        <td>{{ record.fair_value }}</td>
-                        <td>{{ record.fair_value_pct }}</td>
-                        <td>{{ record.cost }}</td>
-                        <td>{{ record.cost_pct }}</td>
-                        <td>{{ record.multiple_times }}</td>
-                      </tr>
+                  <tr>
+                    {% for header in result_headers %}
+                      <th>{{header}}</th>
                     {% endfor %}
-                  </tbody>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for record in bronze %}
+                    </tr>
+                      <td>{{ record.name }}</td>
+                      <td>{{ record.sector }}</td>
+                      <td>{{ record.first_investment|unlocalize }}</td>
+                      <td>{{ record.shareholding_pct }}</td>
+                      <td>{{ record.fair_value }}</td>
+                      <td>{{ record.fair_value_pct }}</td>
+                      <td>{{ record.cost }}</td>
+                      <td>{{ record.cost_pct }}</td>
+                      <td>{{ record.multiple_times }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot></tfoot>
               </table>
             </div>
+          </div>
+          <!-- /.card -->
+        </div>
+        <!-- /.row -->
+
+        <div class='row'>
+          <div class="card card-body border-0 shadow table-wrapper table-responsive">
+            <table id="total" class="table table-bordered table-striped">
+              <thead>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
           </div>
           <!-- /.card -->
         </div>
@@ -169,6 +185,95 @@
 <script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
 <!-- Page specific script -->
+
+<!-- Total values -->
+<script>
+  function calculateResults(id){
+    // Get the table element
+    var table = document.getElementById(id);
+    // Initialize an array to store the sum for each column
+    var columnSums = Array.from({ length: table.rows[0].cells.length }, () => 0);
+    // Iterate through each row in the table (skip the header row)
+    for (var i = 1; i < table.rows.length; i++) {
+      var row = table.rows[i];
+      // Iterate through each cell in the row
+      for (var j = 0; j < row.cells.length; j++) {
+        // Parse the cell value as a number (assuming the values are numeric)
+        var cellValue = parseFloat(row.cells[j].innerText.replaceAll(',', ''));
+
+        // Add the cell value to the sum for the corresponding column
+        if (!isNaN(cellValue)) {
+          columnSums[j] += cellValue;
+        }
+      }
+    }
+    const numOfRecords = document.querySelectorAll(`#${id} tbody tr`).length;
+    let resultRow = document.getElementById(id).tFoot.insertRow();
+    for(var index = 0; index<columnSums.length; index++){
+      // Insert text
+      if(index === 0){
+        resultRow.insertCell().innerHTML = '<b>Total:</b>';
+      // Insert blank value
+      }else if([1, 2].includes(index)){
+        resultRow.insertCell().innerHTML = '';
+      // Insert AVG value
+      }else if([3].includes(index)){
+        resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
+      // Insert SUM value
+      } else {
+        resultRow.insertCell().innerHTML = `<b>${columnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
+      }
+    }
+    return [columnSums, numOfRecords]
+  }
+
+  let [totalColumnSums, totalNumOfRecords] = calculateResults('gold')
+  let [columnSums1, numOfRecords1] = calculateResults('silver');
+  totalNumOfRecords += numOfRecords1;
+  for(let index = 0; index<columnSums1.length; index++){
+    totalColumnSums[index] += columnSums1[index]
+  }
+  let [columnSums2, numOfRecords2] = calculateResults('bronze');
+  totalNumOfRecords += numOfRecords2;
+  for(let index = 0; index<columnSums2.length; index++){
+    totalColumnSums[index] += columnSums2[index]
+  }
+
+  // Grand total
+  $(document).ready(function() {
+    var table1 = document.getElementById('gold');
+    var table3 = document.getElementById('total');
+    // Получаем заголовки из gold
+    var headers = table1.getElementsByTagName('thead')[0].getElementsByTagName('tr')[0].cloneNode(true);
+    // Вставляем заголовки в total
+    table3.getElementsByTagName('thead')[0].appendChild(headers);
+
+    // Создаем новую строку
+    var newRow = table3.getElementsByTagName('tbody')[0].insertRow();
+    // Добавляем ячейки в новую строку с данными из массива
+    for (var index = 0; index < totalColumnSums.length; index++) {
+      var cell = newRow.insertCell(index);
+      // Insert text
+      if(index === 0){
+        cell.innerHTML = '<b>Grand Total:</b>';
+      // Insert blank value
+      }else if([1, 2].includes(index)){
+        cell.innerHTML = '';
+      // Insert AVG value
+      }else if([3].includes(index)){
+        cell.innerHTML = `<b>${(totalColumnSums[index]/totalNumOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
+      // Insert SUM
+      } else {
+        cell.innerHTML = `<b>${totalColumnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
+      }
+    }
+
+  });
+
+  
+</script>
+
+<!-- DataTable -->
 <script>
   $(function () {
     $("#gold").DataTable({
