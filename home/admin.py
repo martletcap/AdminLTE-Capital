@@ -175,6 +175,7 @@ class ShareholderListAdmin(SimpleHistoryAdminCustom):
 class ShareholderAdmin(SimpleHistoryAdminCustom):
     change_form_template = 'pages/shareholder_change_form.html'
     list_display = ['shareholder_list', 'contact', 'share', 'amount', 'option']
+    list_select_related = ('shareholder_list', 'contact', 'share')
     form = ShareholderForm
 
 class CompanyHouseParserAdmin(SimpleHistoryAdmin):
