@@ -1496,6 +1496,7 @@ class CategoryPerformanceView(View):
             'fair_value':0,
             'cost':0,
             'multiple_times':0,
+            'color':'#ffffff',
         }
         # Name
         res['name'] = company.short_name
@@ -1572,6 +1573,13 @@ class CategoryPerformanceView(View):
         # Multiple times 
         if res['cost']:
             res['multiple_times'] = res['fair_value']/res['cost']
+        # Color
+        fair_value_method = FairValueMethod.objects.filter(
+            company = company,
+            date__lte = reporting_date,
+        ).order_by('-date')[:1].first()
+        if fair_value_method:
+            res['color']=fair_value_method.color
         
         return res
     
@@ -1615,7 +1623,7 @@ class CategoryPerformanceView(View):
         headers = [
             'Company', 'Sector', 'Year of first investment', 'Shareholding',
             'Martlet fair value', 'Percent of Total Portfolio', 'Martlet cost',
-            'Percent of Total Portfolio', 'Multiple Times'
+            'Percent of Total Portfolio', 'Multiple Times', 'Fair Value Method',
         ]
         companies = Company.objects.filter(
             category = 1, # Companys category (fixture)

@@ -4,6 +4,13 @@ from simple_history.models import HistoricalRecords
 
 from .managers import SharePriceManager, SplitManager
 
+
+COLOR_CHOICES = [
+    ('#92d14f', 'Green'),
+    ('#ffff00', 'Yellow'),
+    ('#fe0000', 'Red'),
+]
+
 User = get_user_model()
 
 class ContactType(models.Model):
@@ -284,6 +291,7 @@ class FairValueMethod(models.Model):
     name = models.CharField(max_length=255)
     percent = models.IntegerField()
     date = models.DateField()
+    color = models.CharField(max_length=8, choices=COLOR_CHOICES, null=True, blank=True)
     history = HistoricalRecords()
 
 

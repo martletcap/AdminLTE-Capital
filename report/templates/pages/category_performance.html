@@ -63,6 +63,7 @@
                       <td>{{ record.cost }}</td>
                       <td>{{ record.cost_pct }}</td>
                       <td>{{ record.multiple_times }}</td>
+                      <td><div style="background-color:{{ record.color }};">&zwnj;</div></td>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -101,6 +102,7 @@
                       <td>{{ record.cost }}</td>
                       <td>{{ record.cost_pct }}</td>
                       <td>{{ record.multiple_times }}</td>
+                      <td><div style="background-color:{{ record.color }};">&zwnj;</div></td>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -139,6 +141,7 @@
                       <td>{{ record.cost }}</td>
                       <td>{{ record.cost_pct }}</td>
                       <td>{{ record.multiple_times }}</td>
+                      <td><div style="background-color:{{ record.color }};">&zwnj;</div></td>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -214,7 +217,7 @@
       if(index === 0){
         resultRow.insertCell().innerHTML = '<b>Total:</b>';
       // Insert blank value
-      }else if([1, 2].includes(index)){
+      }else if([1, 2, 9].includes(index)){
         resultRow.insertCell().innerHTML = '';
       // Insert AVG value
       }else if([3].includes(index)){
@@ -257,7 +260,7 @@
       if(index === 0){
         cell.innerHTML = '<b>Grand Total:</b>';
       // Insert blank value
-      }else if([1, 2].includes(index)){
+      }else if([1, 2, 9].includes(index)){
         cell.innerHTML = '';
       // Insert AVG value
       }else if([3].includes(index)){
