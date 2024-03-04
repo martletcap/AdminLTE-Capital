@@ -800,6 +800,7 @@ class CurrentHoldingsView(View):
             ).order_by('-date')[:1].first()
             fair_value_cof_rep = 1
             if fair_value_method_rep:
+                res[-1]['fair_value_method'] = fair_value_method_rep.name
                 fair_value_cof_rep = Decimal(fair_value_method_rep.percent/100)
 
             our_amount = 0
