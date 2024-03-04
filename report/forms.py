@@ -6,7 +6,7 @@ from django.forms import formset_factory
 
 from home.models import (
     Share, ShareType, ContactType, Contact, Company, ShareholderList,
-    Shareholder,
+    Shareholder, COLOR_CHOICES,
 )
 from home.forms import SharePriceForm
 
@@ -180,10 +180,12 @@ class SharesControlForm(forms.Form):
                 shareholder_list=shareholder_list,
                 **record,
             ))
-        return res
-        
-        
-        
-        
+        return res       
 
 SharesControlFormSet = formset_factory(SharesControlForm, extra=0)
+
+class DateColorForm(DateForm):
+    color = forms.ChoiceField(
+        choices=COLOR_CHOICES,
+        required=True,
+    )

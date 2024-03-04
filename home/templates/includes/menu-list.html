@@ -70,6 +70,13 @@
             <p>Category Performance</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'fair_color' as fair_color %}
+          <a href="{{ fair_color }}" class="nav-link {% if fair_color == request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Fair Color</p>
+          </a>
+        </li>
         {% comment %} 
         <li class="nav-item">
           {% url 'iframe' as iframe %}

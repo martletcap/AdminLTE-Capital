@@ -20,4 +20,5 @@ urlpatterns = [
     path('utils/confirm/', views.confirm_shareholders, name='confirm_shareholders'),
     path('utils/updateprices/', views.SharePriceUpdateView.as_view(), name='update_prices'),
     path('utils/sharescontrol/', views.SharesControlView.as_view(), name='shares_control'),
+    path('utils/fair_color/', views.FairColorView.as_view(), name='fair_color'),
 ]

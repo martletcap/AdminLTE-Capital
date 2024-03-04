@@ -68,8 +68,11 @@
                             <div class="{% for field in form %}{% if field.name %} field-{{ field.name }}{% endif %}{% endfor %}">
                                 {% block field_sets %}
                                         {% for field in form %}
-                                            {{ field.label_tag }}
+                                        <div>
+                                            <div>{{ field.label_tag }}</div>
                                             {{ field }}
+                                        </div>
+                                        <br>
                                         {% endfor %}
                                         <button type="submit" class="btn btn-success" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
                                             {% trans "Send" %}
