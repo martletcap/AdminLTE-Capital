@@ -1526,10 +1526,15 @@ class CategoryPerformanceView(View):
             'share',
         ).annotate(type=F('money_transaction__transaction_type__title'))
         for transaction in our_share_transactions:
+            cof = Split.objects.cof(
+                date__gte = transaction.date,
+                date__lte = reporting_date,
+                share=transaction.share,
+            )
             if transaction.type == 'Sell':
-                our_share_amount -= transaction.amount
+                our_share_amount -= transaction.amount*cof
             else:
-                our_share_amount += transaction.amount
+                our_share_amount += transaction.amount*cof
         if last_share_amount:
             res['shareholding_pct'] = 100/last_share_amount*our_share_amount
         # Martlet fair value
