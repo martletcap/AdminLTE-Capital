@@ -19,7 +19,7 @@ from home.models import (
 from report.forms import (
     UploadFileForm, ShareholderListExtraForm, CompanySelectForm,
     ShareholderUploadFormSet, SharePriceFormSet, PeriodForm, DateForm,
-    SharesControlFormSet, DateColorForm,
+    SharesControlFormSet,
 )
 
 def short_report(request):
@@ -1656,31 +1656,5 @@ class CategoryPerformanceView(View):
         
 
 
-class FairColorView(View):
-    def get(self, request):
-        form = DateColorForm()
-        context = {
-            'enctype':'multipart/form-data',
-            'method': "POST",
-            'url': resolve_url('fair_color'), 
-            'form': form,
-        }
-        return render(request, 'pages/simple_form.html', context=context)
-    
-    def post(self, request):
-        form = DateColorForm(request.POST)
-        if not form.is_valid():
-            context = {
-                'enctype':'multipart/form-data',
-                'method': "POST",
-                'url': resolve_url('fair_color'), 
-                'form': form,
-            }
-            return render(request, 'pages/simple_form.html', context=context)
-        all_fair_methods = FairValueMethod.objects.filter(
-            date = form.cleaned_data['date']
-        )
-        for record in all_fair_methods:
-            record.color = form.cleaned_data['color']
-            record.save()
-        return redirect('index')
+
+
