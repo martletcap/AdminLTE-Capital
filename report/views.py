@@ -14,7 +14,8 @@ from utils.pdf_utils import CS01_parser, SH01_parser, report_file_name
 from utils.general import share_name_correction, previous_quarters, get_fiscal_quarter
 from home.models import (
     Company, ContactType, Contact, Share, MoneyTransaction, ShareTransaction,
-    SharePrice, Split, ShareholderList, Shareholder, FairValueMethod,
+    SharePrice, Split, ShareholderList, Shareholder, FairValueList, 
+    FairValueMethod,
 )
 from report.forms import (
     UploadFileForm, ShareholderListExtraForm, CompanySelectForm,
@@ -794,14 +795,17 @@ class CurrentHoldingsView(View):
                     total_amount = Sum('amount')
             )['total_amount']
 
+            fair_value_list_rep = FairValueList.objects.filter(
+                date__lte = reporting_date,
+            ).order_by('-date')[:1].first()
             fair_value_method_rep = FairValueMethod.objects.filter(
                 company = company,
-                date__lte = reporting_date, 
-            ).order_by('-date')[:1].first()
+                fair_value_list = fair_value_list_rep, 
+            ).select_related('percent').first()
             fair_value_cof_rep = 1
             if fair_value_method_rep:
-                res[-1]['fair_value_method'] = fair_value_method_rep.name
-                fair_value_cof_rep = Decimal(fair_value_method_rep.percent/100)
+                res[-1]['fair_value_method'] = fair_value_method_rep.percent.name
+                fair_value_cof_rep = Decimal(fair_value_method_rep.percent.percent/100)
 
             our_amount = 0
             our_share_transactions = ShareTransaction.objects.filter(
@@ -860,13 +864,16 @@ class CurrentHoldingsView(View):
                 type = F('money_transaction__transaction_type__title'),
             )
             
-            fair_value_method_prev = FairValueMethod.objects.filter(
-                company = company,
+            fair_value_list_prev = FairValueList.objects.filter(
                 date__lte = previous_date, 
             ).order_by('-date')[:1].first()
+            fair_value_method_prev = FairValueMethod.objects.filter(
+                company = company,
+                fair_value_list = fair_value_list_prev,
+            ).select_related('percent').first()
             fair_value_cof_prev = 1
             if fair_value_method_prev:
-                fair_value_cof_prev = Decimal(fair_value_method_prev.percent/100)
+                fair_value_cof_prev = Decimal(fair_value_method_prev.percent.percent/100)
 
             for transaction in our_share_transactions:
                 # Last price
@@ -1024,14 +1031,17 @@ class CurrentHoldingsView(View):
                     total_amount = Sum('amount')
             )['total_amount']
 
+            fair_value_list = FairValueList.objects.filter(
+                date__lte = reporting_date,
+            ).order_by('-date')[:1].first()
             fair_value_method = FairValueMethod.objects.filter(
                 company = company,
-                date__lte = reporting_date, 
-            ).order_by('-date')[:1].first()
+                fair_value_list = fair_value_list,
+            ).select_related('percent').first()
             fair_value_cof = 1
             if fair_value_method:
-                res[-1]['fair_value_method'] = fair_value_method.name
-                fair_value_cof = Decimal(fair_value_method.percent/100)
+                res[-1]['fair_value_method'] = fair_value_method.percent.name
+                fair_value_cof = Decimal(fair_value_method.percent.percent/100)
 
             our_amount = 0
             price_exist = set()
@@ -1576,10 +1586,13 @@ class CategoryPerformanceView(View):
         if res['cost']:
             res['multiple_times'] = res['fair_value']/res['cost']
         # Color
-        fair_value_method = FairValueMethod.objects.filter(
-            company = company,
+        fair_value_list = FairValueList.objects.filter(
             date__lte = reporting_date,
         ).order_by('-date')[:1].first()
+        fair_value_method = FairValueMethod.objects.filter(
+            company = company,
+            fair_value_list = fair_value_list,
+        ).first()
         if fair_value_method:
             res['color']=fair_value_method.color
         

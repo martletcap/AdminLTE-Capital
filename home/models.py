@@ -280,17 +280,49 @@ class ShareTransaction(models.Model):
     comment = models.TextField(max_length=10240, blank=True)
     history = HistoricalRecords()
 
+
+class Percent(models.Model):
+    
+    class Meta:
+        app_label = 'base_info'
+        db_table = 'percent'
+        verbose_name_plural = 'Percent'
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255, unique=True)
+    percent = models.IntegerField()
+
+    def __str__(self) -> str:
+        return self.name
+    
+
+class FairValueList(models.Model):
+
+    class Meta:
+        db_table = 'fair_value_list'
+        verbose_name_plural = '11. Fair Value List'
+
+    id = models.AutoField(primary_key=True)
+    date = models.DateField()
+    comment = models.TextField(max_length=10240, blank=True)
+    history = HistoricalRecords()
+
+    def __str__(self) -> str:
+        return self.date.strftime('%Y/%m/%d')
+
+
 class FairValueMethod(models.Model):
 
     class Meta:
         db_table = 'fair_value_method'
-        verbose_name_plural = '11. Fair Value Method'
+        verbose_name_plural = '12. Fair Value Method'
+        unique_together = ('company', 'fair_value_list',)
 
     id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
-    name = models.CharField(max_length=255)
-    percent = models.IntegerField()
-    date = models.DateField()
+    percent = models.ForeignKey(Percent, on_delete=models.PROTECT)
+    fair_value_list = models.ForeignKey(FairValueList, on_delete=models.PROTECT)
+    comment = models.TextField(max_length=10240, blank=True)
     color = models.CharField(max_length=8, choices=COLOR_CHOICES, null=True, blank=True)
     history = HistoricalRecords()
 
@@ -337,7 +369,7 @@ class CompanyHouseParser(models.Model):
 
     class Meta:
         db_table = 'company_house_parser'
-        verbose_name_plural = '12. Company House Parser'
+        verbose_name_plural = '13. Company House Parser'
 
     id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)

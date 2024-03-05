@@ -10,13 +10,13 @@ from simple_history.admin import SimpleHistoryAdmin
 from .models import (
     ContactType, Contact, Sector, Location, CompanyStatus, CategoryOfCompany,
     Company, SeedStep, ShareType, Share, Split, SharePrice,
-    MoneyTransaction, ShareTransaction, FairValueMethod,
-    ShareholderList, Shareholder, CompanyHouseParser,
+    MoneyTransaction, ShareTransaction, Percent, FairValueList, 
+    FairValueMethod, ShareholderList, Shareholder, CompanyHouseParser,
 )
 from .forms import (
     CompanyForm, SeedStepForm, SplitForm,
     SharePriceForm, MoneyTransactionForm, ShareTransactionForm,
-    FairValueMethodForm, ShareholderListForm, ShareholderForm
+    PercentForm, FairValueListForm, ShareholderListForm, ShareholderForm,
 )
 
 class SimpleHistoryAdminCustom(SimpleHistoryAdmin):
@@ -132,9 +132,21 @@ class MoneyTransactionAdmin(SimpleHistoryAdminCustom):
         return super().response_post_save_add(request, obj)
     
 
+class PercentAdmin(SimpleHistoryAdminCustom):
+    list_display = ['name', 'percent']
+    form = PercentForm
+
+
+class FairValueListAdmin(SimpleHistoryAdminCustom):
+    list_display = ['formatted_date_field', 'comment']
+    form = FairValueListForm
+
+    def formatted_date_field(self, obj):
+        return obj.date.strftime('%Y/%m/%d')
+    
+
 class FairValueMethodAdmin(SimpleHistoryAdminCustom):
-    list_display = ['company', 'name', 'percent', 'date']
-    form = FairValueMethodForm
+    list_display = ['company', 'percent']
 
 
 class ShareholderListAdmin(SimpleHistoryAdminCustom):
@@ -239,6 +251,8 @@ admin.site.register(Split, SplitAdmin)
 admin.site.register(SharePrice, SharePriceAdmin)
 admin.site.register(MoneyTransaction, MoneyTransactionAdmin)
 admin.site.register(ShareTransaction, ShareTransactionAdmin)
+admin.site.register(Percent, PercentAdmin)
+admin.site.register(FairValueList, FairValueListAdmin)
 admin.site.register(FairValueMethod, FairValueMethodAdmin)
 admin.site.register(ShareholderList, ShareholderListAdmin)
 admin.site.register(Shareholder, ShareholderAdmin)

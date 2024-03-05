@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 
 from .models import (
     Company, SeedStep, Split, SharePrice, MoneyTransaction,
-    ShareTransaction, FairValueMethod, ShareholderList, Shareholder
+    ShareTransaction, Percent, FairValueList, ShareholderList,
+    Shareholder,
 )
 from .utils import UserChoiceField
 
@@ -78,11 +79,18 @@ class ShareTransactionForm(forms.ModelForm):
         return cleaned_data
 
 
-class FairValueMethodForm(forms.ModelForm):
+class PercentForm(forms.ModelForm):
     percent = forms.IntegerField(min_value=0, max_value=100)
 
     class Meta:
-        model = FairValueMethod
+        model = Percent
+        fields = '__all__'
+
+
+class FairValueListForm(forms.ModelForm):
+
+    class Meta:
+        model = FairValueList
         widgets = {
             'date':forms.widgets.NumberInput(attrs={'type':'date'}),
         }
