@@ -1,7 +1,10 @@
 from datetime import date
 from collections import defaultdict
 
-from home.models import Company, Contact, ContactType, Share, ShareType, ShareholderList, Shareholder
+from home.models import (
+    Company, Contact, ContactType, Share, ShareType, ShareholderList,
+    Shareholder, SharePrice,
+)
 from utils.general import share_name_correction
 
 
@@ -145,3 +148,16 @@ def SH01_to_shareholderlist(shares, date, company):
             option = record['option'],
         )
     return new_shareholder_list
+
+def is_new_shares(res, company):
+    new_shares = []
+    for r in res:
+        share_name = share_name_correction(r['share'])
+        exists = Share.objects.filter(
+            company = company,
+            type__type = share_name
+        ).exists()
+        if not exists:
+            new_shares.append(share_name)
+
+    return new_shares

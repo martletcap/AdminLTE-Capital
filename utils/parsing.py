@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from utils.pdf_utils import CS01_parser, SH01_parser
 from utils.model import (
     copy_shareholder_list, compare_shareholderlist, CS01_to_shareholderlist,
-    SH01_to_shareholderlist,
+    SH01_to_shareholderlist, is_new_shares
 )
 from home.models import (
     ShareholderList, CompanyHouseParser,
@@ -128,8 +128,13 @@ def item_to_shareholder_list(company, item):
         return new_list, ''
     # There is no sheet and there are results.
     elif not shareholder_list and res:
+        # crate list of shares
         new_list = None
         comment = ''
+        # Check new shares
+        new_shares = is_new_shares(res, company)
+        if new_shares:
+            comment = f'Add price to new shares: {", ".join(new_shares)}.'
         # CS01 - create new
         if item['type'] == 'CS01':
             new_list = CS01_to_shareholderlist(res, date, company)
