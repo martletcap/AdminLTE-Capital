@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.views.generic import View
 from django.urls import reverse
 from django.shortcuts import render, resolve_url, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.db.models import (
     F, Sum,
 )
@@ -23,6 +25,8 @@ from report.forms import (
     SharesControlFormSet,
 )
 
+
+@login_required
 def short_report(request):
     date_form = DateForm(request.GET)
     if not date_form.is_valid():
@@ -172,6 +176,7 @@ def short_report(request):
     ]
     return render(request, 'pages/short_report.html', context=context)
 
+@login_required
 def index(request):
     # Duct tape
     _mutable = request.GET._mutable
@@ -180,6 +185,7 @@ def index(request):
     request.GET._mutable = _mutable
     return short_report(request)
 
+@login_required
 def upload_shareholders(request):
     if request.method == "POST":
         file = request.FILES.get('file')
@@ -282,7 +288,7 @@ def upload_shareholders(request):
         }
         return render(request, 'pages/simple_form.html', context=context)
     
-
+@login_required
 def confirm_shareholders(request):
     extra_form = ShareholderListExtraForm(request.POST)
     shareholders_formset = ShareholderUploadFormSet(request.POST)
@@ -309,6 +315,8 @@ def confirm_shareholders(request):
             )
     return redirect('upload_shareholders')
 
+
+@method_decorator(login_required, name='dispatch')
 class SharePriceUpdateView(View):
     def get(self, request):
         form = CompanySelectForm(request.GET)
@@ -373,6 +381,7 @@ class SharePriceUpdateView(View):
         return redirect('index')
     
 
+@method_decorator(login_required, name='dispatch')
 class CompanyReportView(View):
     def get(self, request):
         form = CompanySelectForm(request.GET)
@@ -516,6 +525,7 @@ class CompanyReportView(View):
         return render(request, 'pages/company_report.html', context)
     
 
+@method_decorator(login_required, name='dispatch')
 class DetailedReportView(View):
     def get(self, request):
         res = {}
@@ -644,7 +654,7 @@ class DetailedReportView(View):
         return render(request, 'pages/detailed_report.html', context=context)
         
 
-
+@method_decorator(login_required, name='dispatch')
 class UpdateShareholdersView(View):
     def get(self, request):
         form = CompanySelectForm(request.GET)
@@ -691,7 +701,7 @@ class UpdateShareholdersView(View):
         return render(request, 'pages/shareholders_formset.html', context=context)
     
 
-
+@method_decorator(login_required, name='dispatch')
 class CurrentHoldingsView(View):
     def get(self, request):
         period_form = PeriodForm(request.GET)
@@ -1215,6 +1225,7 @@ class CurrentHoldingsView(View):
         return render(request, 'pages/current_holdings.html', context=context)
     
 
+@method_decorator(login_required, name='dispatch')
 class SharesInfoView(View):
     def get(self, request):
         date_form = DateForm(request.GET)
@@ -1340,6 +1351,8 @@ class SharesInfoView(View):
             ))
         return render(request, 'pages/shares_info.html', context=context)
 
+
+@method_decorator(login_required, name='dispatch')
 class SharesControlView(View):
     def get(self, request):
         context = {'extra_form': DateForm()}
@@ -1375,6 +1388,7 @@ class SharesControlView(View):
         return redirect('shares_control')
         
 
+@method_decorator(login_required, name='dispatch')
 class QuarterGraphslView(View):
     def get(self, request):
         date_form = DateForm()
@@ -1468,6 +1482,7 @@ class QuarterGraphslView(View):
         return render(request, 'pages/quarter_report.html', context)
 
 
+@method_decorator(login_required, name='dispatch')
 class CategoryPerformanceView(View):
     def brake_into_categories(self, records:list):
         # Category boundaries
@@ -1669,7 +1684,3 @@ class CategoryPerformanceView(View):
         }
         return render(request, 'pages/simple_form.html', context=context)
         
-
-
-
-
