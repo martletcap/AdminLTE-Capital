@@ -1,6 +1,7 @@
 from datetime import date
-from collections import defaultdict
 from decimal import Decimal
+from collections import defaultdict
+from dateutil.relativedelta import relativedelta
 
 from django.contrib import messages
 from django.views.generic import View
@@ -1518,6 +1519,7 @@ class CategoryPerformanceView(View):
             'fair_value':0,
             'cost':0,
             'multiple_times':0,
+            'prev_color':'#ffffff',
             'color':'#ffffff',
         }
         # Name
@@ -1610,6 +1612,17 @@ class CategoryPerformanceView(View):
         ).first()
         if fair_value_method:
             res['color']=fair_value_method.color
+        # Prev color
+        prev_reporting_date = reporting_date - relativedelta(months=3)
+        fair_value_list = FairValueList.objects.filter(
+            date__lte = prev_reporting_date,
+        ).order_by('-date')[:1].first()
+        fair_value_method = FairValueMethod.objects.filter(
+            company = company,
+            fair_value_list = fair_value_list,
+        ).first()
+        if fair_value_method:
+            res['prev_color']=fair_value_method.color
         
         return res
     
@@ -1653,7 +1666,8 @@ class CategoryPerformanceView(View):
         headers = [
             'Company', 'Sector', 'Year of first investment', 'Shareholding',
             'Martlet fair value', 'Percent of Total Portfolio', 'Martlet cost',
-            'Percent of Total Portfolio', 'Multiple Times', 'Fair Value Method',
+            'Percent of Total Portfolio', 'Multiple Times', 'Prev Fair Value Method',
+            'Fair Value Method',
         ]
         companies = Company.objects.filter(
             category = 1, # Companys category (fixture)
