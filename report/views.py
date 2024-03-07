@@ -41,6 +41,7 @@ def short_report(request):
     date = date_form.cleaned_data['date']
 
     context = {}
+    context['date']=date
     context['result_headers'] = [
         'Area', 'No. Com.', 'Pct. Com.', 'Investment', 'Investment Pct.',
         'Market Price', 'Market Price Pct.'
@@ -735,6 +736,7 @@ class CurrentHoldingsView(View):
             'links1':[],
             'links2':[],
         }
+        context['date'] = reporting_date
         tmp = {
             'company':'',
             'year':0,
@@ -1251,6 +1253,7 @@ class SharesInfoView(View):
             'results':[],
             'links':[],
         }
+        context['date'] = reporting_date
         tmp = {
             'company':'',
             'enterprise_undiluted':0,
@@ -1479,6 +1482,7 @@ class QuarterGraphslView(View):
             'investments':investments,
             'growths':growths,
             'previous_months':previous_months,
+            'date':reporting_date,
         }
         return render(request, 'pages/quarter_report.html', context)
 
@@ -1685,6 +1689,7 @@ class CategoryPerformanceView(View):
             'gold':gold,
             'silver':silver,
             'bronze':bronze,
+            'date':reporting_date,
         }
         return render(request, 'pages/category_performance.html', context)
 

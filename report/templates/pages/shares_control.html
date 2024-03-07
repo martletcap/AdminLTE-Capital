@@ -12,6 +12,8 @@ s{% extends "layouts/base.html" %}
     <link rel="stylesheet" type="text/css" href="{% static "dist/css/forms.css" %}">
 {% endblock %}
 
+{% block title %} Shares Control {% endblock title %}
+
 {% if not is_popup %}
     {% block breadcrumbs %}
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">

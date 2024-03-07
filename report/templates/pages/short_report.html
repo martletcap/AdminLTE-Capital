@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
 {% endblock %}
 
-{% block title %} ChartJS {% endblock title %}
+{% block title %} Short {% endblock title %}
 
 {% block bodyclass %} hold-transition sidebar-mini {% endblock bodyclass %}
 
@@ -21,7 +21,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Short</h1>
+            <h1>{{ date|date:'d-m-Y' }}</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
