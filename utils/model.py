@@ -56,7 +56,7 @@ def compare_shareholderlist(shareholder_list:ShareholderList, amounts:dict):
 def CS01_to_shareholderlist(shareholders:list, date:date, company:Company):
     default_contact_type = ContactType.objects.get(id=7) # No Type Info
     shareholder_list = ShareholderList.objects.create(
-        company=company, date=date
+        company=company, date=date, comment = 'Created by parser.',
     )
     for record in shareholders:
         owner = record['owner']
@@ -135,7 +135,7 @@ def SH01_to_shareholderlist(shares, date, company):
                 'contact':default_contact,
                 })
     new_shareholder_list = ShareholderList.objects.create(
-        company = company, date = date,
+        company = company, date = date, comment = 'Created by parser.',
     )
     for record in new_records:
         share_type, _ = ShareType.objects.get_or_create(type=record['type'])
