@@ -83,12 +83,15 @@ class SharePriceAdmin(SimpleHistoryAdminCustom):
 class ShareTransactionAdmin(SimpleHistoryAdminCustom):
     change_form_template = 'pages/sharetransaction_change_form.html'
     list_display = [
-        'get_money_transaction', 'date', 'share', 'amount',
+        'get_money_transaction', 'formatted_date_field', 'share', 'amount',
     ]
     form = ShareTransactionForm
 
     def get_money_transaction(self, obj):
         return obj.money_transaction.price
+    
+    def formatted_date_field(self, obj):
+        return obj.date.strftime('%Y/%m/%d')
 
     def add_view(self, request, form_url="", extra_context=None):
         if extra_context is None: extra_context = {}
@@ -150,13 +153,29 @@ class FairValueMethodAdmin(SimpleHistoryAdminCustom):
 
 
 class ShareholderListAdmin(SimpleHistoryAdminCustom):
-    list_display = ['company', 'formatted_date_field']
+    list_display = [
+        'company', 'formatted_date_field', 'shares_field', 'options_field'
+    ]
     form = ShareholderListForm
     add_form_template = 'admin/change_form.html'
     change_form_template = 'pages/shareholderlist_change_form.html'
 
     def formatted_date_field(self, obj):
         return obj.date.strftime('%Y/%m/%d')
+    
+    def shares_field(self, obj):
+        total = Shareholder.objects.filter(
+            shareholder_list = obj,
+            option = True,
+        ).aggregate(total_amount = Sum('amount'))['total_amount']
+        return total
+    
+    def options_field(self, obj):
+        total = Shareholder.objects.filter(
+            shareholder_list = obj,
+            option = False,
+        ).aggregate(total_amount = Sum('amount'))['total_amount']
+        return total
     
     def render_change_form(
         self, request, context, add=False, change=False, form_url="", obj=None
@@ -182,6 +201,10 @@ class ShareholderListAdmin(SimpleHistoryAdminCustom):
             ))
         context['id'] = obj.pk if obj else obj
         return super().render_change_form(request, context, add, change, form_url, obj)
+    
+
+    shares_field.short_description = 'Shares'
+    options_field.short_description = 'Options'
 
 
 class ShareholderAdmin(SimpleHistoryAdminCustom):
