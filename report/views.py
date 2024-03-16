@@ -23,7 +23,7 @@ from home.models import (
 from report.forms import (
     UploadFileForm, ShareholderListExtraForm, CompanySelectForm,
     ShareholderUploadFormSet, SharePriceFormSet, PeriodForm, DateForm,
-    SharesControlFormSet,
+    SharesControlFormSet, FairValueControlFormSet,
 )
 
 
@@ -1702,4 +1702,53 @@ class CategoryPerformanceView(View):
             'form': date_form,
         }
         return render(request, 'pages/simple_form.html', context=context)
+        
+
+@method_decorator(login_required, name='dispatch')
+class FairValueControlView(View):
+    def post(self, request):
+        date_form = DateForm(request.POST)
+        control_formset = FairValueControlFormSet(request.POST)
+        if not control_formset.is_valid() or not date_form.is_valid():
+            context = {
+            'date_form':date_form,
+            'formset':control_formset,
+            }
+            return render(request, 'pages/fair_value_control.html', context=context)
+        date = date_form.cleaned_data['date']
+        fair_value_list = FairValueList.objects.create(date=date)
+        for form in control_formset:
+            form.save(fair_value_list)
+
+        messages.success(request, 'Added successfully')
+        return redirect('index')
+
+    def get(self, request):
+        date_form = DateForm(request.GET)
+        if not date_form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('fair_value_control'), 
+                'form': date_form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        inital_data = []
+        last_date = date_form.cleaned_data['date']
+        for company in Company.objects.all():
+            record = {'company': company.pk}
+            fair_value = FairValueMethod.objects.filter(
+                company = company,
+                fair_value_list__date__lte = last_date,
+            ).select_related('percent').first()
+            if fair_value:
+                record['prev_percent'] = fair_value.percent.name
+                record['prev_color'] = fair_value.color
+
+            inital_data.append(record)
+        context = {
+            'date_form':date_form,
+            'formset':FairValueControlFormSet(initial=inital_data),
+        }
+        return render(request, 'pages/fair_value_control.html', context=context)
         

@@ -70,6 +70,13 @@
             <p>Category Performance</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'fair_value_control' as fair_value_control %}
+          <a href="{{ fair_value_control }}" class="nav-link {% if fair_value_control == request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Fair Value Control</p>
+          </a>
+        </li>
         {% comment %} 
         <li class="nav-item">
           {% url 'iframe' as iframe %}

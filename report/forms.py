@@ -5,8 +5,8 @@ from django import forms
 from django.forms import formset_factory
 
 from home.models import (
-    Share, ShareType, ContactType, Contact, Company, ShareholderList,
-    Shareholder,
+    COLOR_CHOICES, Share, ShareType, ContactType, Contact, Company,
+    ShareholderList, Shareholder, Percent, FairValueMethod,
 )
 from home.forms import SharePriceForm
 
@@ -182,8 +182,35 @@ class SharesControlForm(forms.Form):
             ))
         return res
         
-        
-        
-        
-
 SharesControlFormSet = formset_factory(SharesControlForm, extra=0)
+
+class FairValueControlForm(forms.Form):
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.all(),
+        required=True,
+        empty_label=None,
+    )
+    prev_percent=forms.ModelChoiceField(
+        queryset=Percent.objects.all(),
+        required=False,
+    )
+    prev_color=forms.ChoiceField(
+        choices=[('', '---------')]+COLOR_CHOICES,
+        required=False,
+    )
+    percent = forms.ModelChoiceField(
+        queryset=Percent.objects.all(),
+        required=True,
+        empty_label=None,
+    )
+    color = forms.ChoiceField(choices=COLOR_CHOICES)
+
+    def save(self, fair_value_list):
+        return FairValueMethod.objects.create(
+            company=self.cleaned_data['company'],
+            percent = self.cleaned_data['percent'],
+            fair_value_list=fair_value_list,
+            color=self.cleaned_data['color']
+        )
+
+FairValueControlFormSet = formset_factory(FairValueControlForm, extra=0)
