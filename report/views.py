@@ -737,6 +737,7 @@ class CurrentHoldingsView(View):
             'links2':[],
         }
         context['date'] = reporting_date
+        context['prev_date'] = previous_date
         tmp = {
             'company':'',
             'year':0,
