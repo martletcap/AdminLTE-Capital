@@ -782,12 +782,12 @@ class CurrentHoldingsView(View):
                 type = F('transaction_type__title')
             )
             for transaction in money_transactions:
-                if transaction.transaction_type in {1, 3}: # Buy and Loan transactions
+                if transaction.type in {"Buy", "Loan"}:
                     res[-1]['invested'] += transaction.price
-                    if transaction.portfolio == 'Martlet':
+                    if transaction.portfolio_name == 'Martlet':
                         res[-1]['cost'] += transaction.price
-                elif transaction.transaction_type in {7,}: # Restructuring transaction
-                    if transaction.portfolio == 'Martlet':
+                elif transaction.transaction_type in {"Restructuring",}:
+                    if transaction.portfolio_name == 'Martlet':
                         res[-1]['cost'] += transaction.price
             # Martlet ownership
             # and
@@ -1014,18 +1014,13 @@ class CurrentHoldingsView(View):
                 type = F('transaction_type__title')
             )
             for transaction in money_transactions:
-                if transaction.type == "Sell":
-                    res[-1]['invested'] -= transaction.price
-                    if transaction.portfolio_name == 'Martlet':
-                        res[-1]['cost'] += transaction.price
-                elif transaction.type == "Restructuring":
-                    if transaction.portfolio_name == 'Martlet':
-                        res[-1]['cost'] += transaction.price
-                else:
+                if transaction.type in {"Buy", "Loan"}:
                     res[-1]['invested'] += transaction.price
                     if transaction.portfolio_name == 'Martlet':
                         res[-1]['cost'] += transaction.price
-
+                elif transaction.transaction_type in {"Restructuring",}:
+                    if transaction.portfolio_name == 'Martlet':
+                        res[-1]['cost'] += transaction.price
             # Martlet ownership
             # and
             # Fair Value Method
