@@ -761,16 +761,15 @@ class CurrentHoldingsView(View):
         )
         res = []
         for company in companies:
-            context['links1'].append(reverse('company_report')+f'?company={company.pk}')
-            res.append(tmp.copy())
+            record = tmp.copy()
             # Company
-            res[-1]['company'] = company.short_name
+            record['company'] = company.short_name
             # Year of investment
             first_investment = MoneyTransaction.objects.filter(
                 company = company
             ).order_by('date')[:1].first()
             if first_investment:
-                res[-1]['year'] = first_investment.date.year
+                record['year'] = first_investment.date.year
             # Martlet direct investment cost
             # and
             # Martlet cost based on transfer value (including new investment)
@@ -783,12 +782,12 @@ class CurrentHoldingsView(View):
             )
             for transaction in money_transactions:
                 if transaction.type in {"Buy", "Loan"}:
-                    res[-1]['invested'] += transaction.price
+                    record['invested'] += transaction.price
                     if transaction.portfolio_name == 'Martlet':
-                        res[-1]['cost'] += transaction.price
+                        record['cost'] += transaction.price
                 elif transaction.transaction_type in {"Restructuring",}:
                     if transaction.portfolio_name == 'Martlet':
-                        res[-1]['cost'] += transaction.price
+                        record['cost'] += transaction.price
             # Martlet ownership
             # and
             # Fair Value Method
@@ -813,7 +812,7 @@ class CurrentHoldingsView(View):
             ).select_related('percent').first()
             fair_value_cof_rep = 1
             if fair_value_method_rep:
-                res[-1]['fair_value_method'] = fair_value_method_rep.percent.name
+                record['fair_value_method'] = fair_value_method_rep.percent.name
                 fair_value_cof_rep = Decimal(fair_value_method_rep.percent.percent/100)
 
             our_amount = 0
@@ -842,12 +841,12 @@ class CurrentHoldingsView(View):
 
                 if transaction.type == 'Sell':
                     our_amount -= transaction.amount*cof
-                    res[-1]['fair_value_rep'] -= (
+                    record['fair_value_rep'] -= (
                         transaction.amount*last_price*fair_value_cof_rep*cof
                     )
                 else:
                     our_amount += transaction.amount*cof
-                    res[-1]['fair_value_rep'] += (
+                    record['fair_value_rep'] += (
                         transaction.amount*last_price*fair_value_cof_rep*cof
                     )
             # Add Loan to fair_value_prev
@@ -861,10 +860,10 @@ class CurrentHoldingsView(View):
                 transaction_type__title = "Loan"
             ).exclude(id__in = share_money_ids)
             for transaction in money_transactions:
-                res[-1]['fair_value_rep'] += transaction.price
+                record['fair_value_rep'] += transaction.price
 
             if total_amount and our_amount:
-                res[-1]['ownership'] = our_amount/total_amount*100
+                record['ownership'] = our_amount/total_amount*100
             # Martlet fair value previous_date
             our_share_transactions = ShareTransaction.objects.filter(
                 date__lte = previous_date,
@@ -902,11 +901,11 @@ class CurrentHoldingsView(View):
                 )
 
                 if transaction.type == 'Sell':
-                    res[-1]['fair_value_prev'] -= (
+                    record['fair_value_prev'] -= (
                         transaction.amount*last_price*fair_value_cof_prev*cof
                     )
                 else:
-                    res[-1]['fair_value_prev'] += (
+                    record['fair_value_prev'] += (
                         transaction.amount*last_price*fair_value_cof_prev*cof
                     )
             # Add Loan to fair_value_prev
@@ -920,11 +919,11 @@ class CurrentHoldingsView(View):
                 transaction_type__title = "Loan",
             ).exclude(id__in = share_money_ids)
             for transaction in money_transactions:
-                res[-1]['fair_value_prev'] += transaction.price
+                record['fair_value_prev'] += transaction.price
 
             # Valuation change reporting_date vs previous_date
-            res[-1]['valuation_change'] = (
-                res[-1]['fair_value_rep'] - res[-1]['fair_value_prev']
+            record['valuation_change'] = (
+                record['fair_value_rep'] - record['fair_value_prev']
             )
             # New Martlet investment since previous_date
             money_transactions = MoneyTransaction.objects.filter(
@@ -937,22 +936,22 @@ class CurrentHoldingsView(View):
             )
             for transaction in money_transactions:
                 if transaction.type == 'Sell':
-                    res[-1]['new_investment'] -= transaction.price
+                    record['new_investment'] -= transaction.price
                 else:
-                    res[-1]['new_investment'] += transaction.price
+                    record['new_investment'] += transaction.price
             # Valuation change reporting_date vs previous_date
-            res[-1]['valuation_change_exclud']=(
-                res[-1]['valuation_change'] - res[-1]['new_investment']
+            record['valuation_change_exclud']=(
+                record['valuation_change'] - record['new_investment']
             )
             # Fair value multiple to cost
-            if res[-1]['fair_value_rep'] and res[-1]['invested']:
-                res[-1]['fair_cost'] = (
-                    res[-1]['fair_value_rep']/res[-1]['invested']
+            if record['fair_value_rep'] and record['invested']:
+                record['fair_cost'] = (
+                    record['fair_value_rep']/record['invested']
                 )
             # Fair value multiple to transfer cost
-            if res[-1]['fair_value_rep'] and res[-1]['cost']:
-                res[-1]['fair_transfer_cost'] = (
-                    res[-1]['fair_value_rep']/res[-1]['cost']
+            if record['fair_value_rep'] and record['cost']:
+                record['fair_transfer_cost'] = (
+                    record['fair_value_rep']/record['cost']
                 )
             # Enterprise valuation (fully diluted) as at last round
             shareholder_list = ShareholderList.objects.filter(
@@ -967,7 +966,11 @@ class CurrentHoldingsView(View):
                     share=shareholder.share,
                     date__lte = reporting_date,
                 )
-                res[-1]['enterprise']+=shareholder.amount*last_price
+                record['enterprise']+=shareholder.amount*last_price
+            # If we own part of the company, insert it into the table
+            if our_amount != 0:
+                context['links1'].append(reverse('company_report')+f'?company={company.pk}')
+                res.append(record)
 
         for r in res:
             context['table1'].append((
@@ -993,16 +996,15 @@ class CurrentHoldingsView(View):
         )
         res = []
         for company in companies:
-            context['links2'].append(reverse('company_report')+f'?company={company.pk}')
-            res.append(tmp.copy())
+            record = tmp.copy()
             # Company
-            res[-1]['company'] = company.short_name
+            record['company'] = company.short_name
             # Year of investment
             first_investment = MoneyTransaction.objects.filter(
                 company = company
             ).order_by('date')[:1].first()
             if first_investment:
-                res[-1]['year'] = first_investment.date.year
+                record['year'] = first_investment.date.year
             # Martlet direct investment cost
             # and
             # Martlet cost based on transfer value (including new investment)
@@ -1015,12 +1017,12 @@ class CurrentHoldingsView(View):
             )
             for transaction in money_transactions:
                 if transaction.type in {"Buy", "Loan"}:
-                    res[-1]['invested'] += transaction.price
+                    record['invested'] += transaction.price
                     if transaction.portfolio_name == 'Martlet':
-                        res[-1]['cost'] += transaction.price
+                        record['cost'] += transaction.price
                 elif transaction.transaction_type in {"Restructuring",}:
                     if transaction.portfolio_name == 'Martlet':
-                        res[-1]['cost'] += transaction.price
+                        record['cost'] += transaction.price
             # Martlet ownership
             # and
             # Fair Value Method
@@ -1036,20 +1038,19 @@ class CurrentHoldingsView(View):
                     total_amount = Sum('amount')
             )['total_amount']
 
-            fair_value_list = FairValueList.objects.filter(
+            fair_value_list_rep = FairValueList.objects.filter(
                 date__lte = reporting_date,
             ).order_by('-date')[:1].first()
-            fair_value_method = FairValueMethod.objects.filter(
+            fair_value_method_rep = FairValueMethod.objects.filter(
                 company = company,
-                fair_value_list = fair_value_list,
+                fair_value_list = fair_value_list_rep, 
             ).select_related('percent').first()
-            fair_value_cof = 1
-            if fair_value_method:
-                res[-1]['fair_value_method'] = fair_value_method.percent.name
-                fair_value_cof = Decimal(fair_value_method.percent.percent/100)
+            fair_value_cof_rep = 1
+            if fair_value_method_rep:
+                record['fair_value_method'] = fair_value_method_rep.percent.name
+                fair_value_cof_rep = Decimal(fair_value_method_rep.percent.percent/100)
 
             our_amount = 0
-            price_exist = set()
             our_share_transactions = ShareTransaction.objects.filter(
                 date__lte = reporting_date,
                 share__company = company,
@@ -1063,8 +1064,6 @@ class CurrentHoldingsView(View):
                     date__lte = reporting_date,
                 ).order_by('-date')[:1].first()
                 if last_price:
-                    if last_price.date > previous_date:
-                        price_exist.add(last_price.share)
                     last_price = last_price.price
                 else:
                     last_price = 0
@@ -1077,13 +1076,13 @@ class CurrentHoldingsView(View):
 
                 if transaction.type == 'Sell':
                     our_amount -= transaction.amount*cof
-                    res[-1]['fair_value_rep'] -= (
-                        transaction.amount*last_price*fair_value_cof*cof
+                    record['fair_value_rep'] -= (
+                        transaction.amount*last_price*fair_value_cof_rep*cof
                     )
                 else:
                     our_amount += transaction.amount*cof
-                    res[-1]['fair_value_rep'] += (
-                        transaction.amount*last_price*fair_value_cof*cof
+                    record['fair_value_rep'] += (
+                        transaction.amount*last_price*fair_value_cof_rep*cof
                     )
             # Add Loan to fair_value_prev
             share_money_ids = ShareTransaction.objects.filter(
@@ -1096,10 +1095,10 @@ class CurrentHoldingsView(View):
                 transaction_type__title = "Loan"
             ).exclude(id__in = share_money_ids)
             for transaction in money_transactions:
-                res[-1]['fair_value_rep'] += transaction.price
+                record['fair_value_rep'] += transaction.price
 
             if total_amount and our_amount:
-                res[-1]['ownership'] = our_amount/total_amount*100
+                record['ownership'] = our_amount/total_amount*100
             # Martlet fair value previous_date
             our_share_transactions = ShareTransaction.objects.filter(
                 date__lte = previous_date,
@@ -1107,6 +1106,18 @@ class CurrentHoldingsView(View):
             ).annotate(
                 type = F('money_transaction__transaction_type__title'),
             )
+            
+            fair_value_list_prev = FairValueList.objects.filter(
+                date__lte = previous_date, 
+            ).order_by('-date')[:1].first()
+            fair_value_method_prev = FairValueMethod.objects.filter(
+                company = company,
+                fair_value_list = fair_value_list_prev,
+            ).select_related('percent').first()
+            fair_value_cof_prev = 1
+            if fair_value_method_prev:
+                fair_value_cof_prev = Decimal(fair_value_method_prev.percent.percent/100)
+
             for transaction in our_share_transactions:
                 # Last price
                 last_price = SharePrice.objects.filter(
@@ -1120,27 +1131,18 @@ class CurrentHoldingsView(View):
                 # Split
                 cof = Split.objects.cof(
                     date__gte = transaction.date,
+                    date__lte = previous_date,
                     share=transaction.share,
                 )
 
                 if transaction.type == 'Sell':
-                    if transaction.share in price_exist:
-                        res[-1]['fair_value_prev'] -= (
-                            transaction.amount*last_price*cof
-                        )
-                    else:
-                        res[-1]['fair_value_prev'] -= (
-                            transaction.amount*last_price*fair_value_cof*cof
-                        )
+                    record['fair_value_prev'] -= (
+                        transaction.amount*last_price*fair_value_cof_prev*cof
+                    )
                 else:
-                    if transaction.share in price_exist:
-                        res[-1]['fair_value_prev'] += (
-                            transaction.amount*last_price*cof
-                        )
-                    else:
-                        res[-1]['fair_value_prev'] += (
-                            transaction.amount*last_price*fair_value_cof*cof
-                        )
+                    record['fair_value_prev'] += (
+                        transaction.amount*last_price*fair_value_cof_prev*cof
+                    )
             # Add Loan to fair_value_prev
             share_money_ids = ShareTransaction.objects.filter(
                 date__lte = previous_date,
@@ -1152,11 +1154,11 @@ class CurrentHoldingsView(View):
                 transaction_type__title = "Loan",
             ).exclude(id__in = share_money_ids)
             for transaction in money_transactions:
-                res[-1]['fair_value_prev'] += transaction.price
+                record['fair_value_prev'] += transaction.price
 
             # Valuation change reporting_date vs previous_date
-            res[-1]['valuation_change'] = (
-                res[-1]['fair_value_rep'] - res[-1]['fair_value_prev']
+            record['valuation_change'] = (
+                record['fair_value_rep'] - record['fair_value_prev']
             )
             # New Martlet investment since previous_date
             money_transactions = MoneyTransaction.objects.filter(
@@ -1169,22 +1171,22 @@ class CurrentHoldingsView(View):
             )
             for transaction in money_transactions:
                 if transaction.type == 'Sell':
-                    res[-1]['new_investment'] -= transaction.price
+                    record['new_investment'] -= transaction.price
                 else:
-                    res[-1]['new_investment'] += transaction.price
+                    record['new_investment'] += transaction.price
             # Valuation change reporting_date vs previous_date
-            res[-1]['valuation_change_exclud']=(
-                res[-1]['valuation_change'] - res[-1]['new_investment']
+            record['valuation_change_exclud']=(
+                record['valuation_change'] - record['new_investment']
             )
             # Fair value multiple to cost
-            if res[-1]['fair_value_rep'] and res[-1]['invested']:
-                res[-1]['fair_cost'] = (
-                    res[-1]['fair_value_rep']/res[-1]['invested']
+            if record['fair_value_rep'] and record['invested']:
+                record['fair_cost'] = (
+                    record['fair_value_rep']/record['invested']
                 )
             # Fair value multiple to transfer cost
-            if res[-1]['fair_value_rep'] and res[-1]['cost']:
-                res[-1]['fair_transfer_cost'] = (
-                    res[-1]['fair_value_rep']/res[-1]['cost']
+            if record['fair_value_rep'] and record['cost']:
+                record['fair_transfer_cost'] = (
+                    record['fair_value_rep']/record['cost']
                 )
             # Enterprise valuation (fully diluted) as at last round
             shareholder_list = ShareholderList.objects.filter(
@@ -1199,7 +1201,11 @@ class CurrentHoldingsView(View):
                     share=shareholder.share,
                     date__lte = reporting_date,
                 )
-                res[-1]['enterprise']+=shareholder.amount*last_price
+                record['enterprise']+=shareholder.amount*last_price
+            # If we own part of the company, insert it into the table
+            if our_amount != 0:
+                context['links2'].append(reverse('company_report')+f'?company={company.pk}')
+                res.append(record)
 
         for r in res:
             context['table2'].append((
