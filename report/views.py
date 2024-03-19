@@ -934,6 +934,7 @@ class CurrentHoldingsView(View):
             # New Martlet investment since previous_date
             money_transactions = MoneyTransaction.objects.filter(
                 date__gt = previous_date,
+                date__lte = reporting_date,
                 company = company,
                 portfolio__name = 'Martlet',
             ).annotate(
