@@ -177,6 +177,7 @@
                                         <th>Contact Type</th>
                                         <th>Share</th>
                                         <th>Amount</th>
+                                        <th>Share</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -186,6 +187,13 @@
                                             <td>{{ record.contact.type }}</td>
                                             <td>{{ record.share.type }}</td>
                                             <td>{{ record.amount }}</td>
+                                            <td>
+                                            {% if record.option == True %}
+                                                <img width="13" height="13" src="{% static "admin/img/icon-yes.svg" %}" alt="True">
+                                            {% else %}
+                                                <img width="13" height="13" src="{% static "admin/img/icon-no.svg" %}" alt="False">
+                                            {% endif %}
+                                            </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
