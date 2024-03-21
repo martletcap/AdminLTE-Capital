@@ -1522,8 +1522,8 @@ class CategoryPerformanceView(View):
             'fair_value':0,
             'cost':0,
             'multiple_times':0,
-            'prev_color':'#ffffff',
-            'color':'#ffffff',
+            'prev_color':'',
+            'color':'',
         }
         # Name
         res['name'] = company.short_name

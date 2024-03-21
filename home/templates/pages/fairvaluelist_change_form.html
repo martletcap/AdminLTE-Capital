@@ -1,0 +1,272 @@
+{% extends "layouts/base.html" %}
+{% load i18n admin_urls static admin_modify index %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+    {{ media }}
+{% endblock %}
+
+{% block extrastyle %}
+    <!-- Default -->
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "dist/css/forms.css" %}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{% static 'plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+{% endblock %}
+
+{% if not is_popup %}
+    {% block breadcrumbs %}
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'admin:index' %}">
+                                <svg class="icon icon-xxs" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                          <a href="{% url 'admin:app_list' opts.app_config.label %}">
+                            {{ opts.app_config.verbose_name }}
+                          </a>
+                        </li>
+
+                        {% if has_view_permission %}
+                            <li class="breadcrumb-item"><a
+                                    href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+                            </li>
+                        {% else %}
+                            <li class="breadcrumb-item">{{ opts.verbose_name_plural|capfirst }}</li>
+                        {% endif %}
+
+                        {% if add %}
+                            <li class="breadcrumb-item">{% blocktrans with name=opts.verbose_name %}Add
+                                {{ name }}{% endblocktrans %}</li>
+                        {% else %}
+                            <li class="breadcrumb-item">{{ original|truncatewords:"18" }}</li>
+                        {% endif %}
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    {% endblock %}
+{% endif %}
+
+{% block content %}
+    <div class="py-4 main-footer">
+        <div class="d-flex justify-content-between w-100 flex-wrap">
+            <div class="mb-3 mb-lg-0">
+                 <h1 class="h4">
+                     {% if add %}
+                        {% blocktrans with name=opts.verbose_name %}Add {{ name }}{% endblocktrans %}
+                     {% else %}
+                        {{ original|truncatewords:"18" }}
+                     {% endif %}
+                 </h1>
+            </div>
+            <div>
+                {% block object-tools %}
+                    {% if change %}{% if not is_popup %}
+                        {% block object-tools-items %}
+                            {% change_form_object_tools %}
+                        {% endblock %}
+                    {% endif %}{% endif %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row main-footer">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}"
+                          method="post" id="{{ opts.model_name }}_form" novalidate>
+
+                        {% csrf_token %}
+                        <div class="{{ direction.panel }}">{% block form_top %}{% endblock %}</div>
+                        <div>
+                            {% block field_sets %}
+                                {% for fieldset in adminform %}
+                                    {% if forloop.counter > 1 %}<hr>{% endif %}
+                                    {% include "admin/includes/fieldset.html" %}
+                                {% endfor %}
+                            {% endblock %}
+
+                            {% block after_field_sets %}{% endblock %}
+
+                            {% block inline_field_sets %}
+                                {% for inline_admin_formset in inline_admin_formsets %}
+                                    {% include inline_admin_formset.opts.template %}
+                                {% endfor %}
+                            {% endblock %}
+
+                            {% block after_related_objects %}{% endblock %}
+
+                            {% block submit_buttons_bottom %}{% submit_row %}{% endblock %}
+
+                            {% block admin_change_form_document_ready %}
+                                <script type="text/javascript"
+                                        id="django-admin-form-add-constants"
+                                        src="{% static 'admin/js/change_form.js' %}"
+                                        {% if adminform and add %}
+                                        data-model-name="{{ opts.model_name }}"
+                                        {% endif %}>
+                                </script>
+                            {% endblock %}
+
+                            {% prepopulated_fields_js %}
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='row main-footer'>
+        <div class="col-12 mb-4">
+            <div class="card card-body border-0 shadow table-wrapper table-responsive">
+                <table id="example1" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        {% for header in result_headers %}
+                        <th>{{header}}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for record in results %}
+                        </tr>
+                        {% with forloop.counter0 as external_loop %}
+                        {% for value in record %}
+                            {% if forloop.counter0 == 0 %}
+                                <td><a href="{{ links|index:external_loop }}">{{value}}</a></td>
+                            {% elif forloop.counter0 == 2 %}
+                                <td>
+                                    <div style="background-color:{{ value }};border:2px solid black;color:{{ value }}">
+                                        {{ value }}
+                                    </div>
+                                </td>
+                            {% else %}
+                            <td>{{value}}</td>
+                            {% endif %}
+                        {% endfor %}
+                        {% endwith %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{% url "admin:home_shareholder_add" %}?shareholder_list={{ id }}" class="btn btn-sm btn-outline-gray-600 btn-info mr-2">
+                    <i class="fa fa-plus-circle"></i>
+                    {% blocktrans %}Add Shareholder{% endblocktrans %}
+                </a>
+            </div>
+            <!-- /.card -->
+            <div class='card'>
+                <div class='card-body'>
+                    <div id='output'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.row -->
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- DataTables  & Plugins -->
+<script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+<!-- Page specific script -->
+<script>
+  $(function () {
+    $("#example1").DataTable({
+      "paging": false,
+      "responsive": true,
+      "lengthChange": false,
+      "autoWidth": false,
+      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+  });
+</script>
+<!-- Total info script  -->
+  <script>
+    function updateOutput(){
+        const rows = document.querySelectorAll('#example1 tbody tr');
+
+        // Option True
+        const sharesTypeOption = {};
+        // Option False
+        const sharesTypeNoOption = {};
+        // Option True or False
+        const sharesTypeTotal = {};
+
+        rows.forEach(row => {
+            const shareTypeInput = row.querySelector('td:nth-child(3)');
+            const amountInput = row.querySelector('td:nth-child(4)');
+            const optionInput = row.querySelector('td:nth-child(5) img');
+
+            const shareType = shareTypeInput.innerHTML;
+            const amount = parseInt(amountInput.innerHTML.replaceAll(',', '')) || 0;
+            const option = optionInput.alt == 'True';
+            
+            let currentShares;
+            // Sum all shareholders Option or No Option
+            if (option){
+                currentShares = sharesTypeOption
+            } else {
+                currentShares = sharesTypeNoOption
+            }
+            if (currentShares[shareType]){
+                currentShares[shareType] += amount
+            } else {
+                currentShares[shareType] = amount
+            }
+            // Total Shares
+            if (sharesTypeTotal[shareType]){
+                sharesTypeTotal[shareType] += amount
+            } else {
+                sharesTypeTotal[shareType] = amount
+            }
+        });
+        const outputDiv = document.getElementById('output');
+        // Output Formatting function
+        const outputFormatting = (outputString, title, shareDict) => {
+            outputString += `${title}:<br>`
+            let sum = 0;
+            for (const shareType in shareDict) {
+                sum += shareDict[shareType]
+                outputString += `${shareType} - ${shareDict[shareType].toLocaleString('en-US')};<br>`;
+            }
+            outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b>`
+            return outputString
+        }
+        // Format Output
+        let outputString = '';
+        outputString = outputFormatting(outputString, 'Shares', sharesTypeOption)
+        outputString += '<br><br>'
+        outputString = outputFormatting(outputString, 'Option', sharesTypeNoOption)
+        outputString += '<br><br>'
+        outputString = outputFormatting(outputString, 'Total', sharesTypeTotal)
+
+        outputDiv.innerHTML = outputString;
+    }
+    updateOutput();
+  </script>
+{% endblock extra_scripts %}

@@ -143,9 +143,36 @@ class PercentAdmin(SimpleHistoryAdminCustom):
 class FairValueListAdmin(SimpleHistoryAdminCustom):
     list_display = ['formatted_date_field', 'comment']
     form = FairValueListForm
+    add_form_template = 'admin/change_form.html'
+    change_form_template = 'pages/fairvaluelist_change_form.html'
 
     def formatted_date_field(self, obj):
         return obj.date.strftime('%Y/%m/%d')
+    
+    def render_change_form(
+        self, request, context, add=False, change=False, form_url="", obj=None
+    ):
+        context['result_headers'] = [
+            'Company', 'Percent', 'Color', 'Comment',
+        ]
+        context['results'] = []
+        context['links'] = []
+        fair_value_methods = FairValueMethod.objects.filter(
+            fair_value_list = obj,
+        ).select_related()
+        for fair_value_method in fair_value_methods:
+            context['links'].append(
+                reverse(
+                    f'admin:{FairValueMethod._meta.app_label}_{FairValueMethod._meta.model_name}_change',
+                    kwargs = {'object_id':fair_value_method.pk},
+                )
+            )
+            context['results'].append((
+                fair_value_method.company, fair_value_method.percent,
+                fair_value_method.color, fair_value_method.comment,
+            ))
+        context['id'] = obj.pk if obj else obj
+        return super().render_change_form(request, context, add, change, form_url, obj)
     
 
 class FairValueMethodAdmin(SimpleHistoryAdminCustom):
