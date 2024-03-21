@@ -203,7 +203,7 @@ class FairValueControlForm(forms.Form):
         required=True,
         empty_label=None,
     )
-    color = forms.ChoiceField(choices=COLOR_CHOICES)
+    color = forms.ChoiceField(choices=COLOR_CHOICES, required=False)
 
     def save(self, fair_value_list):
         return FairValueMethod.objects.create(

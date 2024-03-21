@@ -1709,6 +1709,8 @@ class FairValueControlView(View):
         date_form = DateForm(request.POST)
         control_formset = FairValueControlFormSet(request.POST)
         if not control_formset.is_valid() or not date_form.is_valid():
+            print(control_formset.errors)
+            messages.error(request, 'Invalid Form!')
             context = {
             'date_form':date_form,
             'formset':control_formset,
@@ -1739,9 +1741,9 @@ class FairValueControlView(View):
             fair_value = FairValueMethod.objects.filter(
                 company = company,
                 fair_value_list__date__lte = last_date,
-            ).select_related('percent').first()
+            ).select_related('percent').order_by('-fair_value_list__date').first()
             if fair_value:
-                record['prev_percent'] = fair_value.percent.name
+                record['prev_percent'] = fair_value.percent
                 record['prev_color'] = fair_value.color
 
             inital_data.append(record)

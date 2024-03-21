@@ -6,6 +6,7 @@ from .managers import SharePriceManager, SplitManager
 
 
 COLOR_CHOICES = [
+    ('', '---------'),
     ('#92d14f', 'Green'),
     ('#ffff00', 'Yellow'),
     ('#fe0000', 'Red'),
