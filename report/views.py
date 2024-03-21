@@ -415,7 +415,7 @@ class CompanyReportView(View):
             for share_transaction in share_transactions:
                 total_amount += share_transaction.amount
             if total_amount:
-                cost_per_share = price/total_amount
+                cost_per_share = round(price/total_amount, 8)
 
             if len(share_transactions)==0:
                 table1.append([
