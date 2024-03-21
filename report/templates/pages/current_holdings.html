@@ -164,11 +164,8 @@
       if(index === 0){
         resultRow.insertCell().innerHTML = '<b>Total:</b>';
       // Insert blank value
-      }else if([0, 1, 2, 10].includes(index)){
+      }else if([1, 2, 10].includes(index)){
         resultRow.insertCell().innerHTML = '';
-      // Insert AVG value
-      }else if([11, 12].includes(index)){
-        resultRow.insertCell().innerHTML = `<b>${(columnSums[index]/numOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
       // Insert SUM
       } else {
         resultRow.insertCell().innerHTML = `<b>${columnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
@@ -202,11 +199,8 @@
       if(index === 0){
         cell.innerHTML = '<b>Grand Total:</b>';
       // Insert blank value
-      }else if([0, 1, 2, 10].includes(index)){
+      }else if([1, 2, 10].includes(index)){
         cell.innerHTML = '';
-      // Insert AVG value
-      }else if([11, 12].includes(index)){
-        cell.innerHTML = `<b>${(totalColumnSums[index]/totalNumOfRecords).toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`;
       // Insert SUM
       } else {
         cell.innerHTML = `<b>${totalColumnSums[index].toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
