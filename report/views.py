@@ -54,9 +54,37 @@ def short_report(request):
         'market': 0,
     }
 
+    # Exclude companies in which we do not own shares
+    exclude_list = []
+    for company in Company.objects.all():
+        shares_amount = 0
+        share_transactions = ShareTransaction.objects.annotate(
+            type = F('money_transaction__transaction_type__title'),
+        ).filter(
+            share__company = company,
+            date__lte = date,
+        )
+        for transaction in share_transactions:
+            cof = Split.objects.cof(
+                date__gte = transaction.date,
+                share=transaction.share,
+            )
+            if transaction.type == 'Sell':
+                shares_amount -= (
+                    transaction.amount*cof
+                )
+            else:
+                shares_amount += (
+                    transaction.amount*cof
+                )
+        if shares_amount == 0:
+            exclude_list.append(company.pk)
+
     # Get companies
     companies = Company.objects.filter(
         status = 1, # Portfolio status (fixture)
+    ).exclude(
+        pk__in = exclude_list,
     ).annotate(
         area = F('sector__name'),
         city = F('location__city')
