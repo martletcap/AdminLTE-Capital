@@ -155,7 +155,7 @@
                                         </tr>
                                             {% for field in record %}
                                                 {% if forloop.counter0 == 0 %}
-                                                    <td>{{ field|date:'d-m-Y' }}</td>
+                                                    <td>{{ field|date:'Y/m/d' }}</td>
                                                 {% else %}
                                                     <td>{{ field }}</td>
                                                 {% endif %}
