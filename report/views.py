@@ -816,6 +816,10 @@ class CurrentHoldingsView(View):
                 elif transaction.type in {"Restructuring",}:
                     if transaction.portfolio_name == 'Martlet':
                         record['cost'] += transaction.price
+                elif transaction.type in {"Sell"}:
+                    record['invested'] -= transaction.price
+                    if transaction.portfolio_name == 'Martlet':
+                        record['cost'] -= transaction.price
             # Martlet ownership
             # and
             # Fair Value Method
@@ -1051,6 +1055,10 @@ class CurrentHoldingsView(View):
                 elif transaction.type in {"Restructuring",}:
                     if transaction.portfolio_name == 'Martlet':
                         record['cost'] += transaction.price
+                elif transaction.type in {"Sell"}:
+                    record['invested'] -= transaction.price
+                    if transaction.portfolio_name == 'Martlet':
+                        record['cost'] -= transaction.price
             # Martlet ownership
             # and
             # Fair Value Method
