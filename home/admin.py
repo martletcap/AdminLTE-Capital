@@ -134,6 +134,9 @@ class MoneyTransactionAdmin(SimpleHistoryAdminCustom):
             )
         return super().response_post_save_add(request, obj)
     
+    def get_changeform_initial_data(self, request):
+        return {'portfolio': 2} # Martlet default portfolio
+    
 
 class PercentAdmin(SimpleHistoryAdminCustom):
     list_display = ['name', 'percent']
