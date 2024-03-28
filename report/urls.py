@@ -14,6 +14,7 @@ urlpatterns = [
     path('report/shares_info/', views.SharesInfoView.as_view(), name='shares_info'),
     path('report/quarter/', views.QuarterGraphslView.as_view(), name='quarter_report'),
     path('report/category_performance/', views.CategoryPerformanceView.as_view(), name='category_performance_report'),
+    path('report/audit_shares', views.AuditSharesView.as_view(), name='audit_shares'),
     # Utils
     path('utils/upload/', views.upload_shareholders, name='upload_shareholders'),
     path('utils/update/', views.UpdateShareholdersView.as_view(), name='update_shareholders'),

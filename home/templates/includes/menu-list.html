@@ -77,6 +77,13 @@
             <p>Fair Value Control</p>
           </a>
         </li>
+        <li class="nav-item">
+          {% url 'audit_shares' as audit_shares %}
+          <a href="{{ audit_shares }}" class="nav-link {% if audit_shares == request.path %} active {% endif %}">
+            <i class="far fa-circle nav-icon"></i>
+            <p>Audit Shares</p>
+          </a>
+        </li>
         {% comment %} 
         <li class="nav-item">
           {% url 'iframe' as iframe %}

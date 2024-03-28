@@ -1791,3 +1791,46 @@ class FairValueControlView(View):
         }
         return render(request, 'pages/fair_value_control.html', context=context)
         
+
+class AuditSharesView(View):
+    def get(self, request):
+        date_form = DateForm(request.GET)
+        if not date_form.is_valid():
+            context = {
+                'enctype':'multipart/form-data',
+                'method': "GET",
+                'url': resolve_url('audit_shares'), 
+                'form': date_form,
+            }
+            return render(request, 'pages/simple_form.html', context=context)
+        report_date = date_form.cleaned_data['date']
+        shares = Share.objects.all()
+
+        result = []
+        for share in shares:
+            amount = 0
+            share_transactions = ShareTransaction.objects.filter(
+                share=share,
+                date__lte=report_date,
+            ).annotate(type=F('money_transaction__transaction_type__title'))
+            for transaction in share_transactions:
+                cof = Split.objects.cof(
+                    date__gte = transaction.date,
+                    date__lte = report_date,
+                    share=transaction.share,
+                )
+                if transaction.type == 'Sell':
+                    amount -= transaction.amount*cof
+                else:
+                    amount += transaction.amount*cof
+            if amount != 0:
+                result.append((share.company, share.type, amount))
+
+        context = {
+            'result':result,
+        }
+        return render(request, 'pages/audit_shares.html', context=context)
+
+
+
+        
