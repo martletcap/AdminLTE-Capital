@@ -164,7 +164,7 @@
       if(index === 0){
         resultRow.insertCell().innerHTML = '<b>Total:</b>';
       // Insert blank value
-      }else if([1, 2, 10].includes(index)){
+      }else if([1, 2, 10, 13].includes(index)){
         resultRow.insertCell().innerHTML = '';
       } else if([12].includes(index)){
         let tmp = columnSums[4]/columnSums[5]
@@ -205,7 +205,7 @@
       if(index === 0){
         cell.innerHTML = '<b>Grand Total:</b>';
       // Insert blank value
-      }else if([1, 2, 10].includes(index)){
+      }else if([1, 2, 10, 13].includes(index)){
         cell.innerHTML = '';
       } else if([12].includes(index)){
         let tmp = totalColumnSums[4]/totalColumnSums[5]
