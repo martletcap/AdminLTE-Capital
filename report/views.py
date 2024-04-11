@@ -1732,8 +1732,8 @@ class CategoryPerformanceView(View):
         headers = [
             'Company', 'Sector', 'Year of first investment', 'Shareholding',
             'Martlet fair value', 'Percent of Total Portfolio', 'Martlet cost',
-            'Percent of Total Portfolio', 'Multiple Times', 'Prev Fair Value Method',
-            'Fair Value Method',
+            'Percent of Total Portfolio', 'Multiple Times', 'Prev color code',
+            'Current color code',
         ]
         companies = Company.objects.filter(
             category = 1, # Companys category (fixture)
