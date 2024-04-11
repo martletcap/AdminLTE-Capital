@@ -994,13 +994,11 @@ class CurrentHoldingsView(View):
                 date__lte = reporting_date,
                 company = company,
                 portfolio__name = 'Martlet',
+                transaction_type__title__in = ('Buy', 'Loan'),
             ).annotate(
                 type = F('transaction_type__title')
             )
             for transaction in money_transactions:
-                if transaction.type == 'Sell':
-                    record['new_investment'] -= transaction.price
-                else:
                     record['new_investment'] += transaction.price
             # Valuation change reporting_date vs previous_date
             record['valuation_change_exclud']=(
@@ -1264,16 +1262,12 @@ class CurrentHoldingsView(View):
                 date__lte = reporting_date,
                 company = company,
                 portfolio__name = 'Martlet',
+                transaction_type__title__in = ('Buy', 'Loan'),
             ).annotate(
                 type = F('transaction_type__title')
             )
             for transaction in money_transactions:
-                if transaction.type == 'Sell':
-                    record['new_investment'] -= transaction.price
-                else:
                     record['new_investment'] += transaction.price
-            if record['new_investment'] < 0:
-                record['new_investment'] = 0
             # Valuation change reporting_date vs previous_date
             record['valuation_change_exclud']=(
                 record['valuation_change'] - record['new_investment']
