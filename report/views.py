@@ -1076,49 +1076,18 @@ class CurrentHoldingsView(View):
                 portfolio_name = F('portfolio__name'),
                 type = F('transaction_type__title')
             ).order_by('date')
-            invested_total_amount = 0
-            invested_total_cost = 0
-            cost_total_amount = 0
-            cost_total_cost = 0
             for money_transaction in money_transactions:
-                amount_of_shares = 0
-                if money_transaction.type == 'Restructuring':
-                    share_transactions = ShareTransaction.objects.filter(
-                        money_transaction__portfolio__name = 'Marshall',
-                    )
-                else:
-                    share_transactions = ShareTransaction.objects.filter(
-                        money_transaction=money_transaction,
-                    )
-                for share_transaction in share_transactions:
-                    cof = Split.objects.cof(
-                        date__gte = share_transaction.date,
-                        date__lte = reporting_date,
-                        share=share_transaction.share,
-                    )
-                    amount_of_shares += share_transaction.amount * cof
-                
                 if money_transaction.type in {"Buy", "Loan"}:
-                    invested_total_amount += amount_of_shares
-                    invested_total_cost += money_transaction.price
+                    record['invested'] += money_transaction.price
                     if money_transaction.portfolio_name == 'Martlet':
-                        cost_total_amount += amount_of_shares
-                        cost_total_cost += money_transaction.price
+                        record['cost'] += money_transaction.price
                 elif money_transaction.type in {"Restructuring",}:
                     if money_transaction.portfolio_name == 'Martlet':
-                        cost_total_amount += amount_of_shares
-                        cost_total_cost += money_transaction.price
+                        record['cost'] += money_transaction.price
                 elif money_transaction.type in {"Sell"}:
-                    price_per_one = invested_total_cost/invested_total_amount
-                    invested_total_amount -= amount_of_shares
-                    invested_total_cost -= amount_of_shares * price_per_one
+                    record['invested'] -= money_transaction.price
                     if money_transaction.portfolio_name == 'Martlet':
-                        price_per_one = cost_total_cost/cost_total_amount
-                        cost_total_amount -= amount_of_shares
-                        cost_total_cost -= amount_of_shares * price_per_one
-
-            record['invested'] = invested_total_cost
-            record['cost'] = cost_total_cost
+                        record['cost'] -= money_transaction.price
             # Martlet ownership
             # and
             # Fair Value Method
