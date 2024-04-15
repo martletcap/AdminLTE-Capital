@@ -817,10 +817,12 @@ class CurrentHoldingsView(View):
                 if money_transaction.type == 'Restructuring':
                     share_transactions = ShareTransaction.objects.filter(
                         money_transaction__portfolio__name = 'Marshall',
+                        date__lte = reporting_date,
                     )
                 else:
                     share_transactions = ShareTransaction.objects.filter(
                         money_transaction=money_transaction,
+                        date__lte = reporting_date,
                     )
                 for share_transaction in share_transactions:
                     cof = Split.objects.cof(
@@ -1477,76 +1479,226 @@ class QuarterGraphslView(View):
             }
             return render(request, 'pages/simple_form.html', context=context)
         reporting_date = date_form.cleaned_data['date']
-        labels = []
-        market_prices = []
-        investments = []
+        results = []
         # Report for N quarters in reverse order
         N = 8
-        for date_gte, date_lt in previous_quarters(N, reporting_date):
-            labels.append(get_fiscal_quarter(date_gte))
+        companies = Company.objects.filter(
+            category = 1 # Companys category (fixture)
+        )
+        previous_change = 0
+        for date_gte, date_lte in previous_quarters(N, reporting_date):
+            record = self.make_record(
+                date_gte, date_lte, companies, previous_change,
+            )
+            results.append(record)
+            previous_change = record['change']
+        context = {
+            'results':results
+        }
+        return render(request, 'pages/quarter_report.html', context=context)
+    
+    def make_record(self, date_gte, date_lte, companies, previous_change):
+        last_date = date_lte.strftime('%Y/%m/%d')
+        years = f'{date_lte.year-1}/{date_lte.year}'
+        quarter = get_fiscal_quarter(date_gte)
+        gross_portfolio = int(self.gross_portfolio(date_lte, companies))
+        investment = int(self.investement(date_gte, date_lte, companies))
+        disposals = int(self.disposals(date_gte, date_lte, companies, investment))
+        revaluation = int(self.revaluation(date_gte, companies, gross_portfolio))
+        change_sum = investment + disposals + revaluation
+        change = gross_portfolio - previous_change
+
+        return {
+            'last_date': last_date,
+            'years': years,
+            'quarter': quarter,
+            'gross_portfolio': gross_portfolio,
+            'investment': investment,
+            'disposals': disposals,
+            'revaluation':revaluation,
+            'change_sum': change_sum,
+            'change': change,
+        }
+    
+    def gross_portfolio(self, date_lte, companies):
+        amount = 0
+        for company in companies:
+            fair_value_list = FairValueList.objects.filter(
+                date__lte = date_lte,
+            ).order_by('-date').first()
+            fair_value_method = FairValueMethod.objects.filter(
+                company = company,
+                fair_value_list = fair_value_list,
+            ).select_related('percent').first()
+            fair_value_cof = 1
+            if fair_value_method:
+                fair_value_cof = Decimal(fair_value_method.percent.percent/100)
             
             share_transactions = ShareTransaction.objects.filter(
-                date__lt = date_lt,
+                date__lte = date_lte,
+                share__company = company,
             ).annotate(
-                    type = F('money_transaction__transaction_type__title'),
+                type = F('money_transaction__transaction_type__title'),
             )
-            total_market_price = 0
-            # Sum market price
             for transaction in share_transactions:
-                last_price = SharePrice.objects.last_price(share=transaction.share)
-                cof = Split.objects.cof(
+                last_price = SharePrice.objects.last_price(
+                    share = transaction.share,
+                    date__lte = date_lte,
+                )
+                split_cof = Split.objects.cof(
                     date__gte = transaction.date,
-                    date__lt = date_lt,
+                    date__lte = date_lte,
                     share=transaction.share,
                 )
+                value = transaction.amount*last_price*fair_value_cof*split_cof
                 if transaction.type == 'Sell':
-                    total = -float(transaction.amount*cof*last_price)
+                    amount -= value
                 else:
-                    total = float(transaction.amount*cof*last_price)
-                total_market_price += total
+                    amount += value
 
-            # Get money transactions
+            # Add Loan
+            share_money_ids = ShareTransaction.objects.filter(
+                date__lte = date_lte,
+                money_transaction__company = company,
+            ).values_list('money_transaction_id', flat=True)
             money_transactions = MoneyTransaction.objects.filter(
-                portfolio__name = 'Martlet',
-                date__gte = date_gte,
-                date__lt = date_lt
-            ).annotate(
-                type = F('transaction_type__title'),
-            )
-            total_invested = 0
-            # Sum all investments
+                company = company,
+                date__lte = date_lte,
+                transaction_type__title = "Loan"
+            ).exclude(id__in = share_money_ids)
             for transaction in money_transactions:
-                if transaction.type == 'Sell':
-                    price = -float(transaction.price)
-                else:
-                    price = float(transaction.price)
-                total_invested += price
-            market_prices.append(int(total_market_price))
-            investments.append(int(total_invested))
-        # Changing the order
-        labels = labels[::-1]
-        market_prices = market_prices[::-1]
-        investments = investments[::-1]
+                amount += transaction.price
         
-        # Calculate growth
-        # First record have no growth
-        growths = [0]
-        previous_months = [market_prices[0]]
-        for index in range(1, len(market_prices)):
-            prev_value = previous_months[index-1]
-            prev_growth = growths[index-1]
-            growth = market_prices[index]-(prev_value+prev_growth)
-            growths.append(growth)
-            previous_months.append(prev_value+prev_growth)
+        return amount
+    
+    def investement(self, date_gte, date_lte, companies):
+        amount = 0
+        money_transactions = MoneyTransaction.objects.filter(
+            date__gte = date_gte,
+            date__lte = date_lte,
+            company__in = companies,
+            portfolio__name = 'Martlet',
+            transaction_type__title__in = {'Buy', 'Loan'},
+        )
+        for transaction in money_transactions:
+            amount += transaction.price
+        return amount
+    
+    def disposals(self, date_gte, date_lte, companies, investment=0):
+        prev_date_lte = (date_gte - relativedelta(days=1)).date()
+        money_transactions = MoneyTransaction.objects.filter(
+            date__lte = date_lte,
+            company__in = companies,
+            transaction_type__title__in = {'Buy', 'Loan', 'Sell'},
+        ).annotate(
+            type = F('transaction_type__title')
+        ).order_by('date')
 
-        context = {
-            'labels':labels,
-            'investments':investments,
-            'growths':growths,
-            'previous_months':previous_months,
-            'date':reporting_date,
-        }
-        return render(request, 'pages/quarter_report.html', context)
+        # Temporary variable for calculation
+        total_shares = 0
+        prev_invested = 0
+        cur_invested = 0
+        for money_transaction in money_transactions:
+            cur_shares = 0
+            share_transactions = ShareTransaction.objects.filter(
+                money_transaction = money_transaction,
+                date__lte = date_lte,
+            )
+            for share_transaction in share_transactions:
+                cof = Split.objects.cof(
+                    share = share_transaction.share,
+                    date__gte = share_transaction.date,
+                    date__lte = date_lte,
+                )
+                cur_shares += share_transaction.amount * cof
+            
+            if money_transaction.type in {'Buy', 'Loan'}:
+                total_shares += cur_shares
+
+                cur_invested += money_transaction.price
+                if money_transaction.date <= prev_date_lte:
+                    prev_invested += money_transaction.price
+            elif money_transaction.type in {'Sell'}:
+                # Same for cur and prev
+                price_per_one = cur_invested/total_shares
+                total_shares -= cur_shares  
+
+                cur_invested -= cur_shares * price_per_one
+                if money_transaction.date <= prev_date_lte:
+                    prev_invested -= cur_shares * price_per_one
+
+        return cur_invested - prev_invested - investment
+    
+    def revaluation(self, date_gte, companies, gross_portfolio=0):
+        amount = 0
+        for company in companies:
+            # Fair value
+            fair_value_list = FairValueList.objects.filter(
+                date__lte = date_gte, 
+            ).order_by('-date')[:1].first()
+            fair_value_method = FairValueMethod.objects.filter(
+                company = company,
+                fair_value_list = fair_value_list,
+            ).select_related('percent').first()
+            fair_value_cof = 1
+            if fair_value_method:
+                fair_value_cof = Decimal(fair_value_method.percent.percent/100)
+
+            our_share_transactions = ShareTransaction.objects.filter(
+                date__lte = date_gte,
+                share__company = company,
+            ).annotate(
+                type = F('money_transaction__transaction_type__title'),
+            )
+
+            for transaction in our_share_transactions:
+                # Last price
+                last_price = SharePrice.objects.last_price(
+                    share = transaction.share,
+                    date__lte = date_gte,
+                )
+                # Split
+                cof = Split.objects.cof(
+                    date__gte = transaction.date,
+                    date__lte = date_gte,
+                    share=transaction.share,
+                )
+
+                if transaction.type == 'Sell':
+                    amount -= (
+                        transaction.amount*last_price*fair_value_cof*cof
+                    )
+                else:
+                    amount += (
+                        transaction.amount*last_price*fair_value_cof*cof
+                    )
+
+                # Add Loan
+                share_money_ids = ShareTransaction.objects.filter(
+                    date__lte = date_gte,
+                    money_transaction__company = company,
+                ).values_list('money_transaction_id', flat=True)
+                money_transactions = MoneyTransaction.objects.filter(
+                    company = company,
+                    date__lte = date_gte,
+                    transaction_type__title = "Loan"
+                ).exclude(id__in = share_money_ids)
+                for transaction in money_transactions:
+                    amount += transaction.price
+
+        return gross_portfolio - amount
+            
+
+
+
+
+        
+                
+
+
+
+
+
 
 
 @method_decorator(login_required, name='dispatch')

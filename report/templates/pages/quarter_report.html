@@ -1,6 +1,13 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
 
+{% block extrastyle %}
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{% static 'plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+{% endblock %}
+
 {% block title %} Quarter Diagram{% endblock title %}
 
 {% block bodyclass %} hold-transition sidebar-mini {% endblock bodyclass %}
@@ -31,28 +38,39 @@
       <div class="container-fluid">
         <div class="row">
 
-            <!-- BAR CHART -->
-            <div class="card card-success" style="width: 100%;" >
-              <div class="card-header">
-                <h3 class="card-title">Bar Chart</h3>
-
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="chart">
-                  <canvas id="barChart" style="height: 55vh; max-width: 100%;"></canvas>
-                </div>
-              </div>
-              <!-- /.card-body -->
-            </div>
-            <!-- /.card -->
+            <div class="card card-body border-0 shadow table-wrapper table-responsive">
+            <table id="data" class="table table-bordered table-striped">
+              <thead>
+                  <tr>
+                    <th>Last date</th>
+                    <th>Years</th>
+                    <th>Quarter</th>
+                    <th>Gross Portfolio</th>
+                    <th>Investment</th>
+                    <th>Disposals</th>
+                    <th>Revaluation</th>
+                    <th>Change Sum</th>
+                    <th>Change</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for result in results %}
+                    <tr>
+                        <td>{{ result.last_date }}</td>
+                        <td>{{ result.years }}</td>
+                        <td>{{ result.quarter }}</td>
+                        <td>{{ result.gross_portfolio }}</td>
+                        <td>{{ result.investment }}</td>
+                        <td>{{ result.disposals }}</td>
+                        <td>{{ result.revaluation }}</td>
+                        <td>{{ result.change_sum }}</td>
+                        <td>{{ result.change }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+          </div>
+          <!-- /.card -->
 
         </div>
         <!-- /.row -->
@@ -63,65 +81,29 @@
 
   {% endblock content %}
 
-  {% block extra_scripts %}
-  <!-- ChartJS -->
-  <script src="{% static 'plugins/chart.js/Chart.min.js' %}"></script>
-  <!-- Page specific script -->
-  <script>
-    $(function () {
-      /* ChartJS
-      * -------
-      * Here we will create a few charts using ChartJS
-      */
-
-
-      //-------------
-      //- BAR CHART -
-      //-------------
-      var barChartCanvas = $('#barChart').get(0).getContext('2d')
-      var barChartData = {
-        labels  : {{ labels|safe }},
-        datasets: [
-          {
-            label               : 'Gross Portfolio Fair Value ("GPFV")',
-            backgroundColor     : 'rgba(68,114,200,255)',
-            stack: "Market Price",
-            data                : {{ previous_months|safe }}
-          },
-          {
-            label               : 'Growth',
-            backgroundColor     : 'rgba(255,192,0,255)',
-            stack: "Market Price",
-            data                : {{ growths|safe }}
-          },
-          {
-            label               : 'Investment',
-            backgroundColor     : 'rgba(237,125,49,255)',
-            stack: "Investment",
-            data                : {{ investments|safe }}
-          },
-        ]
-      }
-
-      var barChartOptions = {
-        responsive              : true,
-        maintainAspectRatio     : false,
-        datasetFill             : false,
-        scales: {
-          xAxes: [{
-            stacked: true,
-          }],
-          yAxes: [{
-            stacked: true,
-          }]
-        },
-      }
-
-      new Chart(barChartCanvas, {
-        type: 'bar',
-        data: barChartData,
-        options: barChartOptions
-      })
-    })
-  </script>
+{% block extra_scripts %}
+<!-- Page specific script -->
+<!-- DataTables  & Plugins -->
+<script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+<script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
+<script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+<script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+<!-- Page specific script -->
+<script>
+  $(function () {
+    $("#data").DataTable({
+      "responsive": true, "lengthChange": false, "autoWidth": false,
+      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+      "paging": false,
+    }).buttons().container().appendTo('#data_wrapper .col-md-6:eq(0)');
+  });
+</script>
 {% endblock extra_scripts %}
