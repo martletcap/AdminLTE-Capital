@@ -1586,48 +1586,56 @@ class QuarterGraphslView(View):
     
     def disposals(self, date_gte, date_lte, companies, investment=0):
         prev_date_lte = (date_gte - relativedelta(days=1)).date()
-        money_transactions = MoneyTransaction.objects.filter(
-            date__lte = date_lte,
-            company__in = companies,
-            transaction_type__title__in = {'Buy', 'Loan', 'Sell'},
-        ).annotate(
-            type = F('transaction_type__title')
-        ).order_by('date')
-
-        # Temporary variable for calculation
-        total_shares = 0
-        prev_invested = 0
         cur_invested = 0
-        for money_transaction in money_transactions:
-            cur_shares = 0
-            share_transactions = ShareTransaction.objects.filter(
-                money_transaction = money_transaction,
+        prev_invested = 0 
+        for company in companies:
+            company_total_shares = 0
+            company_cur_invested = 0
+            company_prev_invested = 0
+
+            money_transactions = MoneyTransaction.objects.filter(
                 date__lte = date_lte,
-            )
-            for share_transaction in share_transactions:
-                cof = Split.objects.cof(
-                    share = share_transaction.share,
-                    date__gte = share_transaction.date,
+                company= company,
+                transaction_type__title__in = {'Buy', 'Loan', 'Sell'},
+            ).annotate(
+                type = F('transaction_type__title')
+            ).order_by('date')
+
+            for money_transaction in money_transactions:
+                transaction_shares = 0
+                share_transactions = ShareTransaction.objects.filter(
+                    money_transaction = money_transaction,
                     date__lte = date_lte,
                 )
-                cur_shares += share_transaction.amount * cof
-            
-            if money_transaction.type in {'Buy', 'Loan'}:
-                total_shares += cur_shares
+                for share_transaction in share_transactions:
+                    cof = Split.objects.cof(
+                        share = share_transaction.share,
+                        date__gte = share_transaction.date,
+                        date__lte = date_lte,
+                    )
+                    transaction_shares += share_transaction.amount * cof
 
-                cur_invested += money_transaction.price
-                if money_transaction.date <= prev_date_lte:
-                    prev_invested += money_transaction.price
-            elif money_transaction.type in {'Sell'}:
-                # Same for cur and prev
-                price_per_one = cur_invested/total_shares
-                total_shares -= cur_shares  
+                if money_transaction.type in {'Buy', 'Loan'}:
+                    company_total_shares += transaction_shares
 
-                cur_invested -= cur_shares * price_per_one
-                if money_transaction.date <= prev_date_lte:
-                    prev_invested -= cur_shares * price_per_one
+                    company_cur_invested += money_transaction.price
+                    if money_transaction.date <= prev_date_lte:
+                        company_prev_invested += money_transaction.price
+                elif money_transaction.type in {'Sell'}:
+                    # Same for cur and prev
+                    price_per_one = company_cur_invested/company_total_shares
+                    company_total_shares += transaction_shares  
+
+                    company_cur_invested -= transaction_shares * price_per_one
+                    if money_transaction.date <= prev_date_lte:
+                        company_prev_invested -= transaction_shares * price_per_one
+
+            cur_invested += company_cur_invested
+            prev_invested += company_prev_invested
 
         return cur_invested - prev_invested - investment
+
+
     
     def revaluation(self, date_gte, companies, gross_portfolio=0):
         amount = 0
