@@ -1673,18 +1673,18 @@ class QuarterGraphslView(View):
                         transaction.amount*last_price*fair_value_cof*cof
                     )
 
-                # Add Loan
-                share_money_ids = ShareTransaction.objects.filter(
-                    date__lte = date_gte,
-                    money_transaction__company = company,
-                ).values_list('money_transaction_id', flat=True)
-                money_transactions = MoneyTransaction.objects.filter(
-                    company = company,
-                    date__lte = date_gte,
-                    transaction_type__title = "Loan"
-                ).exclude(id__in = share_money_ids)
-                for transaction in money_transactions:
-                    amount += transaction.price
+            # Add Loan
+            share_money_ids = ShareTransaction.objects.filter(
+                date__lte = date_gte,
+                money_transaction__company = company,
+            ).values_list('money_transaction_id', flat=True)
+            money_transactions = MoneyTransaction.objects.filter(
+                company = company,
+                date__lte = date_gte,
+                transaction_type__title = "Loan"
+            ).exclude(id__in = share_money_ids)
+            for transaction in money_transactions:
+                amount += transaction.price
 
         return gross_portfolio - amount
             
