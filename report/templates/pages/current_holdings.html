@@ -167,10 +167,10 @@
       }else if([1, 2, 10, 13].includes(index)){
         resultRow.insertCell().innerHTML = '';
       } else if([12].includes(index)){
-        let tmp = columnSums[4]/columnSums[5]
+        let tmp = columnSums[4]/columnSums[3]
         resultRow.insertCell().innerHTML = `<b>${tmp.toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
       } else if([11].includes(index)){
-        tmp = columnSums[3]/columnSums[5]
+        let tmp = columnSums[5]/columnSums[3]
         resultRow.insertCell().innerHTML = `<b>${tmp.toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
       // Insert SUM
       } else {
@@ -208,10 +208,10 @@
       }else if([1, 2, 10, 13].includes(index)){
         cell.innerHTML = '';
       } else if([12].includes(index)){
-        let tmp = totalColumnSums[4]/totalColumnSums[5]
+        let tmp = totalColumnSums[4]/totalColumnSums[3]
         cell.innerHTML = `<b>${tmp.toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
       } else if([11].includes(index)){
-        let tmp = totalColumnSums[3]/totalColumnSums[5]
+        let tmp = totalColumnSums[5]/totalColumnSums[3]
         cell.innerHTML = `<b>${tmp.toLocaleString('en-US', { maximumFractionDigits: 2 })}</b>`
       // Insert SUM
       } else {
