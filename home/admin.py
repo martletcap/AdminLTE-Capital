@@ -83,7 +83,7 @@ class SharePriceAdmin(SimpleHistoryAdminCustom):
 class ShareTransactionAdmin(SimpleHistoryAdminCustom):
     change_form_template = 'pages/sharetransaction_change_form.html'
     list_display = [
-        'get_money_transaction', 'formatted_date_field', 'share', 'amount',
+        'formatted_date_field', 'get_money_transaction', 'share', 'amount',
     ]
     form = ShareTransactionForm
 
