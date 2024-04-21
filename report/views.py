@@ -1932,7 +1932,6 @@ class FairValueControlView(View):
         date_form = DateForm(request.POST)
         control_formset = FairValueControlFormSet(request.POST)
         if not control_formset.is_valid() or not date_form.is_valid():
-            print(control_formset.errors)
             messages.error(request, 'Invalid Form!')
             context = {
             'date_form':date_form,
@@ -1968,6 +1967,9 @@ class FairValueControlView(View):
             if fair_value:
                 record['prev_percent'] = fair_value.percent
                 record['prev_color'] = fair_value.color
+                # Offer a new meaning, the new meaning is the same as before
+                record['percent'] = fair_value.percent
+                record['color'] = fair_value.color
 
             inital_data.append(record)
         context = {
