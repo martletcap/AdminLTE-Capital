@@ -322,7 +322,7 @@ class FairValueMethod(models.Model):
     id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
     percent = models.ForeignKey(Percent, on_delete=models.PROTECT)
-    fair_value_list = models.ForeignKey(FairValueList, on_delete=models.PROTECT)
+    fair_value_list = models.ForeignKey(FairValueList, on_delete=models.CASCADE)
     comment = models.TextField(max_length=10240, blank=True)
     color = models.CharField(max_length=8, choices=COLOR_CHOICES, null=True, blank=True)
     history = HistoricalRecords()
