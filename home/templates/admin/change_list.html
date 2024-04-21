@@ -25,6 +25,8 @@
     {% endif %}
 {% endblock %}
 
+{% block title %} {{ cl.opts.verbose_name|title }} {% endblock title %}
+
 {% block extrahead %}
     {{ block.super }}
     {{ media.js }}
