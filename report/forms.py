@@ -193,6 +193,7 @@ class FairValueControlForm(forms.Form):
     prev_percent=forms.ModelChoiceField(
         queryset=Percent.objects.all(),
         required=False,
+        label='Prev Fair Value Method'
     )
     prev_color=forms.ChoiceField(
         choices=[('', '---------')]+COLOR_CHOICES,
@@ -202,6 +203,7 @@ class FairValueControlForm(forms.Form):
         queryset=Percent.objects.all(),
         required=True,
         empty_label=None,
+        label='Fair Value Method'
     )
     color = forms.ChoiceField(choices=COLOR_CHOICES, required=False)
 
