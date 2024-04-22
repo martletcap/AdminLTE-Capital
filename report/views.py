@@ -748,21 +748,13 @@ class CurrentHoldingsView(View):
         previous_date = period_form.cleaned_data['previous']
         # General context
         context = {
-            'result_headers':[
-                'Company', 'Year of investment', 'Martlet ownership',
-                'Martlet direct investment cost', 'Martlet cost based on transfer value',
-                f'Martlet fair value ({reporting_date})', f'Martlet fair value ({previous_date})',
-                f'Valuation change {reporting_date} vs {previous_date}',
-                f'New Martlet investment since {previous_date}',
-                f'Valuation change {reporting_date} vs {previous_date} (excluding new Martlet investment)',
-                'Fair Value Method', 'Fair value multiple to cost',
-                'Fair value multiple to transfer cost',
-                'Enterprise valuation as at last round',
-            ],
+            'reporting_date':reporting_date,
+            'previous_date':previous_date,
             'table1':[],
             'table2':[],
+            'table3':[],
             'links1':[],
-            'links2':[],
+            'links3':[],
         }
         context['date'] = reporting_date
         context['prev_date'] = previous_date
@@ -914,7 +906,7 @@ class CurrentHoldingsView(View):
                     record['fair_value_rep'] += (
                         transaction.amount*last_price*fair_value_cof_rep*cof
                     )
-            # Add Loan to fair_value_prev
+            # Add Loan to fair_value_rep
             share_money_ids = ShareTransaction.objects.filter(
                 date__lte = reporting_date,
                 money_transaction__company = company,
@@ -1053,6 +1045,167 @@ class CurrentHoldingsView(View):
                 round(r['enterprise']),
             ))
         # Table 2
+        tmp2 = {
+            'company': '',
+            'year_of_investment': '',
+            'disposal_date': '',
+            'direct_cost': 0,
+            'tov_cost': 0,
+            'proceeds':0,
+            'fair_value':0,
+            'proceeds_direct':0,
+            'proceeds_tov': 0,
+            'profit':0,
+        }
+        res = []
+        for company in companies:
+            record = tmp2.copy()
+            # Company name
+            record['company'] = company.short_name
+            # Year of investment
+            first_investment = MoneyTransaction.objects.filter(
+                company = company
+            ).order_by('date')[:1].first()
+            if first_investment:
+                record['year_of_investment'] = first_investment.date.year
+            # Disposal date
+
+            # Direct cost and ToV cost
+            money_transactions = MoneyTransaction.objects.filter(
+                date__lte = reporting_date,
+                company = company,
+            ).annotate(
+                portfolio_name = F('portfolio__name'),
+                type = F('transaction_type__title')
+            ).order_by('date')
+            direct_amount = 0
+            direct_cost = 0
+            direct_sell = 0
+            tov_amount = 0
+            tov_cost = 0
+            tov_sell = 0
+            for money_transaction in money_transactions:
+                amount_of_shares = 0
+                if money_transaction.type == 'Restructuring':
+                    share_transactions = ShareTransaction.objects.filter(
+                        money_transaction__portfolio__name = 'Marshall',
+                        date__lte = reporting_date,
+                    )
+                else:
+                    share_transactions = ShareTransaction.objects.filter(
+                        money_transaction=money_transaction,
+                        date__lte = reporting_date,
+                    )
+                for share_transaction in share_transactions:
+                    cof = Split.objects.cof(
+                        date__gte = share_transaction.date,
+                        date__lte = reporting_date,
+                        share=share_transaction.share,
+                    )
+                    amount_of_shares += share_transaction.amount * cof
+                
+                if money_transaction.type in {"Buy", "Loan"}:
+                    direct_amount += amount_of_shares
+                    direct_cost += money_transaction.price
+                    if money_transaction.portfolio_name == 'Martlet':
+                        tov_amount += amount_of_shares
+                        tov_cost += money_transaction.price
+                elif money_transaction.type in {"Restructuring",}:
+                    if money_transaction.portfolio_name == 'Martlet':
+                        tov_amount += amount_of_shares
+                        tov_cost += money_transaction.price
+                elif money_transaction.type in {"Sell"}:
+                    price_per_one = direct_cost/direct_amount
+                    direct_amount -= amount_of_shares
+                    direct_cost -= amount_of_shares * price_per_one
+                    direct_sell += amount_of_shares * price_per_one
+                    if money_transaction.portfolio_name == 'Martlet':
+                        price_per_one = tov_cost/tov_amount
+                        tov_amount -= amount_of_shares
+                        tov_cost -= amount_of_shares * price_per_one
+                        tov_sell += amount_of_shares * price_per_one
+            record['direct_cost'] = direct_sell
+            record['tov_cost'] = tov_sell
+            # Proceeds
+            money_transactions = MoneyTransaction.objects.filter(
+                date__gte = previous_date,
+                date__lte = reporting_date,
+                company = company,
+                transaction_type__title = 'Sell',
+            )
+            for transaction in money_transactions:
+                record['proceeds'] += transaction.price
+            # Fair value
+            our_share_transactions = ShareTransaction.objects.filter(
+                date__lte = reporting_date,
+                share__company = company,
+            ).annotate(
+                type = F('money_transaction__transaction_type__title'),
+            )
+            for transaction in our_share_transactions:
+                # Last price
+                last_price = SharePrice.objects.filter(
+                    share = transaction.share,
+                    date__lte = reporting_date,
+                ).order_by('-date')[:1].first()
+                if last_price:
+                    last_price = last_price.price
+                else:
+                    last_price = 0
+                # Split
+                cof = Split.objects.cof(
+                    date__gte = transaction.date,
+                    date__lte = reporting_date,
+                    share=transaction.share,
+                )
+
+                if transaction.type == 'Sell':
+                    record['fair_value'] -= (
+                        transaction.amount*last_price*fair_value_cof_rep*cof
+                    )
+                else:
+                    record['fair_value'] += (
+                        transaction.amount*last_price*fair_value_cof_rep*cof
+                    )
+            # Add Loan to fair_value_rep
+            share_money_ids = ShareTransaction.objects.filter(
+                date__lte = reporting_date,
+                money_transaction__company = company,
+            ).values_list('money_transaction_id', flat=True)
+            money_transactions = MoneyTransaction.objects.filter(
+                company = company,
+                date__lte = reporting_date,
+                transaction_type__title = "Loan"
+            ).exclude(id__in = share_money_ids)
+            for transaction in money_transactions:
+                record['fair_value'] += transaction.price
+            # Proceeds direct
+            if record['direct_cost'] != 0:
+                record['proceeds_direct'] = record['proceeds']/record['direct_cost']
+            # Proceeds tov
+            if record['tov_cost'] != 0:
+                record['proceeds_tov'] = record['proceeds']/record['tov_cost']
+            # Profit
+            record['profit'] = record['proceeds'] - record['tov_cost']
+            # Result
+            res.append(record)
+        
+        for r in res:
+            context['table2'].append((
+                r['company'],
+                r['year_of_investment'],
+                r['disposal_date'],
+                round(r['direct_cost'], 0),
+                round(r['tov_cost'], 0),
+                round(r['proceeds'], 0),
+                round(r['fair_value'], 0),
+                round(r['proceeds_direct'], 0),
+                round(r['proceeds_tov'], 0),
+                round(r['profit'], 0),
+            ))
+        
+
+        # Table 3
         companies = Company.objects.filter(
             status = 1, # Portfolio status (fixture)
             category = 2 # Strategic category (fixture)
@@ -1269,11 +1422,11 @@ class CurrentHoldingsView(View):
                 record['enterprise']+=shareholder.amount*last_price
             # If we own part of the company, insert it into the table
             if our_amount != 0:
-                context['links2'].append(reverse('company_report')+f'?company={company.pk}')
+                context['links3'].append(reverse('company_report')+f'?company={company.pk}')
                 res.append(record)
 
         for r in res:
-            context['table2'].append((
+            context['table3'].append((
                 r['company'],
                 round(r['year']),
                 f"{round(r['ownership'], 2)}%",
@@ -1482,11 +1635,12 @@ class QuarterGraphslView(View):
         results = []
         # Report for N quarters in reverse order
         N = 8
-        companies = Company.objects.filter(
+        all_companies = Company.objects.filter(
             category = 1 # Companys category (fixture)
         )
         previous_change = 0
         for date_gte, date_lte in previous_quarters(N, reporting_date):
+            companies = self.companies_with_shares(date_lte, all_companies)
             record = self.make_record(
                 date_gte, date_lte, companies, previous_change,
             )
@@ -1496,6 +1650,31 @@ class QuarterGraphslView(View):
             'results':results
         }
         return render(request, 'pages/quarter_report.html', context=context)
+    
+    def companies_with_shares(self, date_lte, all_companies):
+        companies = []
+        for company in all_companies:
+            amount_of_shares = 0
+            share_transactions = ShareTransaction.objects.filter(
+                date__lte = date_lte,
+                share__company = company,
+            ).annotate(
+                type = F('money_transaction__transaction_type__title'),
+            )
+            for transaction in share_transactions:
+                split_cof = Split.objects.cof(
+                    date__gte = transaction.date,
+                    date__lte = date_lte,
+                    share=transaction.share,
+                )
+                if transaction.type == 'Sell':
+                    amount_of_shares -= transaction.amount*split_cof
+                else:
+                    amount_of_shares += transaction.amount*split_cof
+
+            if amount_of_shares != 0:
+                companies.append(company)
+        return companies
     
     def make_record(self, date_gte, date_lte, companies, previous_change):
         last_date = date_lte.strftime('%Y/%m/%d')

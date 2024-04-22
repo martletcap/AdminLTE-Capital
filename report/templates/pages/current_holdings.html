@@ -41,9 +41,20 @@
             <table id="table1" class="table table-bordered table-striped">
               <thead>
                   <tr>
-                    {% for header in result_headers %}
-                      <th>{{header}}</th>
-                    {% endfor %}
+                      <th>Company</th>
+                      <th>Year of investment</th>
+                      <th>Martlet ownership</th>
+                      <th>Martlet direct investment cost</th>
+                      <th>Martlet cost based on transfer value</th>
+                      <th>Martlet fair value ({{ reporting_date|date:'d-m-Y' }})</th>
+                      <th>Martlet fair value ({{ previous_date|date:'d-m-Y' }})</th>
+                      <th>Valuation change {{ reporting_date|date:'d-m-Y' }} vs {{ previous_date|date:'d-m-Y' }}</th>
+                      <th>New Martlet investment since {{ previous_date|date:'d-m-Y' }}</th>
+                      <th>Valuation change {{ reporting_date|date:'d-m-Y' }} vs {{ previous_date|date:'d-m-Y' }} (excluding new Martlet investment)</th>
+                      <th>Fair Value Method</th>
+                      <th>Fair value multiple to cost</th>
+                      <th>Fair value multiple to transfer cost</th>
+                      <th>Enterprise valuation as at last round</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -74,9 +85,16 @@
             <table id="table2" class="table table-bordered table-striped">
               <thead>
                   <tr>
-                    {% for header in result_headers %}
-                      <th>{{header}}</th>
-                    {% endfor %}
+                      <th>Company</th>
+                      <th>Year of investment</th>
+                      <th>Disposal date</th>
+                      <th>Martlet direct cost</th>
+                      <th>Martlet ToV cost</th>
+                      <th>Martlet proceeds to date</th>
+                      <th>Martlet fair value as at {{ previous_date|date:'d-m-Y' }}</th>
+                      <th>Proceeds multiple to direct cost</th>
+                      <th>Proceeds multiple to ToV cost</th>
+                      <th>Profit to date (using Tov cost)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -84,9 +102,7 @@
                     </tr>
                       {% with forloop.counter0 as external_loop %}
                       {% for value in record %}
-                        {% if forloop.counter0 == 0 %}
-                          <td><a href="{{ links2|index:external_loop }}">{{value}}</a></td>
-                        {% elif forloop.counter0 == 1 %}
+                        {% if forloop.counter0 == 1 %}
                           <td>{{ value|unlocalize }}</td>
                         {% else %}
                           <td>{{value}}</td>
@@ -105,6 +121,50 @@
         <div class='row'>
           <div class="card card-body border-0 shadow table-wrapper table-responsive">
             <table id="table3" class="table table-bordered table-striped">
+              <thead>
+                  <tr>
+                      <th>Company</th>
+                      <th>Year of investment</th>
+                      <th>Martlet ownership</th>
+                      <th>Martlet direct investment cost</th>
+                      <th>Martlet cost based on transfer value</th>
+                      <th>Martlet fair value ({{ reporting_date|date:'d-m-Y' }})</th>
+                      <th>Martlet fair value ({{ previous_date|date:'d-m-Y' }})</th>
+                      <th>Valuation change {{ reporting_date|date:'d-m-Y' }} vs {{ previous_date|date:'d-m-Y' }}</th>
+                      <th>New Martlet investment since {{ previous_date|date:'d-m-Y' }}</th>
+                      <th>Valuation change {{ reporting_date|date:'d-m-Y' }} vs {{ previous_date|date:'d-m-Y' }} (excluding new Martlet investment)</th>
+                      <th>Fair Value Method</th>
+                      <th>Fair value multiple to cost</th>
+                      <th>Fair value multiple to transfer cost</th>
+                      <th>Enterprise valuation as at last round</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for record in table3 %}
+                    </tr>
+                      {% with forloop.counter0 as external_loop %}
+                      {% for value in record %}
+                        {% if forloop.counter0 == 0 %}
+                          <td><a href="{{ links3|index:external_loop }}">{{value}}</a></td>
+                        {% elif forloop.counter0 == 1 %}
+                          <td>{{ value|unlocalize }}</td>
+                        {% else %}
+                          <td>{{value}}</td>
+                        {% endif %}
+                      {% endfor %}
+                      {% endwith %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot></tfoot>
+            </table>
+          </div>
+          <!-- /.card -->
+        </div>
+        <!-- /.row -->
+        <div class='row'>
+          <div class="card card-body border-0 shadow table-wrapper table-responsive">
+            <table id="table5" class="table table-bordered table-striped">
               <thead>
               </thead>
               <tbody>
@@ -181,7 +241,7 @@
 
   }
   let [totalColumnSums, totalNumOfRecords] = calculateResults('table1');
-  let [columnSums, numOfRecords] = calculateResults('table2');
+  let [columnSums, numOfRecords] = calculateResults('table3');
   totalNumOfRecords += numOfRecords;
   for(let index = 0; index<columnSums.length; index++){
     totalColumnSums[index] += columnSums[index]
@@ -190,7 +250,7 @@
   // Grand total
   $(document).ready(function() {
     var table1 = document.getElementById('table1');
-    var table3 = document.getElementById('table3');
+    var table3 = document.getElementById('table5');
     // Получаем заголовки из table1
     var headers = table1.getElementsByTagName('thead')[0].getElementsByTagName('tr')[0].cloneNode(true);
     // Вставляем заголовки в table3
@@ -246,6 +306,16 @@
   });
   $(function () {
     $("#table3").DataTable({
+      "responsive": true, "lengthChange": false, "autoWidth": false,
+      "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+      "paging": false,
+      "order": [
+        [5, 'desc']
+      ]
+    }).buttons().container().appendTo('#table3_wrapper .col-md-6:eq(0)');
+  });
+  $(function () {
+    $("#table5").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "paging": false, "searching": false,
     })
