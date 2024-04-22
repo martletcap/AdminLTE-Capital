@@ -808,6 +808,7 @@ class CurrentHoldingsView(View):
                 amount_of_shares = 0
                 if money_transaction.type == 'Restructuring':
                     share_transactions = ShareTransaction.objects.filter(
+                        money_transaction__company = company,
                         money_transaction__portfolio__name = 'Marshall',
                         date__lte = reporting_date,
                     )
@@ -1088,6 +1089,7 @@ class CurrentHoldingsView(View):
                 amount_of_shares = 0
                 if money_transaction.type == 'Restructuring':
                     share_transactions = ShareTransaction.objects.filter(
+                        money_transaction__company = company,
                         money_transaction__portfolio__name = 'Marshall',
                         date__lte = reporting_date,
                     )
