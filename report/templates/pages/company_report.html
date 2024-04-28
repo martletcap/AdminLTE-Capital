@@ -81,12 +81,13 @@
                 <div class="row">
                     <div class="col">
                         <div class="card text-white bg-secondary">
-                            <div class="card-header">Company</div>
+                            <div class="card-header">
+                                <a href={% url 'admin:home_company_change' company.pk %}>{{ company.name }} | {{ company.short_name }} | {{ company.number }}</a>
+                            </div>
                             <div class="card-body">
                             <h5 class="card-title mb-3">
-                                <div class="text-light">{{ company.name }} | {{ company.sector }}</div>
+                                <div class="text-light">{{ company.sector }} | {{ company.location }} | {{ company.category }}</div>
                                 <div class="text-light">Percentage of company ownership: {{percentage_of_ownership}}</div>
-                                <div class="text-light">{{ company.location }}</div>
                             </h5>
                             <p class="card-text">{{ company.comment }}</p>
                             </div>
