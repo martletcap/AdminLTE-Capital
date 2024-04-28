@@ -64,6 +64,20 @@
     <div class="content-wrapper">
         <section class="content">
             <div class="container-fluid">
+                <div class='row-12'>
+                    <div class="card card-info">
+                        <div class="card-body">
+                            <a href='{% url 'admin:home_moneytransaction_add' %}?company={{ company.pk }}' class="btn btn-primary">Add Money Transaction</a>
+                            <a href='{% url 'admin:home_sharetransaction_add' %}' class="btn btn-primary">Add Share Transaction</a>
+                            <a href='{% url 'update_prices' %}?company={{ company.pk }}' class="btn btn-primary">Update Share Prices</a>
+                            <a href='{% url 'update_shareholders' %}?company={{ company.pk }}' class="btn btn-primary">Update Shareholder List</a>
+                            <a href='{% url 'admin:home_split_add' %}' class="btn btn-primary">Update Split</a>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- row -->
                 <div class="row">
                     <div class="col">
                         <div class="card text-white bg-secondary">
