@@ -1065,7 +1065,7 @@ class CurrentHoldingsView(View):
             ).order_by('date')[:1].first()
             if first_investment:
                 record['year'] = first_investment.date.year
-           # Martlet direct investment cost
+            # Martlet direct investment cost
             # and
             # Martlet cost based on transfer value (including new investment)
             money_transactions = MoneyTransaction.objects.filter(
@@ -1361,12 +1361,16 @@ class CurrentHoldingsView(View):
                         tov_amount += amount_of_shares
                         tov_cost += money_transaction.price
                 elif money_transaction.type in {"Sell"}:
-                    price_per_one = direct_cost/direct_amount
+                    price_per_one = 0
+                    if direct_amount:
+                        price_per_one = direct_cost/direct_amount
                     direct_amount -= amount_of_shares
                     direct_cost -= amount_of_shares * price_per_one
                     direct_sell += amount_of_shares * price_per_one
                     if money_transaction.portfolio_name == 'Martlet':
-                        price_per_one = tov_cost/tov_amount
+                        price_per_one = 0
+                        if tov_amount:
+                            price_per_one = tov_cost/tov_amount
                         tov_amount -= amount_of_shares
                         tov_cost -= amount_of_shares * price_per_one
                         tov_sell += amount_of_shares * price_per_one
