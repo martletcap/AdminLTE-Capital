@@ -180,6 +180,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 USE_THOUSAND_SEPARATOR = True
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+
 # Celery
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
