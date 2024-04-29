@@ -836,11 +836,15 @@ class CurrentHoldingsView(View):
                         cost_total_amount += amount_of_shares
                         cost_total_cost += money_transaction.price
                 elif money_transaction.type in {"Sell"}:
-                    price_per_one = invested_total_cost/invested_total_amount
+                    price_per_one = 0
+                    if invested_total_amount:
+                        price_per_one = invested_total_cost/invested_total_amount
                     invested_total_amount -= amount_of_shares
                     invested_total_cost -= amount_of_shares * price_per_one
                     if money_transaction.portfolio_name == 'Martlet':
-                        price_per_one = cost_total_cost/cost_total_amount
+                        price_per_one = 0
+                        if cost_total_amount:
+                            price_per_one = cost_total_cost/cost_total_amount
                         cost_total_amount -= amount_of_shares
                         cost_total_cost -= amount_of_shares * price_per_one
 
