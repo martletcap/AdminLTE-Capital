@@ -71,13 +71,6 @@
           </a>
         </li>
         <li class="nav-item">
-          {% url 'fair_value_control' as fair_value_control %}
-          <a href="{{ fair_value_control }}" class="nav-link {% if fair_value_control == request.path %} active {% endif %}">
-            <i class="far fa-circle nav-icon"></i>
-            <p>Fair Value Control</p>
-          </a>
-        </li>
-        <li class="nav-item">
           {% url 'audit_shares' as audit_shares %}
           <a href="{{ audit_shares }}" class="nav-link {% if audit_shares == request.path %} active {% endif %}">
             <i class="far fa-circle nav-icon"></i>

@@ -151,6 +151,7 @@ class FairValueListAdmin(SimpleHistoryAdminCustom):
     form = FairValueListForm
     add_form_template = 'admin/change_form.html'
     change_form_template = 'pages/fairvaluelist_change_form.html'
+    change_list_template = 'pages/fairvaluelist_change_list.html'
 
     def formatted_date_field(self, obj):
         return obj.date.strftime('%Y/%m/%d')
