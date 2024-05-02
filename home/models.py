@@ -291,7 +291,7 @@ class Percent(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
-    percent = models.IntegerField()
+    percent = models.DecimalField(max_digits=4, decimal_places=1)
 
     def __str__(self) -> str:
         return self.name
