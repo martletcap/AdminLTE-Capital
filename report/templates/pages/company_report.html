@@ -227,6 +227,14 @@
                     </div>
                 </div>
                 <!-- row -->
+                <div class='row-12'>
+                    <div class='card'>
+                        <div class='card-body'>
+                            <div id='output'></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- row -->
             </div>
         </section>
     </div>
@@ -344,5 +352,68 @@ $(function () {
     }).buttons().container().appendTo('#shareholders_wrapper .col-md-6:eq(0)');
 })
 </script>
+<!-- Total info script  -->
+<script>
+    function updateOutput(){
+        const rows = document.querySelectorAll('#shareholders tbody tr');
 
+        // Option True
+        const sharesTypeOption = {};
+        // Option False
+        const sharesTypeNoOption = {};
+        // Option True or False
+        const sharesTypeTotal = {};
+
+        rows.forEach(row => {
+            const shareTypeInput = row.querySelector('td:nth-child(3)');
+            const amountInput = row.querySelector('td:nth-child(4)');
+            const optionInput = row.querySelector('td:nth-child(5) img');
+
+            const shareType = shareTypeInput.innerHTML;
+            const amount = parseInt(amountInput.innerHTML.replaceAll(',', '')) || 0;
+            const option = optionInput.alt == 'True';
+            
+            let currentShares;
+            // Sum all shareholders Option or No Option
+            if (option){
+                currentShares = sharesTypeOption
+            } else {
+                currentShares = sharesTypeNoOption
+            }
+            if (currentShares[shareType]){
+                currentShares[shareType] += amount
+            } else {
+                currentShares[shareType] = amount
+            }
+            // Total Shares
+            if (sharesTypeTotal[shareType]){
+                sharesTypeTotal[shareType] += amount
+            } else {
+                sharesTypeTotal[shareType] = amount
+            }
+        });
+        const outputDiv = document.getElementById('output');
+        // Output Formatting function
+        const outputFormatting = (outputString, title, shareDict) => {
+            outputString += `${title}:<br>`
+            let sum = 0;
+            for (const shareType in shareDict) {
+                sum += shareDict[shareType]
+                outputString += `${shareType} - ${shareDict[shareType].toLocaleString('en-US')};<br>`;
+            }
+            outputString += `<b>Total: ${sum.toLocaleString('en-US')}</b>`
+            return outputString
+        }
+        // Format Output
+        let outputString = '';
+        outputString = outputFormatting(outputString, 'Shares', sharesTypeOption)
+        outputString += '<br><br>'
+        outputString = outputFormatting(outputString, 'Option', sharesTypeNoOption)
+        outputString += '<br><br>'
+        outputString = outputFormatting(outputString, 'Total', sharesTypeTotal)
+
+        outputDiv.innerHTML = outputString;
+    }
+    updateOutput();
+</script>
 {% endblock extra_scripts %}
