@@ -777,7 +777,7 @@ class CurrentHoldingsView(View):
         # Table 1
         companies = Company.objects.filter(
             status = 1, # Portfolio status (fixture)
-            category = 1 # Companys category (fixture)
+            category = 1, # Companys category (fixture)
         )
         res = []
         for company in companies:
@@ -824,19 +824,19 @@ class CurrentHoldingsView(View):
                     all_transactions.append(('share', share_transactions[j]))
                     j += 1
             for money_transaction in money_transactions[i:]:
-                all_transactions.append(('money', money_transactions[i]))
+                all_transactions.append(('money', money_transaction))
             for share_transaction in share_transactions[j:]:
-                all_transactions.append(('share', share_transactions[j]))
+                all_transactions.append(('share', share_transaction))
 
             for transaction_type, transaction in all_transactions:
                 if transaction_type == 'money':
                     if transaction.type in {"Buy", "Loan"}:
                         invested_total_cost += transaction.price
                         if transaction.portfolio_name == 'Martlet':
-                            cost_total_cost += money_transaction.price
+                            cost_total_cost += transaction.price
                     elif transaction.type in {"Restructuring",}:
                         if transaction.portfolio_name == 'Martlet':
-                            cost_total_cost += money_transaction.price
+                            cost_total_cost += transaction.price
                             # Restructuring shares
                             amount_of_shares = 0
                             share_transactions = ShareTransaction.objects.filter(
