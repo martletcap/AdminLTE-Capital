@@ -1323,6 +1323,12 @@ class CurrentHoldingsView(View):
             # Disposal date
 
             # Direct cost and ToV cost
+            amount_of_shares = 0
+            direct_cost = 0
+            tov_cost = 0
+            direct_sell = 0
+            tov_sell = 0
+
             money_transactions = MoneyTransaction.objects.filter(
                 date__lte = reporting_date,
                 company = company,
@@ -1330,57 +1336,59 @@ class CurrentHoldingsView(View):
                 portfolio_name = F('portfolio__name'),
                 type = F('transaction_type__title')
             ).order_by('date')
-            direct_amount = 0
-            direct_cost = 0
-            direct_sell = 0
-            tov_amount = 0
-            tov_cost = 0
-            tov_sell = 0
-            for money_transaction in money_transactions:
-                amount_of_shares = 0
-                if money_transaction.type == 'Restructuring':
-                    share_transactions = ShareTransaction.objects.filter(
-                        money_transaction__company = company,
-                        money_transaction__portfolio__name = 'Marshall',
-                        date__lte = reporting_date,
-                    )
+            share_transactions = ShareTransaction.objects.filter(
+                date__lte = reporting_date,
+                money_transaction__company = company,
+            ).annotate(
+                portfolio_name = F('money_transaction__portfolio__name'),
+                type = F('money_transaction__transaction_type__title')
+            )
+            # Make one array
+            all_transactions = []
+            i = 0
+            j = 0
+            while i<len(money_transactions) and j<len(share_transactions):
+                if money_transactions[i].date <= share_transactions[j].date:
+                    all_transactions.append(('money', money_transactions[i]))
+                    i += 1
                 else:
-                    share_transactions = ShareTransaction.objects.filter(
-                        money_transaction=money_transaction,
-                        date__lte = reporting_date,
-                    )
-                for share_transaction in share_transactions:
+                    all_transactions.append(('share', share_transactions[j]))
+                    j += 1
+            for money_transaction in money_transactions[i:]:
+                all_transactions.append(('money', money_transaction))
+            for share_transaction in share_transactions[j:]:
+                all_transactions.append(('share', share_transaction))
+
+            for transaction_type, transaction in all_transactions:
+                if transaction_type == 'money':
+                    if transaction.type in {"Buy", "Loan"}:
+                        direct_cost += transaction.price
+                        if transaction.portfolio_name == 'Martlet':
+                            tov_cost += transaction.price
+                    elif transaction.type in {"Restructuring",}:
+                        if transaction.portfolio_name == 'Martlet':
+                            tov_cost += transaction.price
+                elif transaction_type == 'share':
                     cof = Split.objects.cof(
-                        date__gte = share_transaction.date,
+                        date__gte = transaction.date,
                         date__lte = reporting_date,
-                        share=share_transaction.share,
+                        share=transaction.share,
                     )
-                    amount_of_shares += share_transaction.amount * cof
-                
-                if money_transaction.type in {"Buy", "Loan"}:
-                    direct_amount += amount_of_shares
-                    direct_cost += money_transaction.price
-                    if money_transaction.portfolio_name == 'Martlet':
-                        tov_amount += amount_of_shares
-                        tov_cost += money_transaction.price
-                elif money_transaction.type in {"Restructuring",}:
-                    if money_transaction.portfolio_name == 'Martlet':
-                        tov_amount += amount_of_shares
-                        tov_cost += money_transaction.price
-                elif money_transaction.type in {"Sell"}:
-                    price_per_one = 0
-                    if direct_amount:
-                        price_per_one = direct_cost/direct_amount
-                    direct_amount -= amount_of_shares
-                    direct_cost -= amount_of_shares * price_per_one
-                    direct_sell += amount_of_shares * price_per_one
-                    if money_transaction.portfolio_name == 'Martlet':
-                        price_per_one = 0
-                        if tov_amount:
-                            price_per_one = tov_cost/tov_amount
-                        tov_amount -= amount_of_shares
-                        tov_cost -= amount_of_shares * price_per_one
-                        tov_sell += amount_of_shares * price_per_one
+                    amount = transaction.amount * cof
+                    if transaction.type in {"Buy", "Loan"}:
+                        amount_of_shares += amount
+                    elif transaction.type in {"Sell",}:
+                        price_per_one_direct = 0
+                        price_per_one_tov = 0
+                        if amount_of_shares:
+                            price_per_one_direct = direct_cost/amount_of_shares
+                            price_per_one_tov = tov_cost/amount_of_shares
+                        amount_of_shares -= amount
+                        direct_cost -= amount * price_per_one_direct
+                        direct_sell += amount * price_per_one_cost
+                        if transaction.portfolio_name == 'Martlet':
+                            tov_cost -= amount * price_per_one_tov
+                            tov_sell += amount * price_per_one_tov
             record['direct_cost'] = direct_sell
             record['tov_cost'] = tov_sell
             # Proceeds
@@ -1445,7 +1453,8 @@ class CurrentHoldingsView(View):
             # Profit
             record['profit'] = record['proceeds'] - record['tov_cost']
             # Result
-            res.append(record)
+            if record['direct_cost'] or record['tov_cost']:
+                res.append(record)
         
         for r in res:
             context['table3'].append((
