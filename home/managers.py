@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import F
+from django.db.models import ExpressionWrapper, F, DecimalField
 
 class SharePriceManager(models.Manager):
     def last_price(self, **kwargs):
@@ -25,7 +25,7 @@ class SplitManager(models.Manager):
         """
         cof = 1
         splits = self.filter(**kwargs).annotate(
-            cof = F('after')/F('before'),
+            cof = ExpressionWrapper(F('after')*1.0/F('before'), DecimalField())
         ).values_list('cof')
         for split in splits:
             cof *= split[0]
