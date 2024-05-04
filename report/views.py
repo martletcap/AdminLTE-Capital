@@ -793,9 +793,9 @@ class CurrentHoldingsView(View):
             # Martlet direct investment cost
             # and
             # Martlet cost based on transfer value (including new investment)
-            amount_of_shares = 0
-            invested_total_cost = 0
-            cost_total_cost = 0
+            amount_of_shares = Decimal(0)
+            invested_total_cost = Decimal(0)
+            cost_total_cost = Decimal(0)
 
             money_transactions = MoneyTransaction.objects.filter(
                 date__lte = reporting_date,
@@ -1323,11 +1323,11 @@ class CurrentHoldingsView(View):
             # Disposal date
 
             # Direct cost and ToV cost
-            amount_of_shares = 0
-            direct_cost = 0
-            tov_cost = 0
-            direct_sell = 0
-            tov_sell = 0
+            amount_of_shares = Decimal(0)
+            direct_cost = Decimal(0)
+            tov_cost = Decimal(0)
+            direct_sell = Decimal(0)
+            tov_sell = Decimal(0)
 
             money_transactions = MoneyTransaction.objects.filter(
                 date__lte = reporting_date,
