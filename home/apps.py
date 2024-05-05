@@ -6,3 +6,8 @@ class HomeConfig(AppConfig):
     name = "home"
     # Duct tape
     verbose_name = "⠀Add Info"
+
+    def ready(self):
+        # Initialization of signals
+        import home.signals
+        return super().ready()

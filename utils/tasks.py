@@ -5,9 +5,10 @@ from home.models import Company, CompanyHouseParser
 
 
 @shared_task
-def parse_all_shareholders():
+def parse_all_shareholders(**filters):
     companies = Company.objects.filter(
-        category = 1 # Only "Companys" category
+        category = 1, # Only "Companys" category
+        **filters,
     )
     for company in companies:
         items = last_company_file_items(company)
@@ -28,5 +29,3 @@ def parse_all_shareholders():
             # for this company
             if res_shareholder_list is None:
                 break
-
-
