@@ -19,6 +19,8 @@
   * DB_USERNAME
   * DB_PASS
   * DB_PORT
+  * COMPANY_HOUSE_KEY
+  * CELERY_BROKER_URL
 * Configure nginx
 * ```gunicorn --config gunicorn-cfg.py core.wsgi```
 * ```celery -A core worker -l INFO```
