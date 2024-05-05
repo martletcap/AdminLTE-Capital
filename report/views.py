@@ -1385,7 +1385,7 @@ class CurrentHoldingsView(View):
                             price_per_one_tov = tov_cost/amount_of_shares
                         amount_of_shares -= amount
                         direct_cost -= amount * price_per_one_direct
-                        direct_sell += amount * price_per_one_cost
+                        direct_sell += amount * price_per_one_direct
                         if transaction.portfolio_name == 'Martlet':
                             tov_cost -= amount * price_per_one_tov
                             tov_sell += amount * price_per_one_tov
